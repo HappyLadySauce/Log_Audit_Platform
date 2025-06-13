@@ -27,9 +27,9 @@
           <EnhancedStatCard
             :icon="IconStorage"
             icon-bg-color="#1890ff"
-            value="18"
+            value="9"
             label="设备监控"
-            subtitle="网络设备7台 · 服务器11台 · 在线总数18"
+            subtitle="网络设备6台 · 服务器5台 · 在线总数9"
             :trend="{ type: 'stable', value: '全部在线' }"
           />
         </a-col>
@@ -38,7 +38,7 @@
           <EnhancedStatCard
             :icon="IconFile"
             icon-bg-color="#52c41a"
-            value="3K"
+            value="2.1K"
             label="今日日志"
             subtitle="日志采集总量"
             :trend="{ type: 'increase', value: '+12%' }"
@@ -49,7 +49,7 @@
           <EnhancedStatCard
             :icon="IconExclamation"
             icon-bg-color="#faad14"
-            value="5"
+            value="0"
             label="威胁告警"
             subtitle="低风险预警信息"
             :trend="{ type: 'decrease', value: '-8%' }"
@@ -60,7 +60,7 @@
           <EnhancedStatCard
             :icon="IconNotification"
             icon-bg-color="#f5222d"
-            value="11.2G"
+            value="9.6G"
             label="流量审计"
             subtitle="总流量统计"
             :trend="{ type: 'increase', value: '+15%' }"
@@ -351,15 +351,15 @@ const cpuTrend = ref({ type: 'stable', value: '+2%' })
 const memoryTrend = ref({ type: 'stable', value: '-1%' })
 
 // 核心指标数据 - 保持与日志数据一致
-const todayLogs = ref('3K')
-const onlineDevices = ref(18)
+const todayLogs = ref('2.1K')
+const onlineDevices = ref(9)
 const threatAlerts = ref({
-  error: 25,
-  warning: 542,
-  info: 2505,
-  total: 3072
+  error: 0,
+  warning: 280,
+  info: 1820,
+  total: 2100
 })
-const totalTraffic = ref('11.2G')
+const totalTraffic = ref('9.6G')
 
 // 图表时间范围  
 const chartTimeRange = ref('today')
@@ -424,40 +424,40 @@ const updateResourceData = () => {
 // 生成新的日志条目
 const generateNewLogEntry = () => {
   const devices = [
-    { name: '总部防火墙', color: '#52c41a' },
     { name: '分部防火墙', color: '#52c41a' },
-    { name: '总部K8S控制节点1', color: '#1890ff' },
-    { name: '总部K8S工作节点1', color: '#1890ff' },
+    { name: '分部K8S控制节点1', color: '#1890ff' },
+    { name: '分部K8S工作节点1', color: '#1890ff' },
     { name: '分部接入交换机', color: '#52c41a' },
-    { name: 'DNS邮件服务器', color: '#1890ff' }
+    { name: 'DNS邮件服务器', color: '#1890ff' },
+    { name: '分部无线控制器', color: '#52c41a' }
   ]
   
   // 85%信息日志，15%警告日志，系统运行正常
   const logTypes = ['info', 'info', 'info', 'info', 'info', 'info', 'warning']
   const logMessages = {
     info: [
-      '系统启动完成，所有服务正常运行',
-      'CPU使用率: 32%, 内存使用率: 38%',
-      '网络连接正常，延迟 < 5ms',
-      '磁盘I/O操作正常，读写速度稳定',
-      '用户登录认证成功',
-      '定时备份任务执行完成',
-      '防火墙规则更新成功',
-      'K8S集群健康检查通过',
-      '数据同步任务完成',
-      '系统性能监控正常',
-      '网络流量状态稳定',
-      '服务健康检查通过'
+      '分部系统启动完成，所有服务正常运行',
+      '分部CPU使用率: 32%, 内存使用率: 38%',
+      '分部网络连接正常，延迟 < 5ms',
+      '分部磁盘I/O操作正常，读写速度稳定',
+      '分部用户登录认证成功',
+      '分部定时备份任务执行完成',
+      '分部防火墙规则更新成功',
+      '分部K8S集群健康检查通过',
+      '分部数据同步任务完成',
+      '分部系统性能监控正常',
+      '分部网络流量状态稳定',
+      '分部服务健康检查通过'
     ],
     warning: [
-      'CPU使用率达到60%，建议关注',
-      '内存使用率达到70%，状态良好',
-      '网络延迟略微增加至12ms',
-      '磁盘使用率达到75%，建议定期清理',
-      '检测到轻微的负载波动',
-      '备份任务耗时较长，建议优化',
-      '发现少量异常访问尝试，已拦截',
-      '系统负载略有上升，继续监控'
+      '分部CPU使用率达到60%，建议关注',
+      '分部内存使用率达到70%，状态良好',
+      '分部网络延迟略微增加至12ms',
+      '分部磁盘使用率达到75%，建议定期清理',
+      '分部检测到轻微的负载波动',
+      '分部备份任务耗时较长，建议优化',
+      '分部发现少量异常访问尝试，已拦截',
+      '分部系统负载略有上升，继续监控'
     ]
   }
   
@@ -521,40 +521,40 @@ const aiPredictions = ref([
 // 初始化日志数据
 const initLogData = () => {
   const devices = [
-    { name: '总部防火墙', color: '#52c41a' },
     { name: '分部防火墙', color: '#52c41a' },
-    { name: '总部K8S控制节点1', color: '#1890ff' },
-    { name: '总部K8S工作节点1', color: '#1890ff' },
+    { name: '分部K8S控制节点1', color: '#1890ff' },
+    { name: '分部K8S工作节点1', color: '#1890ff' },
     { name: '分部接入交换机', color: '#52c41a' },
-    { name: 'DNS邮件服务器', color: '#1890ff' }
+    { name: 'DNS邮件服务器', color: '#1890ff' },
+    { name: '分部无线控制器', color: '#52c41a' }
   ]
   
   // 80%信息日志，20%警告日志，系统运行正常
   const logTypes = ['info', 'info', 'info', 'info', 'warning']
   const logMessages = {
     info: [
-      '系统启动完成，所有服务正常运行',
-      'CPU使用率: 32%, 内存使用率: 38%',
-      '网络连接正常，延迟 < 5ms',
-      '磁盘I/O操作正常，读写速度稳定',
-      '用户登录认证成功',
-      '定时备份任务执行完成',
-      '防火墙规则更新成功',
-      'K8S集群健康检查通过',
-      '数据同步任务完成',
-      '系统性能监控正常',
-      '网络流量状态稳定',
-      '服务健康检查通过'
+      '分部系统启动完成，所有服务正常运行',
+      '分部CPU使用率: 32%, 内存使用率: 38%',
+      '分部网络连接正常，延迟 < 5ms',
+      '分部磁盘I/O操作正常，读写速度稳定',
+      '分部用户登录认证成功',
+      '分部定时备份任务执行完成',
+      '分部防火墙规则更新成功',
+      '分部K8S集群健康检查通过',
+      '分部数据同步任务完成',
+      '分部系统性能监控正常',
+      '分部网络流量状态稳定',
+      '分部服务健康检查通过'
     ],
     warning: [
-      'CPU使用率达到60%，建议关注',
-      '内存使用率达到70%，状态良好',
-      '网络延迟略微增加至12ms',
-      '磁盘使用率达到75%，建议定期清理',
-      '检测到轻微的负载波动',
-      '备份任务耗时较长，建议优化',
-      '发现少量异常访问尝试，已拦截',
-      '系统负载略有上升，继续监控'
+      '分部CPU使用率达到60%，建议关注',
+      '分部内存使用率达到70%，状态良好',
+      '分部网络延迟略微增加至12ms',
+      '分部磁盘使用率达到75%，建议定期清理',
+      '分部检测到轻微的负载波动',
+      '分部备份任务耗时较长，建议优化',
+      '分部发现少量异常访问尝试，已拦截',
+      '分部系统负载略有上升，继续监控'
     ]
   }
   
@@ -592,15 +592,15 @@ const initLogData = () => {
 
 // 设备状态统计数据
 const deviceStatusData = ref([
-  { name: '在线', value: 18 },
+  { name: '在线', value: 9 },
   { name: '离线', value: 0 },
   { name: '告警', value: 0 }
 ])
 
 // 设备类型统计数据
 const deviceTypeData = ref([
-  { name: '网络设备', value: 7 },
-  { name: '服务器', value: 11 }
+  { name: '网络设备', value: 6 },
+  { name: '服务器', value: 5 }
 ])
 
 // 网络流量趋势数据 (Mbps) - 初始化30个数据点，保留历史数据
@@ -628,19 +628,11 @@ const initNetworkTrafficData = () => {
   networkTrafficData.value = data
 }
 
-// 设备列表 - 使用真实的设备数据
+// 设备列表 - 使用分部设备数据
 const deviceList = ref([
   // 网络设备
   {
     id: 1,
-    name: '总部防火墙',
-    ip: '10.10.10.1',
-    status: 'online',
-    lastResponse: formatTime(new Date()),
-    color: '#52c41a'
-  },
-  {
-    id: 2,
     name: '分部防火墙',
     ip: '10.10.20.1',
     status: 'online',
@@ -648,7 +640,7 @@ const deviceList = ref([
     color: '#52c41a'
   },
   {
-    id: 3,
+    id: 2,
     name: '分部集群接入交换机',
     ip: '10.10.10.150',
     status: 'online',
@@ -656,7 +648,7 @@ const deviceList = ref([
     color: '#52c41a'
   },
   {
-    id: 4,
+    id: 3,
     name: '分部彩光交换机',
     ip: '192.168.100.1',
     status: 'online',
@@ -664,7 +656,7 @@ const deviceList = ref([
     color: '#52c41a'
   },
   {
-    id: 5,
+    id: 4,
     name: '分部无线控制器',
     ip: '192.168.100.2',
     status: 'online',
@@ -672,7 +664,7 @@ const deviceList = ref([
     color: '#52c41a'
   },
   {
-    id: 6,
+    id: 5,
     name: '分部用户接入交换机',
     ip: '192.168.100.3',
     status: 'online',
@@ -680,7 +672,7 @@ const deviceList = ref([
     color: '#52c41a'
   },
   {
-    id: 7,
+    id: 6,
     name: '分部AP',
     ip: '192.168.30.2',
     status: 'online',
@@ -689,55 +681,7 @@ const deviceList = ref([
   },
   // 服务器设备
   {
-    id: 8,
-    name: '总部Karmada控制服务器',
-    ip: '10.10.10.6',
-    status: 'online',
-    lastResponse: formatTime(new Date()),
-    color: '#1890ff'
-  },
-  {
-    id: 9,
-    name: '总部Karmada节点服务器',
-    ip: '10.10.10.7',
-    status: 'online',
-    lastResponse: formatTime(new Date()),
-    color: '#1890ff'
-  },
-  {
-    id: 10,
-    name: '总部K8S控制节点1',
-    ip: '10.10.10.2',
-    status: 'online',
-    lastResponse: formatTime(new Date()),
-    color: '#1890ff'
-  },
-  {
-    id: 11,
-    name: '总部K8S控制节点2',
-    ip: '10.10.10.3',
-    status: 'online',
-    lastResponse: formatTime(new Date()),
-    color: '#1890ff'
-  },
-  {
-    id: 12,
-    name: '总部K8S工作节点1',
-    ip: '10.10.10.4',
-    status: 'online',
-    lastResponse: formatTime(new Date()),
-    color: '#1890ff'
-  },
-  {
-    id: 13,
-    name: '总部K8S工作节点2',
-    ip: '10.10.10.5',
-    status: 'online',
-    lastResponse: formatTime(new Date()),
-    color: '#1890ff'
-  },
-  {
-    id: 14,
+    id: 7,
     name: '分部K8S控制节点1',
     ip: '10.10.20.2',
     status: 'online',
@@ -745,7 +689,7 @@ const deviceList = ref([
     color: '#1890ff'
   },
   {
-    id: 15,
+    id: 8,
     name: '分部K8S控制节点2',
     ip: '10.10.20.3',
     status: 'online',
@@ -753,7 +697,7 @@ const deviceList = ref([
     color: '#1890ff'
   },
   {
-    id: 16,
+    id: 9,
     name: '分部K8S工作节点1',
     ip: '10.10.20.4',
     status: 'online',
@@ -761,7 +705,7 @@ const deviceList = ref([
     color: '#1890ff'
   },
   {
-    id: 17,
+    id: 10,
     name: '分部K8S工作节点2',
     ip: '10.10.20.5',
     status: 'online',
@@ -769,9 +713,9 @@ const deviceList = ref([
     color: '#1890ff'
   },
   {
-    id: 18,
+    id: 11,
     name: 'DNS邮件服务器',
-    ip: '10.10.10.254',
+    ip: '10.10.20.254',
     status: 'online',
     lastResponse: formatTime(new Date()),
     color: '#1890ff'
@@ -968,24 +912,24 @@ const deleteDevice = (device: any) => {
 // 更新核心指标数据
 const updateCoreMetrics = () => {
   // 今日日志数量实时增长
-  const currentLogs = parseInt(todayLogs.value.replace('K', '')) * 1000
-  const newLogs = currentLogs + Math.floor(Math.random() * 50) + 10
+  const currentLogs = parseFloat(todayLogs.value.replace('K', '')) * 1000
+  const newLogs = currentLogs + Math.floor(Math.random() * 30) + 5
   todayLogs.value = (newLogs / 1000).toFixed(1) + 'K'
   
-  // 威胁告警数据轻微波动
+  // 威胁告警数据轻微波动 - 分部规模较小
   if (Math.random() > 0.8) {
-    threatAlerts.value.warning += Math.floor(Math.random() * 3) - 1
-    threatAlerts.value.info += Math.floor(Math.random() * 10) + 5
+    threatAlerts.value.warning += Math.floor(Math.random() * 2) - 1
+    threatAlerts.value.info += Math.floor(Math.random() * 8) + 3
     threatAlerts.value.total = threatAlerts.value.error + threatAlerts.value.warning + threatAlerts.value.info
   }
   
   // 流量审计数据增长
   const currentTraffic = parseFloat(totalTraffic.value.replace('G', ''))
-  const newTraffic = currentTraffic + (Math.random() * 0.1)
+  const newTraffic = currentTraffic + (Math.random() * 0.08)
   totalTraffic.value = newTraffic.toFixed(1) + 'G'
   
   // 设备在线数量保持稳定
-  onlineDevices.value = 18
+  onlineDevices.value = 9
 }
 
 // 组件挂载时初始化数据和定时器
@@ -1067,8 +1011,6 @@ onUnmounted(() => {
   font-weight: 600;
   color: #262626;
 }
-
-
 
 /* 统计卡片样式 */
 .stats-section {

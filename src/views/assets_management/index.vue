@@ -322,7 +322,7 @@ const assetData = ref([
     name: 'DNS邮件服务器',
     model: 'Dell PowerEdge R630',
     type: 'server',
-    ip: '10.10.10.254',
+    ip: '10.10.20.254',
     location: '总部机房A-08',
     status: '在线',
     lastUpdate: '2024-01-15 10:14:00'

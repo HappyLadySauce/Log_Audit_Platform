@@ -28,7 +28,7 @@
         <StatCard
           :icon="IconDesktop"
           icon-bg-color="#52c41a"
-          :value="11"
+          :value="3"
           label="在线服务器"
           subtitle="服务器总数"
         />
@@ -37,7 +37,7 @@
         <StatCard
           :icon="IconDownload"
           icon-bg-color="#1890ff"
-          :value="11"
+          :value="3"
           label="采集中"
           subtitle="正在采集日志"
         />
@@ -46,7 +46,7 @@
         <StatCard
           :icon="IconFile"
           icon-bg-color="#faad14"
-          :value="32580"
+          :value="18420"
           label="今日日志"
           subtitle="条数统计"
         />
@@ -55,7 +55,7 @@
         <StatCard
           :icon="IconCloudDownload"
           icon-bg-color="#722ed1"
-          :value="4.6"
+          :value="2.8"
           label="存储空间(GB)"
           subtitle="日志占用"
         />
@@ -241,54 +241,6 @@ import {
 const serverData = ref([
   {
     key: '1',
-    hostname: '总部Karmada控制服务器',
-    ip: '10.10.10.6',
-    serverType: 'Ubuntu 22.04',
-    protocol: 'syslog',
-    status: '在线'
-  },
-  {
-    key: '2',
-    hostname: '总部Karmada节点服务器',
-    ip: '10.10.10.7',
-    serverType: 'Ubuntu 22.04',
-    protocol: 'syslog',
-    status: '在线'
-  },
-  {
-    key: '3',
-    hostname: '总部K8S控制节点1',
-    ip: '10.10.10.2',
-    serverType: 'Ubuntu 22.04',
-    protocol: 'syslog',
-    status: '在线'
-  },
-  {
-    key: '4',
-    hostname: '总部K8S控制节点2',
-    ip: '10.10.10.3',
-    serverType: 'Ubuntu 22.04',
-    protocol: 'syslog',
-    status: '在线'
-  },
-  {
-    key: '5',
-    hostname: '总部K8S工作节点1',
-    ip: '10.10.10.4',
-    serverType: 'Ubuntu 22.04',
-    protocol: 'syslog',
-    status: '在线'
-  },
-  {
-    key: '6',
-    hostname: '总部K8S工作节点2',
-    ip: '10.10.10.5',
-    serverType: 'Ubuntu 22.04',
-    protocol: 'syslog',
-    status: '在线'
-  },
-  {
-    key: '7',
     hostname: '分部K8S控制节点1',
     ip: '10.10.20.2',
     serverType: 'Ubuntu 22.04',
@@ -296,7 +248,7 @@ const serverData = ref([
     status: '在线'
   },
   {
-    key: '8',
+    key: '2',
     hostname: '分部K8S控制节点2',
     ip: '10.10.20.3',
     serverType: 'Ubuntu 22.04',
@@ -304,7 +256,7 @@ const serverData = ref([
     status: '在线'
   },
   {
-    key: '9',
+    key: '3',
     hostname: '分部K8S工作节点1',
     ip: '10.10.20.4',
     serverType: 'Ubuntu 22.04',
@@ -312,7 +264,7 @@ const serverData = ref([
     status: '在线'
   },
   {
-    key: '10',
+    key: '4',
     hostname: '分部K8S工作节点2',
     ip: '10.10.20.5',
     serverType: 'Ubuntu 22.04',
@@ -320,9 +272,9 @@ const serverData = ref([
     status: '在线'
   },
   {
-    key: '11',
+    key: '5',
     hostname: 'DNS邮件服务器',
-    ip: '10.10.10.254',
+    ip: '10.10.20.254',
     serverType: 'Ubuntu 22.04',
     protocol: 'syslog',
     status: '在线'
@@ -375,18 +327,12 @@ const avgDiskUsage = ref(42)
 const networkIO = ref(28)
 
 // 日志内容
-const logContent = ref(`[2024-01-15 10:35:25] INFO: 总部Karmada控制服务器(10.10.10.6) - 集群状态健康，Pod调度正常
-[2024-01-15 10:35:22] INFO: 总部Karmada节点服务器(10.10.10.7) - 资源调度完成，CPU使用率: 32%
-[2024-01-15 10:35:18] DEBUG: 总部K8S控制节点1(10.10.10.2) - etcd集群同步正常，延迟: 2ms
-[2024-01-15 10:35:15] INFO: 总部K8S控制节点2(10.10.10.3) - API服务器响应正常，QPS: 145
-[2024-01-15 10:35:12] INFO: 总部K8S工作节点1(10.10.10.4) - Pod调度成功，运行容器: 24个
-[2024-01-15 10:35:08] DEBUG: 总部K8S工作节点2(10.10.10.5) - 存储卷挂载完成，PV状态: Bound
-[2024-01-15 10:35:05] INFO: 分部K8S控制节点1(10.10.20.2) - 集群网络通信正常，CNI插件工作正常
+const logContent = ref(`[2024-01-15 10:35:05] INFO: 分部K8S控制节点1(10.10.20.2) - 集群网络通信正常，CNI插件工作正常
 [2024-01-15 10:35:02] INFO: 分部K8S控制节点2(10.10.20.3) - 负载均衡器工作正常，Service状态: Active
 [2024-01-15 10:34:58] DEBUG: 分部K8S工作节点1(10.10.20.4) - 内存使用率: 45%，可用内存: 12GB
 [2024-01-15 10:34:55] INFO: 分部K8S工作节点2(10.10.20.5) - 磁盘I/O性能正常，IOPS: 2500
-[2024-01-15 10:34:52] INFO: DNS邮件服务器(10.10.10.254) - DNS解析服务正常，邮件队列: 0
-[2024-01-15 10:34:48] DEBUG: Kubernetes集群状态检查完成，所有节点健康
+[2024-01-15 10:34:52] INFO: DNS邮件服务器(10.10.20.254) - DNS解析服务正常，邮件队列: 0
+[2024-01-15 10:34:48] DEBUG: 分部Kubernetes集群状态检查完成，所有节点健康
 [2024-01-15 10:34:45] INFO: 容器镜像拉取正常，镜像仓库连接稳定
 [2024-01-15 10:34:42] INFO: 服务发现功能正常，Ingress控制器工作正常
 [2024-01-15 10:34:38] DEBUG: 持久化存储检查完成，StorageClass配置正确
@@ -394,7 +340,8 @@ const logContent = ref(`[2024-01-15 10:35:25] INFO: 总部Karmada控制服务器
 [2024-01-15 10:34:32] INFO: 监控指标收集正常，Prometheus采集成功
 [2024-01-15 10:34:28] DEBUG: 日志聚合服务正常，ElasticSearch索引更新
 [2024-01-15 10:34:25] INFO: 备份任务执行完成，数据完整性检查通过
-[2024-01-15 10:34:22] INFO: 系统日志采集完成，共采集11台服务器数据`)
+[2024-01-15 10:34:22] INFO: 系统日志采集完成，共采集5台分部服务器数据
+[2024-01-15 10:34:18] INFO: 分部网络连接稳定，与主机房通信正常`)
 
 // 获取服务器类型颜色
 const getServerTypeColor = (type: string) => {
