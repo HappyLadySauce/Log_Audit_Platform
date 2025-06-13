@@ -27,9 +27,9 @@
           <EnhancedStatCard
             :icon="IconStorage"
             icon-bg-color="#1890ff"
-            value="9"
+            value="8"
             label="设备监控"
-            subtitle="网络设备6台 · 服务器5台 · 在线总数9"
+            subtitle="网络设备6台 · 服务器4台 · 在线总数8"
             :trend="{ type: 'stable', value: '全部在线' }"
           />
         </a-col>
@@ -38,7 +38,7 @@
           <EnhancedStatCard
             :icon="IconFile"
             icon-bg-color="#52c41a"
-            value="2.1K"
+            value="1.9K"
             label="今日日志"
             subtitle="日志采集总量"
             :trend="{ type: 'increase', value: '+12%' }"
@@ -60,7 +60,7 @@
           <EnhancedStatCard
             :icon="IconNotification"
             icon-bg-color="#f5222d"
-            value="9.6G"
+            value="8.8G"
             label="流量审计"
             subtitle="总流量统计"
             :trend="{ type: 'increase', value: '+15%' }"
@@ -351,15 +351,15 @@ const cpuTrend = ref({ type: 'stable', value: '+2%' })
 const memoryTrend = ref({ type: 'stable', value: '-1%' })
 
 // 核心指标数据 - 保持与日志数据一致
-const todayLogs = ref('2.1K')
-const onlineDevices = ref(9)
+const todayLogs = ref('1.9K')
+const onlineDevices = ref(8)
 const threatAlerts = ref({
   error: 0,
-  warning: 280,
-  info: 1820,
-  total: 2100
+  warning: 250,
+  info: 1650,
+  total: 1900
 })
-const totalTraffic = ref('9.6G')
+const totalTraffic = ref('8.8G')
 
 // 图表时间范围  
 const chartTimeRange = ref('today')
@@ -428,7 +428,6 @@ const generateNewLogEntry = () => {
     { name: '分部K8S控制节点1', color: '#1890ff' },
     { name: '分部K8S工作节点1', color: '#1890ff' },
     { name: '分部接入交换机', color: '#52c41a' },
-    { name: 'DNS邮件服务器', color: '#1890ff' },
     { name: '分部无线控制器', color: '#52c41a' }
   ]
   
@@ -525,7 +524,6 @@ const initLogData = () => {
     { name: '分部K8S控制节点1', color: '#1890ff' },
     { name: '分部K8S工作节点1', color: '#1890ff' },
     { name: '分部接入交换机', color: '#52c41a' },
-    { name: 'DNS邮件服务器', color: '#1890ff' },
     { name: '分部无线控制器', color: '#52c41a' }
   ]
   
@@ -592,7 +590,7 @@ const initLogData = () => {
 
 // 设备状态统计数据
 const deviceStatusData = ref([
-  { name: '在线', value: 9 },
+  { name: '在线', value: 8 },
   { name: '离线', value: 0 },
   { name: '告警', value: 0 }
 ])
@@ -600,7 +598,7 @@ const deviceStatusData = ref([
 // 设备类型统计数据
 const deviceTypeData = ref([
   { name: '网络设备', value: 6 },
-  { name: '服务器', value: 5 }
+  { name: '服务器', value: 4 }
 ])
 
 // 网络流量趋势数据 (Mbps) - 初始化30个数据点，保留历史数据
@@ -708,14 +706,6 @@ const deviceList = ref([
     id: 10,
     name: '分部K8S工作节点2',
     ip: '10.10.20.5',
-    status: 'online',
-    lastResponse: formatTime(new Date()),
-    color: '#1890ff'
-  },
-  {
-    id: 11,
-    name: 'DNS邮件服务器',
-    ip: '10.10.20.254',
     status: 'online',
     lastResponse: formatTime(new Date()),
     color: '#1890ff'
@@ -913,23 +903,23 @@ const deleteDevice = (device: any) => {
 const updateCoreMetrics = () => {
   // 今日日志数量实时增长
   const currentLogs = parseFloat(todayLogs.value.replace('K', '')) * 1000
-  const newLogs = currentLogs + Math.floor(Math.random() * 30) + 5
+  const newLogs = currentLogs + Math.floor(Math.random() * 25) + 3
   todayLogs.value = (newLogs / 1000).toFixed(1) + 'K'
   
   // 威胁告警数据轻微波动 - 分部规模较小
   if (Math.random() > 0.8) {
     threatAlerts.value.warning += Math.floor(Math.random() * 2) - 1
-    threatAlerts.value.info += Math.floor(Math.random() * 8) + 3
+    threatAlerts.value.info += Math.floor(Math.random() * 6) + 2
     threatAlerts.value.total = threatAlerts.value.error + threatAlerts.value.warning + threatAlerts.value.info
   }
   
   // 流量审计数据增长
   const currentTraffic = parseFloat(totalTraffic.value.replace('G', ''))
-  const newTraffic = currentTraffic + (Math.random() * 0.08)
+  const newTraffic = currentTraffic + (Math.random() * 0.06)
   totalTraffic.value = newTraffic.toFixed(1) + 'G'
   
   // 设备在线数量保持稳定
-  onlineDevices.value = 9
+  onlineDevices.value = 8
 }
 
 // 组件挂载时初始化数据和定时器

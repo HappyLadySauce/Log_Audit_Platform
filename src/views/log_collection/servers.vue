@@ -28,7 +28,7 @@
         <StatCard
           :icon="IconDesktop"
           icon-bg-color="#52c41a"
-          :value="3"
+          :value="4"
           label="在线服务器"
           subtitle="服务器总数"
         />
@@ -37,7 +37,7 @@
         <StatCard
           :icon="IconDownload"
           icon-bg-color="#1890ff"
-          :value="3"
+          :value="4"
           label="采集中"
           subtitle="正在采集日志"
         />
@@ -46,7 +46,7 @@
         <StatCard
           :icon="IconFile"
           icon-bg-color="#faad14"
-          :value="18420"
+          :value="16800"
           label="今日日志"
           subtitle="条数统计"
         />
@@ -55,7 +55,7 @@
         <StatCard
           :icon="IconCloudDownload"
           icon-bg-color="#722ed1"
-          :value="2.8"
+          :value="2.4"
           label="存储空间(GB)"
           subtitle="日志占用"
         />
@@ -270,14 +270,6 @@ const serverData = ref([
     serverType: 'Ubuntu 22.04',
     protocol: 'syslog',
     status: '在线'
-  },
-  {
-    key: '5',
-    hostname: 'DNS邮件服务器',
-    ip: '10.10.20.254',
-    serverType: 'Ubuntu 22.04',
-    protocol: 'syslog',
-    status: '在线'
   }
 ])
 
@@ -331,7 +323,6 @@ const logContent = ref(`[2024-01-15 10:35:05] INFO: 分部K8S控制节点1(10.10
 [2024-01-15 10:35:02] INFO: 分部K8S控制节点2(10.10.20.3) - 负载均衡器工作正常，Service状态: Active
 [2024-01-15 10:34:58] DEBUG: 分部K8S工作节点1(10.10.20.4) - 内存使用率: 45%，可用内存: 12GB
 [2024-01-15 10:34:55] INFO: 分部K8S工作节点2(10.10.20.5) - 磁盘I/O性能正常，IOPS: 2500
-[2024-01-15 10:34:52] INFO: DNS邮件服务器(10.10.20.254) - DNS解析服务正常，邮件队列: 0
 [2024-01-15 10:34:48] DEBUG: 分部Kubernetes集群状态检查完成，所有节点健康
 [2024-01-15 10:34:45] INFO: 容器镜像拉取正常，镜像仓库连接稳定
 [2024-01-15 10:34:42] INFO: 服务发现功能正常，Ingress控制器工作正常
@@ -340,8 +331,10 @@ const logContent = ref(`[2024-01-15 10:35:05] INFO: 分部K8S控制节点1(10.10
 [2024-01-15 10:34:32] INFO: 监控指标收集正常，Prometheus采集成功
 [2024-01-15 10:34:28] DEBUG: 日志聚合服务正常，ElasticSearch索引更新
 [2024-01-15 10:34:25] INFO: 备份任务执行完成，数据完整性检查通过
-[2024-01-15 10:34:22] INFO: 系统日志采集完成，共采集5台分部服务器数据
-[2024-01-15 10:34:18] INFO: 分部网络连接稳定，与主机房通信正常`)
+[2024-01-15 10:34:22] INFO: 系统日志采集完成，共采集4台分部服务器数据
+[2024-01-15 10:34:18] INFO: 分部网络连接稳定，集群间通信正常
+[2024-01-15 10:34:15] DEBUG: Pod调度策略优化，资源利用率提升
+[2024-01-15 10:34:12] INFO: 分部K8S集群扩容完成，新节点加入成功`)
 
 // 获取服务器类型颜色
 const getServerTypeColor = (type: string) => {
