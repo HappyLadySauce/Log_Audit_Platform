@@ -1,8 +1,8 @@
 <template>
   <div class="servers-page">
     <PageHeader
-      title="Linux服务器日志"
-      description="管理和监控Linux服务器的日志采集"
+      title="服务器日志采集"
+      description="管理和监控服务器的日志采集，分析系统运行状态"
     >
       <template #extra>
         <a-space>
@@ -22,31 +22,31 @@
       </template>
     </PageHeader>
 
-    <!-- 统计信息 -->
+    <!-- 统计卡片 -->
     <a-row :gutter="24" class="stats-row">
       <a-col :span="6">
         <StatCard
           :icon="IconDesktop"
-          icon-bg-color="#1890ff"
-          :value="24"
-          label="服务器数量"
-          subtitle="Linux服务器"
+          icon-bg-color="#52c41a"
+          :value="11"
+          label="在线服务器"
+          subtitle="服务器总数"
         />
       </a-col>
       <a-col :span="6">
         <StatCard
-          :icon="IconCheck"
-          icon-bg-color="#52c41a"
-          :value="20"
-          label="正常运行"
-          subtitle="健康状态"
+          :icon="IconDownload"
+          icon-bg-color="#1890ff"
+          :value="11"
+          label="采集中"
+          subtitle="正在采集日志"
         />
       </a-col>
       <a-col :span="6">
         <StatCard
           :icon="IconFile"
           icon-bg-color="#faad14"
-          :value="8640"
+          :value="32580"
           label="今日日志"
           subtitle="条数统计"
         />
@@ -55,60 +55,171 @@
         <StatCard
           :icon="IconCloudDownload"
           icon-bg-color="#722ed1"
-          :value="1.2"
+          :value="4.6"
           label="存储空间(GB)"
           subtitle="日志占用"
         />
       </a-col>
     </a-row>
 
-    <!-- 服务器列表 -->
-    <a-card title="服务器列表" :bordered="false">
-      <a-table
-        :columns="serverColumns"
-        :data="serverData"
-        :pagination="{ pageSize: 10 }"
-      >
-        <template #serverInfo="{ record }">
-          <div class="server-info">
-            <a-avatar size="small" class="server-avatar">
-              <icon-server />
-            </a-avatar>
-            <div class="server-details">
-              <div class="server-name">{{ record.hostname }}</div>
-              <div class="server-ip">{{ record.ip }}</div>
+    <!-- 服务器管理标签页 -->
+    <a-tabs default-active-key="server-config" class="server-tabs">
+      <a-tab-pane key="server-config" title="服务器配置">
+        <a-card :bordered="false">
+          <template #title>
+            <a-space>
+              <span>服务器配置</span>
+              <a-tag color="blue">性能监控</a-tag>
+              <a-tag color="green">系统分析</a-tag>
+              <a-tag color="orange">日志查看</a-tag>
+              <a-tag color="purple">实时监控</a-tag>
+            </a-space>
+          </template>
+          
+          <!-- 服务器列表 -->
+          <a-table
+            :columns="serverColumns"
+            :data="serverData"
+            :pagination="false"
+            :scroll="{ x: '100%' }"
+            class="server-table"
+          >
+            <template #serverInfo="{ record }">
+              <div class="server-info">
+                <a-avatar size="small" class="server-avatar">
+                  <icon-desktop />
+                </a-avatar>
+                <div class="server-details">
+                  <div class="server-name">{{ record.hostname }}</div>
+                  <div class="server-ip">{{ record.ip }}</div>
+                </div>
+              </div>
+            </template>
+
+            <template #serverType="{ record }">
+              <a-tag
+                :color="getServerTypeColor(record.serverType)"
+                size="small"
+              >
+                {{ record.serverType }}
+              </a-tag>
+            </template>
+
+            <template #protocol="{ record }">
+              <a-tag color="blue" size="small">{{ record.protocol }}</a-tag>
+            </template>
+
+            <template #status="{ record }">
+              <a-badge
+                :status="record.status === '在线' ? 'success' : 'error'"
+                :text="record.status"
+              />
+            </template>
+
+            <template #actions="{ record }">
+              <a-space>
+                <a-button
+                  type="text"
+                  size="small"
+                  status="normal"
+                  @click="editServer(record)"
+                >
+                  编辑
+                </a-button>
+                <a-button
+                  type="text"
+                  size="small"
+                  status="warning"
+                  @click="stopCollection(record)"
+                >
+                  停止采集
+                </a-button>
+                <a-button
+                  type="text"
+                  size="small"
+                  status="danger"
+                  @click="deleteServer(record)"
+                >
+                  删除
+                </a-button>
+              </a-space>
+            </template>
+          </a-table>
+        </a-card>
+      </a-tab-pane>
+
+      <a-tab-pane key="performance-monitor" title="性能监控">
+        <a-card title="服务器性能监控" :bordered="false">
+          <div class="chart-placeholder">
+            <div class="chart-content">
+              <icon-settings class="chart-icon" />
+              <p>服务器性能监控图表</p>
             </div>
           </div>
-        </template>
+        </a-card>
+      </a-tab-pane>
 
-        <template #os="{ record }">
-          <a-tag color="blue">{{ record.os }}</a-tag>
-        </template>
+      <a-tab-pane key="system-analysis" title="系统分析">
+        <a-card title="系统运行分析" :bordered="false">
+          <div class="chart-placeholder">
+            <div class="chart-content">
+              <icon-desktop class="chart-icon" />
+              <p>系统资源使用分析报告</p>
+            </div>
+          </div>
+        </a-card>
+      </a-tab-pane>
 
-        <template #status="{ record }">
-          <a-badge
-            :status="record.status === 'online' ? 'success' : 'error'"
-            :text="record.status === 'online' ? '在线' : '离线'"
+      <a-tab-pane key="log-view" title="日志查看">
+        <a-card title="服务器日志查看" :bordered="false">
+          <a-textarea
+            :model-value="logContent"
+            :auto-size="{ minRows: 15, maxRows: 20 }"
+            readonly
+            placeholder="服务器日志将在这里显示..."
           />
-        </template>
+        </a-card>
+      </a-tab-pane>
 
-        <template #logStatus="{ record }">
-          <a-tag
-            :color="record.logStatus === 'collecting' ? 'green' : 'orange'"
-          >
-            {{ record.logStatus === 'collecting' ? '采集中' : '暂停' }}
-          </a-tag>
-        </template>
-
-        <template #actions="{ record }">
-          <a-space>
-            <a-button type="text" size="small">查看日志</a-button>
-            <a-button type="text" size="small">配置</a-button>
-            <a-button type="text" size="small" status="danger">删除</a-button>
-          </a-space>
-        </template>
-      </a-table>
-    </a-card>
+      <a-tab-pane key="real-time-monitor" title="实时监控">
+        <a-card title="实时监控面板" :bordered="false">
+          <div class="monitor-grid">
+            <a-row :gutter="16">
+              <a-col :span="12">
+                <div class="monitor-item">
+                  <h4>平均CPU使用率</h4>
+                  <a-progress :percent="avgCpuUsage" :show-text="false" />
+                  <span class="monitor-value">{{ avgCpuUsage }}%</span>
+                </div>
+              </a-col>
+              <a-col :span="12">
+                <div class="monitor-item">
+                  <h4>平均内存使用率</h4>
+                  <a-progress :percent="avgMemoryUsage" :show-text="false" status="success" />
+                  <span class="monitor-value">{{ avgMemoryUsage }}%</span>
+                </div>
+              </a-col>
+            </a-row>
+            <a-row :gutter="16" style="margin-top: 16px;">
+              <a-col :span="12">
+                <div class="monitor-item">
+                  <h4>磁盘使用率</h4>
+                  <a-progress :percent="avgDiskUsage" :show-text="false" status="warning" />
+                  <span class="monitor-value">{{ avgDiskUsage }}%</span>
+                </div>
+              </a-col>
+              <a-col :span="12">
+                <div class="monitor-item">
+                  <h4>网络IO</h4>
+                  <a-progress :percent="networkIO" :show-text="false" status="danger" />
+                  <span class="monitor-value">{{ networkIO }}%</span>
+                </div>
+              </a-col>
+            </a-row>
+          </div>
+        </a-card>
+      </a-tab-pane>
+    </a-tabs>
   </div>
 </template>
 
@@ -117,58 +228,131 @@ import { ref } from 'vue'
 import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
 import {
+  IconDesktop,
+  IconDownload,
+  IconFile,
+  IconCloudDownload,
   IconRefresh,
   IconPlus,
-  IconDesktop,
-  IconCheck,
-  IconFile,
-  IconCloudDownload
+  IconSettings
 } from '@arco-design/web-vue/es/icon'
 
 // 服务器数据
 const serverData = ref([
   {
     key: '1',
-    hostname: 'web-server-01',
-    ip: '192.168.1.101',
-    os: 'Ubuntu 22.04',
-    status: 'online',
-    logStatus: 'collecting',
-    lastLogTime: '2024-01-15 10:30:15'
+    hostname: '总部Karmada控制服务器',
+    ip: '10.10.10.6',
+    serverType: 'Ubuntu 22.04',
+    protocol: 'syslog',
+    status: '在线'
   },
   {
     key: '2',
-    hostname: 'db-server-01',
-    ip: '192.168.1.102',
-    os: 'CentOS 8',
-    status: 'online',
-    logStatus: 'collecting',
-    lastLogTime: '2024-01-15 10:29:50'
+    hostname: '总部Karmada节点服务器',
+    ip: '10.10.10.7',
+    serverType: 'Ubuntu 22.04',
+    protocol: 'syslog',
+    status: '在线'
   },
   {
     key: '3',
-    hostname: 'app-server-01',
-    ip: '192.168.1.103',
-    os: 'RHEL 9',
-    status: 'offline',
-    logStatus: 'stopped',
-    lastLogTime: '2024-01-15 09:15:30'
+    hostname: '总部K8S控制节点1',
+    ip: '10.10.10.2',
+    serverType: 'Ubuntu 22.04',
+    protocol: 'syslog',
+    status: '在线'
+  },
+  {
+    key: '4',
+    hostname: '总部K8S控制节点2',
+    ip: '10.10.10.3',
+    serverType: 'Ubuntu 22.04',
+    protocol: 'syslog',
+    status: '在线'
+  },
+  {
+    key: '5',
+    hostname: '总部K8S工作节点1',
+    ip: '10.10.10.4',
+    serverType: 'Ubuntu 22.04',
+    protocol: 'syslog',
+    status: '在线'
+  },
+  {
+    key: '6',
+    hostname: '总部K8S工作节点2',
+    ip: '10.10.10.5',
+    serverType: 'Ubuntu 22.04',
+    protocol: 'syslog',
+    status: '在线'
+  },
+  {
+    key: '7',
+    hostname: '分部K8S控制节点1',
+    ip: '10.10.20.2',
+    serverType: 'Ubuntu 22.04',
+    protocol: 'syslog',
+    status: '在线'
+  },
+  {
+    key: '8',
+    hostname: '分部K8S控制节点2',
+    ip: '10.10.20.3',
+    serverType: 'Ubuntu 22.04',
+    protocol: 'syslog',
+    status: '在线'
+  },
+  {
+    key: '9',
+    hostname: '分部K8S工作节点1',
+    ip: '10.10.20.4',
+    serverType: 'Ubuntu 22.04',
+    protocol: 'syslog',
+    status: '在线'
+  },
+  {
+    key: '10',
+    hostname: '分部K8S工作节点2',
+    ip: '10.10.20.5',
+    serverType: 'Ubuntu 22.04',
+    protocol: 'syslog',
+    status: '在线'
+  },
+  {
+    key: '11',
+    hostname: 'DNS邮件服务器',
+    ip: '10.10.10.254',
+    serverType: 'Ubuntu 22.04',
+    protocol: 'syslog',
+    status: '在线'
   }
 ])
 
 // 表格列配置
 const serverColumns = [
   {
-    title: '服务器信息',
+    title: '服务器名称',
     dataIndex: 'hostname',
     slotName: 'serverInfo',
-    width: 200
+    width: 250
+  },
+  {
+    title: 'IP地址',
+    dataIndex: 'ip',
+    width: 120
   },
   {
     title: '操作系统',
-    dataIndex: 'os',
-    slotName: 'os',
+    dataIndex: 'serverType',
+    slotName: 'serverType',
     width: 120
+  },
+  {
+    title: '协议',
+    dataIndex: 'protocol',
+    slotName: 'protocol',
+    width: 80
   },
   {
     title: '状态',
@@ -177,23 +361,69 @@ const serverColumns = [
     width: 80
   },
   {
-    title: '日志采集',
-    dataIndex: 'logStatus',
-    slotName: 'logStatus',
-    width: 100
-  },
-  {
-    title: '最后日志时间',
-    dataIndex: 'lastLogTime',
-    width: 160
-  },
-  {
     title: '操作',
     slotName: 'actions',
     width: 180,
     fixed: 'right'
   }
 ]
+
+// 监控数据
+const avgCpuUsage = ref(35)
+const avgMemoryUsage = ref(58)
+const avgDiskUsage = ref(42)
+const networkIO = ref(28)
+
+// 日志内容
+const logContent = ref(`[2024-01-15 10:35:25] INFO: 总部Karmada控制服务器(10.10.10.6) - 集群状态健康，Pod调度正常
+[2024-01-15 10:35:22] INFO: 总部Karmada节点服务器(10.10.10.7) - 资源调度完成，CPU使用率: 32%
+[2024-01-15 10:35:18] DEBUG: 总部K8S控制节点1(10.10.10.2) - etcd集群同步正常，延迟: 2ms
+[2024-01-15 10:35:15] INFO: 总部K8S控制节点2(10.10.10.3) - API服务器响应正常，QPS: 145
+[2024-01-15 10:35:12] INFO: 总部K8S工作节点1(10.10.10.4) - Pod调度成功，运行容器: 24个
+[2024-01-15 10:35:08] DEBUG: 总部K8S工作节点2(10.10.10.5) - 存储卷挂载完成，PV状态: Bound
+[2024-01-15 10:35:05] INFO: 分部K8S控制节点1(10.10.20.2) - 集群网络通信正常，CNI插件工作正常
+[2024-01-15 10:35:02] INFO: 分部K8S控制节点2(10.10.20.3) - 负载均衡器工作正常，Service状态: Active
+[2024-01-15 10:34:58] DEBUG: 分部K8S工作节点1(10.10.20.4) - 内存使用率: 45%，可用内存: 12GB
+[2024-01-15 10:34:55] INFO: 分部K8S工作节点2(10.10.20.5) - 磁盘I/O性能正常，IOPS: 2500
+[2024-01-15 10:34:52] INFO: DNS邮件服务器(10.10.10.254) - DNS解析服务正常，邮件队列: 0
+[2024-01-15 10:34:48] DEBUG: Kubernetes集群状态检查完成，所有节点健康
+[2024-01-15 10:34:45] INFO: 容器镜像拉取正常，镜像仓库连接稳定
+[2024-01-15 10:34:42] INFO: 服务发现功能正常，Ingress控制器工作正常
+[2024-01-15 10:34:38] DEBUG: 持久化存储检查完成，StorageClass配置正确
+[2024-01-15 10:34:35] INFO: 集群安全策略更新，RBAC权限配置生效
+[2024-01-15 10:34:32] INFO: 监控指标收集正常，Prometheus采集成功
+[2024-01-15 10:34:28] DEBUG: 日志聚合服务正常，ElasticSearch索引更新
+[2024-01-15 10:34:25] INFO: 备份任务执行完成，数据完整性检查通过
+[2024-01-15 10:34:22] INFO: 系统日志采集完成，共采集11台服务器数据`)
+
+// 获取服务器类型颜色
+const getServerTypeColor = (type: string) => {
+  switch (type) {
+    case 'Ubuntu 22.04':
+      return 'orange'
+    case 'CentOS 8':
+      return 'red'
+    case 'RHEL 9':
+      return 'blue'
+    case 'Windows Server':
+      return 'purple'
+    default:
+      return 'gray'
+  }
+}
+
+// 操作方法
+const editServer = (record: any) => {
+  console.log('编辑服务器:', record)
+}
+
+const stopCollection = (record: any) => {
+  console.log('停止采集:', record)
+}
+
+const deleteServer = (record: any) => {
+  console.log('删除服务器:', record)
+}
 </script>
 
 <style scoped>
@@ -203,6 +433,14 @@ const serverColumns = [
 
 .stats-row {
   margin-bottom: 24px;
+}
+
+.server-tabs {
+  margin-bottom: 0;
+}
+
+.server-table {
+  margin-top: 16px;
 }
 
 .server-info {
@@ -230,7 +468,55 @@ const serverColumns = [
   color: #86909c;
 }
 
+.chart-placeholder {
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  border-radius: 6px;
+}
+
+.chart-content {
+  text-align: center;
+  color: #86909c;
+}
+
+.chart-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.monitor-grid {
+  padding: 16px 0;
+}
+
+.monitor-item {
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 6px;
+  position: relative;
+}
+
+.monitor-item h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #1d2129;
+}
+
+.monitor-value {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  font-weight: 500;
+  color: #1d2129;
+}
+
 :deep(.arco-card) {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+:deep(.arco-tabs-content) {
+  padding-top: 0;
 }
 </style>

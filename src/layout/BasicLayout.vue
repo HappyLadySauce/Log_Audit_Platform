@@ -39,7 +39,7 @@
           </template>
           <template #title>日志采集</template>
           <a-menu-item key="network-device">网络设备日志</a-menu-item>
-          <a-menu-item key="servers">Linux服务器日志</a-menu-item>
+          <a-menu-item key="servers">服务器日志</a-menu-item>
           <a-menu-item key="kubernetes">K8s集群日志</a-menu-item>
           <a-menu-item key="internet-traffic">上网流量统计</a-menu-item>
         </a-sub-menu>

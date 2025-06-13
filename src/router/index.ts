@@ -39,7 +39,7 @@ const router = createRouter({
       name: 'servers',
       component: () => import('@/views/log_collection/servers.vue'),
       meta: {
-        title: 'Linux服务器日志'
+        title: '服务器日志'
       }
     },
     {
