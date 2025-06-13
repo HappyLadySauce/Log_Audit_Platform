@@ -297,10 +297,10 @@ const trendIcon = computed(() => {
 .main-value {
   display: flex;
   align-items: baseline;
-  font-size: 36px;
+  font-size: 48px;
   font-weight: 700;
   color: #262626;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   line-height: 1;
 }
 
@@ -311,27 +311,28 @@ const trendIcon = computed(() => {
 }
 
 .value-unit {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 400;
   color: #8c8c8c;
-  margin-left: 4px;
+  margin-left: 6px;
 }
 
 .card-labels {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .primary-label {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 600;
   color: #262626;
 }
 
 .secondary-label {
-  font-size: 12px;
+  font-size: 16px;
   color: #8c8c8c;
+  line-height: 1.4;
 }
 
 .card-footer {

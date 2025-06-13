@@ -19,136 +19,6 @@
       </template>
     </PageHeader>
 
-    <!-- 系统监控状态 -->
-    <div class="monitoring-section">
-      <div class="section-header">
-        <h3>系统监控</h3>
-        <a-switch v-model="isMonitoringEnabled" size="small">
-          <template #checked>监控开启</template>
-          <template #unchecked>监控关闭</template>
-        </a-switch>
-      </div>
-      
-      <a-row :gutter="16" class="monitoring-grid">
-        <a-col :span="6">
-          <div class="monitor-item">image.png
-            <div class="monitor-icon success">
-              <icon-check />
-            </div>
-            <div class="monitor-info">
-              <div class="monitor-title">系统异常</div>
-              <div class="monitor-desc">异常总数: 0 条</div>
-            </div>
-            <div class="monitor-action">
-              <a-button size="large" type="outline">处理</a-button>
-            </div>
-          </div>
-        </a-col>
-        
-        <a-col :span="6">
-          <div class="monitor-item">
-            <div class="monitor-icon success">
-              <icon-check />
-            </div>
-            <div class="monitor-info">
-              <div class="monitor-title">API调用</div>
-              <div class="monitor-desc">失败响应数: 0</div>
-            </div>
-            <div class="monitor-action">
-              <a-button size="large" type="outline">查看</a-button>
-            </div>
-          </div>
-        </a-col>
-
-        <a-col :span="6">
-          <div class="monitor-item">
-            <div class="monitor-icon success">
-              <icon-check />
-            </div>
-            <div class="monitor-info">
-              <div class="monitor-title">日志收集</div>
-              <div class="monitor-desc">正常运行中</div>
-            </div>
-            <div class="monitor-action">
-              <a-button size="large" type="outline">详情</a-button>
-            </div>
-          </div>
-        </a-col>
-
-        <a-col :span="6">
-          <div class="monitor-item">
-            <div class="monitor-icon info">
-              <icon-info />
-            </div>
-            <div class="monitor-info">
-              <div class="monitor-title">数据分析</div>
-              <div class="monitor-desc">分析任务中</div>
-            </div>
-            <div class="monitor-action">
-              <a-button size="mini" type="outline">进入</a-button>
-            </div>
-          </div>
-        </a-col>
-      </a-row>
-    </div>
-
-    <!-- CPU和内存使用率 -->
-    <div class="resource-section">
-      <a-row :gutter="16">
-        <a-col :span="12">
-          <a-card title="CPU使用率" :bordered="false">
-            <div class="resource-chart">
-              <div class="chart-container">
-                <DashboardChart
-                  type="line"
-                  :data="cpuTrendData"
-                  height="180px"
-                  :smooth="true"
-                  :colors="['#1890ff']"
-                  :show-legend="false"
-                  :show-grid="true"
-                />
-              </div>
-              <div class="resource-text">
-                <span class="resource-value">{{ currentCpuUsage }}%</span>
-                <span class="resource-trend" :class="cpuTrend.type">
-                  <icon-arrow-up v-if="cpuTrend.type === 'up'" />
-                  <icon-arrow-down v-if="cpuTrend.type === 'down'" />
-                  {{ cpuTrend.value }}
-                </span>
-              </div>
-            </div>
-          </a-card>
-        </a-col>
-        
-        <a-col :span="12">
-          <a-card title="内存使用率" :bordered="false">
-            <div class="resource-chart">
-              <div class="chart-container">
-                <DashboardChart
-                  type="line"
-                  :data="memoryTrendData"
-                  height="180px"
-                  :smooth="true"
-                  :colors="['#52c41a']"
-                  :show-legend="false"
-                  :show-grid="true"
-                />
-              </div>
-              <div class="resource-text">
-                <span class="resource-value">{{ currentMemoryUsage }}%</span>
-                <span class="resource-trend" :class="memoryTrend.type">
-                  <icon-arrow-up v-if="memoryTrend.type === 'up'" />
-                  <icon-arrow-down v-if="memoryTrend.type === 'down'" />
-                  {{ memoryTrend.value }}
-                </span>
-              </div>
-            </div>
-          </a-card>
-        </a-col>
-      </a-row>
-    </div>
-
     <!-- 核心指标统计 -->
     <div class="stats-section">
       <h3>核心指标</h3>
@@ -201,7 +71,7 @@
 
     <!-- AI数据趋势预测 -->
     <div class="charts-section">
-      <h3>
+      <h3 class="large-section-title">
         <icon-robot style="margin-right: 8px; color: #722ed1;" />
         AI数据趋势预测
       </h3>
@@ -209,21 +79,21 @@
         <a-col :span="16">
           <a-card :bordered="false">
             <template #title>
-              <div class="ai-card-title">
+              <div class="ai-card-title-large">
                 <icon-file style="margin-right: 8px; color: #1890ff;" />
                 日志采集概览
-                <a-tag color="processing" size="small" style="margin-left: 8px;">实时监控</a-tag>
+                <a-tag color="processing" size="medium" style="margin-left: 8px;">实时监控</a-tag>
               </div>
             </template>
             <template #extra>
               <div class="chart-controls">
                 <a-space>
-                  <a-radio-group v-model="logFilter" size="small">
+                  <a-radio-group v-model="logFilter" size="medium">
                     <a-radio-button value="all">全部</a-radio-button>
                     <a-radio-button value="info">信息</a-radio-button>
                     <a-radio-button value="warning">警告</a-radio-button>
                   </a-radio-group>
-                  <a-button size="small" @click="refreshLogs">
+                  <a-button size="medium" @click="refreshLogs">
                     <template #icon><icon-refresh /></template>
                     刷新
                   </a-button>
@@ -237,29 +107,30 @@
                 :pagination="{ pageSize: 8, simple: true }"
                 :scroll="{ y: 300 }"
                 row-key="id"
-                size="small"
+                size="medium"
+                class="large-log-table"
               >
                 <template #columns>
                   <a-table-column title="时间" data-index="timestamp" :width="100">
                     <template #cell="{ record }">
-                      <span class="log-time">{{ record.timestamp }}</span>
+                      <span class="log-time-large">{{ record.timestamp }}</span>
                     </template>
                   </a-table-column>
                   
                   <a-table-column title="设备" data-index="device" :width="180">
                     <template #cell="{ record }">
-                      <div class="device-info">
-                        <a-avatar :size="24" :style="{ backgroundColor: record.deviceColor, fontSize: '12px' }">
+                      <div class="device-info-large">
+                        <a-avatar :size="28" :style="{ backgroundColor: record.deviceColor, fontSize: '14px' }">
                           {{ record.device.charAt(0) }}
                         </a-avatar>
-                        <span class="device-name">{{ record.device }}</span>
+                        <span class="device-name-large">{{ record.device }}</span>
                       </div>
                     </template>
                   </a-table-column>
                   
                   <a-table-column title="类型" data-index="type" :width="70">
                     <template #cell="{ record }">
-                      <a-tag :color="getLogTypeColor(record.type)" size="small">
+                      <a-tag :color="getLogTypeColor(record.type)" size="medium">
                         {{ getLogTypeText(record.type) }}
                       </a-tag>
                     </template>
@@ -267,7 +138,7 @@
                   
                   <a-table-column title="日志信息" data-index="message" :width="320">
                     <template #cell="{ record }">
-                      <div class="log-message" :class="'log-' + record.type">
+                      <div class="log-message-large" :class="'log-' + record.type">
                         <icon-info v-if="record.type === 'warning'" style="color: #faad14; margin-right: 4px;" />
                         <icon-check v-if="record.type === 'info'" style="color: #52c41a; margin-right: 4px;" />
                         {{ record.message }}
@@ -283,10 +154,10 @@
         <a-col :span="8">
           <a-card :bordered="false">
             <template #title>
-              <div class="ai-card-title">
+              <div class="ai-card-title-large">
                 <icon-robot style="margin-right: 8px; color: #722ed1;" />
                 AI预测分析
-                <a-tag color="purple" size="small" style="margin-left: 8px;">智能分析</a-tag>
+                <a-tag color="purple" size="medium" style="margin-left: 8px;">智能分析</a-tag>
               </div>
             </template>
             
@@ -304,20 +175,20 @@
               
               <!-- AI预测指标 -->
               <div class="ai-predictions">
-                <h4 style="margin: 16px 0 12px 0; color: #262626; font-size: 14px;">
+                <h4 class="ai-prediction-title">
                   <icon-fire style="margin-right: 4px; color: #722ed1;" />
                   AI预测分析
                 </h4>
                 
-                <div class="prediction-item" v-for="prediction in aiPredictions" :key="prediction.id">
+                <div class="prediction-item-large" v-for="prediction in aiPredictions" :key="prediction.id">
                   <div class="prediction-header">
-                    <span class="prediction-title">{{ prediction.title }}</span>
-                    <a-tag :color="prediction.level === 'high' ? 'red' : prediction.level === 'medium' ? 'orange' : 'green'" size="small">
+                    <span class="prediction-title-large">{{ prediction.title }}</span>
+                    <a-tag :color="prediction.level === 'high' ? 'red' : prediction.level === 'medium' ? 'orange' : 'green'" size="medium">
                       {{ prediction.level === 'high' ? '高风险' : prediction.level === 'medium' ? '中风险' : '低风险' }}
                     </a-tag>
                   </div>
-                  <div class="prediction-content">{{ prediction.content }}</div>
-                  <div class="prediction-suggestion">建议: {{ prediction.suggestion }}</div>
+                  <div class="prediction-content-large">{{ prediction.content }}</div>
+                  <div class="prediction-suggestion-large">建议: {{ prediction.suggestion }}</div>
                 </div>
               </div>
             </div>
@@ -1197,125 +1068,7 @@ onUnmounted(() => {
   color: #262626;
 }
 
-/* 系统监控样式 */
-.monitoring-section {
-  margin-bottom: 24px;
-}
 
-.monitoring-grid {
-  margin-top: 16px;
-}
-
-.monitor-item {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s;
-}
-
-.monitor-item:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
-}
-
-.monitor-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 12px;
-  color: #fff;
-  font-size: 18px;
-}
-
-.monitor-icon.error {
-  background: #f5222d;
-}
-
-.monitor-icon.warning {
-  background: #faad14;
-}
-
-.monitor-icon.success {
-  background: #52c41a;
-}
-
-.monitor-icon.info {
-  background: #1890ff;
-}
-
-.monitor-info {
-  flex: 1;
-}
-
-.monitor-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #262626;
-  margin-bottom: 4px;
-}
-
-.monitor-desc {
-  font-size: 12px;
-  color: #8c8c8c;
-}
-
-/* 资源使用率样式 */
-.resource-section {
-  margin-bottom: 24px;
-}
-
-.resource-chart {
-  padding: 16px 0;
-}
-
-.chart-container {
-  height: 200px;
-  margin-bottom: 16px;
-}
-
-.resource-progress {
-  position: relative;
-  margin-bottom: 16px;
-}
-
-.resource-text {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 12px;
-  padding: 0 8px;
-}
-
-.resource-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #262626;
-}
-
-.resource-trend {
-  display: flex;
-  align-items: center;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.resource-trend.up {
-  color: #f5222d;
-}
-
-.resource-trend.down {
-  color: #52c41a;
-}
-
-.resource-trend.stable {
-  color: #1890ff;
-}
 
 /* 统计卡片样式 */
 .stats-section {
@@ -1323,8 +1076,8 @@ onUnmounted(() => {
 }
 
 .stats-section h3 {
-  margin-bottom: 16px;
-  font-size: 18px;
+  margin-bottom: 20px;
+  font-size: 24px;
   font-weight: 600;
   color: #262626;
 }
@@ -1335,12 +1088,18 @@ onUnmounted(() => {
 }
 
 .charts-section h3 {
-  margin-bottom: 16px;
-  font-size: 18px;
+  margin-bottom: 20px;
+  font-size: 24px;
   font-weight: 600;
   color: #262626;
   display: flex;
   align-items: center;
+}
+
+.large-section-title {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  margin-bottom: 24px !important;
 }
 
 .ai-card-title {
@@ -1351,10 +1110,98 @@ onUnmounted(() => {
   color: #262626;
 }
 
+.ai-card-title-large {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: #262626;
+}
+
 .chart-controls {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* 大字体日志表格样式 */
+.large-log-table {
+  font-size: 16px;
+}
+
+.large-log-table .arco-table-th {
+  font-size: 16px;
+  font-weight: 600;
+  padding: 14px 16px;
+}
+
+.large-log-table .arco-table-td {
+  padding: 14px 16px;
+}
+
+.log-time-large {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: #8c8c8c;
+  font-weight: 500;
+}
+
+.device-info-large {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.device-name-large {
+  font-size: 14px;
+  color: #262626;
+  font-weight: 500;
+}
+
+.log-message-large {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* AI预测分析大字体样式 */
+.ai-prediction-title {
+  margin: 20px 0 16px 0;
+  color: #262626;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.prediction-item-large {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #722ed1;
+}
+
+.prediction-title-large {
+  font-weight: 600;
+  font-size: 16px;
+  color: #262626;
+}
+
+.prediction-content-large {
+  font-size: 14px;
+  color: #595959;
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.prediction-suggestion-large {
+  font-size: 13px;
+  color: #8c8c8c;
+  font-style: italic;
+  line-height: 1.4;
 }
 
 /* 设备监控样式 */
