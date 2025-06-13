@@ -1,237 +1,184 @@
 <template>
   <div class="traffic-page">
     <PageHeader
-      title="上网流量统计"
-      description="监控和分析网络流量使用情况"
+      title="上网流量审计分析"
+      description="审计网络流量使用情况，监控用户上网行为，分析网络活动"
     >
       <template #extra>
         <a-space>
-          <a-range-picker v-model:value="dateRange" />
           <a-button @click="refreshData" :loading="refreshing">
             <template #icon>
               <icon-refresh />
             </template>
-            刷新
-          </a-button>
-          <a-button type="primary" @click="exportReport">
-            <template #icon>
-              <icon-download />
-            </template>
-            导出报告
+            刷新状态
           </a-button>
         </a-space>
       </template>
     </PageHeader>
 
     <!-- 流量统计 -->
-    <a-row :gutter="[24, 24]" class="stats-row">
-      <a-col :xs="24" :sm="12" :lg="6">
-        <EnhancedStatCard
+    <a-row :gutter="24" class="stats-row">
+      <a-col :span="6">
+        <StatCard
           :icon="IconCloudDownload"
-          icon-bg-color="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-          :value="totalTraffic"
-          label="总流量"
+          icon-bg-color="#1890ff"
+          :value="1234.5"
+          label="总流量(GB)"
           subtitle="今日统计"
-          unit="GB"
-          :trend="{ type: 'increase', value: '+15.2%' }"
-          :show-progress="true"
-          :progress-percent="78"
-          progress-color="#667eea"
-          progress-text="带宽使用率 78%"
         />
       </a-col>
-      <a-col :xs="24" :sm="12" :lg="6">
-        <EnhancedStatCard
-          :icon="IconArrowUp"
-          icon-bg-color="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
-          :value="uploadTraffic"
-          label="上行流量"
-          subtitle="上传数据"
-          unit="GB"
-          :trend="{ type: 'increase', value: '+8.5%' }"
-          :show-progress="true"
-          :progress-percent="65"
-          progress-color="#f5576c"
-          progress-text="上传峰值 65%"
-        />
-      </a-col>
-      <a-col :xs="24" :sm="12" :lg="6">
-        <EnhancedStatCard
-          :icon="IconArrowDown"
-          icon-bg-color="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
-          :value="downloadTraffic"
-          label="下行流量"
-          subtitle="下载数据"
-          unit="GB"
-          :trend="{ type: 'increase', value: '+12.3%' }"
-          :show-progress="true"
-          :progress-percent="82"
-          progress-color="#00f2fe"
-          progress-text="下载峰值 82%"
-        />
-      </a-col>
-      <a-col :xs="24" :sm="12" :lg="6">
-        <EnhancedStatCard
+      <a-col :span="6">
+        <StatCard
           :icon="IconUser"
-          icon-bg-color="linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
-          :value="activeUsers"
+          icon-bg-color="#52c41a"
+          :value="156"
           label="活跃用户"
           subtitle="在线人数"
-          :trend="{ type: 'stable', value: '稳定' }"
-          :show-progress="true"
-          :progress-percent="90"
-          progress-color="#fa709a"
-          progress-text="用户活跃度 90%"
+        />
+      </a-col>
+      <a-col :span="6">
+        <StatCard
+          :icon="IconLink"
+          icon-bg-color="#faad14"
+          :value="2346"
+          label="访问网站"
+          subtitle="网站数量"
+        />
+      </a-col>
+      <a-col :span="6">
+        <StatCard
+          :icon="IconExclamationCircle"
+          icon-bg-color="#f5222d"
+          :value="23"
+          label="异常告警"
+          subtitle="安全事件"
         />
       </a-col>
     </a-row>
 
-    <!-- 流量分析 -->
-    <a-row :gutter="[24, 24]" class="charts-row">
-      <a-col :xs="24" :lg="16">
-        <a-card title="流量趋势分析" :bordered="false" class="chart-card">
-          <template #extra>
-            <a-radio-group v-model:value="trendPeriod" type="button" size="small">
-              <a-radio-button value="24h">24小时</a-radio-button>
-              <a-radio-button value="7d">7天</a-radio-button>
-              <a-radio-button value="30d">30天</a-radio-button>
-            </a-radio-group>
-          </template>
-          <DashboardChart
-            type="area"
-            :data="trafficTrendData"
-            height="350px"
-            :smooth="true"
-            :colors="['#1890ff', '#52c41a', '#faad14']"
-          />
-        </a-card>
-      </a-col>
-      <a-col :xs="24" :lg="8">
-        <a-card title="协议分布" :bordered="false" class="chart-card">
-          <DashboardChart
-            type="pie"
-            :data="protocolDistributionData"
-            height="350px"
-            :colors="['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2']"
-          />
-        </a-card>
-      </a-col>
-    </a-row>
+    <!-- 流量分析标签页 -->
+    <a-tabs default-active-key="trend-analysis" class="analysis-tabs">
+      <a-tab-pane key="trend-analysis" title="流量分析">
+        <a-row :gutter="24">
+          <a-col :span="16">
+            <a-card title="流量趋势" :bordered="false" class="chart-card">
+              <div class="chart-container">
+                <div class="chart-placeholder">
+                  <div class="chart-content">
+                    <icon-line-chart class="chart-icon" />
+                    <p>流量趋势分析图表</p>
+                  </div>
+                </div>
+              </div>
+            </a-card>
+          </a-col>
+          <a-col :span="8">
+            <a-card title="协议分布" :bordered="false" class="chart-card">
+              <div class="chart-container">
+                <div class="chart-placeholder">
+                  <div class="chart-content">
+                    <icon-pie-chart class="chart-icon" />
+                    <p>协议类型分布图</p>
+                  </div>
+                </div>
+              </div>
+            </a-card>
+          </a-col>
+        </a-row>
+      </a-tab-pane>
 
-    <!-- 详细分析图表 -->
-    <a-row :gutter="[24, 24]" class="charts-row">
-      <a-col :xs="24" :lg="8">
-        <a-card title="带宽使用率" :bordered="false" class="chart-card">
-          <DashboardChart
-            type="gauge"
-            :data="[{ value: bandwidthUsage }]"
-            height="300px"
-            title="实时带宽"
-          />
+      <a-tab-pane key="behavior-analysis" title="行为分析">
+        <a-card title="用户行为分析" :bordered="false">
+          <div class="chart-placeholder">
+            <div class="chart-content">
+              <icon-bar-chart class="chart-icon" />
+              <p>用户上网行为分析图表</p>
+            </div>
+          </div>
         </a-card>
-      </a-col>
-      <a-col :xs="24" :lg="8">
-        <a-card title="流量类型分析" :bordered="false" class="chart-card">
-          <DashboardChart
-            type="bar"
-            :data="trafficTypeData"
-            height="300px"
-            :colors="['#1890ff', '#52c41a', '#faad14', '#f5222d']"
-          />
-        </a-card>
-      </a-col>
-      <a-col :xs="24" :lg="8">
-        <a-card title="网络质量监控" :bordered="false" class="chart-card">
-          <DashboardChart
-            type="radar"
-            :data="networkQualityData"
-            height="300px"
-            :colors="['#1890ff', '#52c41a']"
-          />
-        </a-card>
-      </a-col>
-    </a-row>
+      </a-tab-pane>
 
-    <!-- 用户流量排行 -->
-    <a-card title="用户流量排行" :bordered="false" class="table-card">
-      <template #extra>
-        <a-space>
-          <a-input-search
-            v-model:value="searchKeyword"
-            placeholder="搜索用户..."
-            style="width: 200px"
-            @search="handleSearch"
-          />
-          <a-button size="small" @click="refreshTable">
-            <template #icon>
-              <icon-refresh />
-            </template>
-          </a-button>
-        </a-space>
-      </template>
+      <a-tab-pane key="abnormal-detection" title="异常检测">
+        <a-card title="异常行为检测" :bordered="false">
+          <div class="chart-placeholder">
+            <div class="chart-content">
+              <icon-thunder class="chart-icon" />
+              <p>异常流量检测分析</p>
+            </div>
+          </div>
+        </a-card>
+      </a-tab-pane>
+
+      <a-tab-pane key="statistical-reports" title="统计报表">
+        <a-card title="流量统计报表" :bordered="false">
+          <div class="chart-placeholder">
+            <div class="chart-content">
+              <icon-file-text class="chart-icon" />
+              <p>详细统计报表</p>
+            </div>
+          </div>
+        </a-card>
+      </a-tab-pane>
+    </a-tabs>
+
+    <!-- 时间筛选 -->
+    <a-card :bordered="false" class="filter-card">
+      <a-row align="middle" justify="space-between">
+        <a-col>
+          <a-space>
+            <span>开始时间</span>
+            <a-date-picker v-model:value="startTime" placeholder="开始时间" />
+            <span>至</span>
+            <a-date-picker v-model:value="endTime" placeholder="结束时间" />
+            <span>截止5小时</span>
+            <a-button type="primary" size="small" @click="queryData">查询</a-button>
+          </a-space>
+        </a-col>
+      </a-row>
+    </a-card>
+
+    <!-- 详细流量记录表格 -->
+    <a-card :bordered="false" class="table-card">
       <a-table
         :columns="trafficColumns"
-        :data="filteredTrafficData"
+        :data="trafficData"
         :pagination="{ pageSize: 10, showTotal: true }"
         :loading="tableLoading"
         row-key="key"
+        size="small"
       >
-        <template #userInfo="{ record }">
-          <div class="user-info">
-            <a-avatar 
-              size="small" 
-              :style="{ backgroundColor: getUserAvatarColor(record.username) }"
-            >
-              {{ record.username.charAt(0).toUpperCase() }}
-            </a-avatar>
-            <div class="user-details">
-              <div class="username">{{ record.username }}</div>
-              <div class="user-ip">{{ record.ip }}</div>
-            </div>
-          </div>
+        <template #user="{ record }">
+          <span class="user-name">{{ record.user }}</span>
         </template>
 
-        <template #traffic="{ record }">
-          <div class="traffic-info">
-            <div class="traffic-value">{{ record.totalTraffic }} GB</div>
-            <a-progress
-              :percent="Math.min((record.totalTraffic / 50) * 100, 100)"
-              size="small"
-              :show-text="false"
-              :color="getProgressColor(record.totalTraffic)"
-            />
-          </div>
+        <template #srcIp="{ record }">
+          <span class="ip-address">{{ record.srcIp }}</span>
+        </template>
+
+        <template #dstIp="{ record }">
+          <span class="ip-address">{{ record.dstIp }}</span>
+        </template>
+
+        <template #url="{ record }">
+          <a-tooltip :content="record.url">
+            <span class="url-text">{{ record.url }}</span>
+          </a-tooltip>
         </template>
 
         <template #protocol="{ record }">
-          <a-space wrap>
-            <a-tag 
-              v-for="proto in record.protocols" 
-              :key="proto" 
-              size="small"
-              :color="getProtocolColor(proto)"
-            >
-              {{ proto }}
-            </a-tag>
-          </a-space>
+          <a-tag :color="getProtocolColor(record.protocol)" size="small">
+            {{ record.protocol }}
+          </a-tag>
+        </template>
+
+        <template #browser="{ record }">
+          <span class="browser-text">{{ record.browser }}</span>
         </template>
 
         <template #status="{ record }">
-          <a-badge 
-            :status="record.isOnline ? 'processing' : 'default'" 
-            :text="record.isOnline ? '在线' : '离线'"
-          />
-        </template>
-
-        <template #actions="{ record }">
-          <a-space>
-            <a-button size="mini" type="text" @click="viewDetails(record)">
-              详情
-            </a-button>
-            <a-button size="mini" type="text" @click="blockUser(record)">
-              限制
-            </a-button>
-          </a-space>
+          <a-tag :color="getStatusColor(record.status)" size="small">
+            {{ record.status }}
+          </a-tag>
         </template>
       </a-table>
     </a-card>
@@ -239,221 +186,147 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import PageHeader from '@/components/PageHeader.vue'
-import EnhancedStatCard from '@/components/EnhancedStatCard.vue'
-import DashboardChart from '@/components/DashboardChart.vue'
+import StatCard from '@/components/StatCard.vue'
 import {
   IconRefresh,
-  IconDownload,
   IconUser,
   IconCloudDownload,
-  IconArrowUp,
-  IconArrowDown
+  IconLink,
+  IconExclamationCircle,
+  IconLineChart,
+  IconPieChart,
+  IconBarChart,
+  IconThunder,
+  IconFileText
 } from '@arco-design/web-vue/es/icon'
 
 // 响应式数据
 const refreshing = ref(false)
 const tableLoading = ref(false)
-const dateRange = ref([])
-const trendPeriod = ref('24h')
-const searchKeyword = ref('')
-
-// 统计数据
-const totalTraffic = ref(1234.5)
-const uploadTraffic = ref(456.8)
-const downloadTraffic = ref(777.7)
-const activeUsers = ref(245)
-const bandwidthUsage = ref(78)
-
-// 流量趋势数据
-const trafficTrendData = ref([
-  { name: '00:00', value: 120 },
-  { name: '02:00', value: 80 },
-  { name: '04:00', value: 60 },
-  { name: '06:00', value: 150 },
-  { name: '08:00', value: 300 },
-  { name: '10:00', value: 450 },
-  { name: '12:00', value: 600 },
-  { name: '14:00', value: 550 },
-  { name: '16:00', value: 480 },
-  { name: '18:00', value: 520 },
-  { name: '20:00', value: 380 },
-  { name: '22:00', value: 280 }
-])
-
-// 协议分布数据
-const protocolDistributionData = ref([
-  { name: 'HTTPS', value: 45.2 },
-  { name: 'HTTP', value: 28.6 },
-  { name: 'TCP', value: 12.8 },
-  { name: 'UDP', value: 8.4 },
-  { name: 'DNS', value: 3.2 },
-  { name: '其他', value: 1.8 }
-])
-
-// 流量类型数据
-const trafficTypeData = ref([
-  { name: '视频流媒体', value: 35.2 },
-  { name: '文件下载', value: 28.6 },
-  { name: '网页浏览', value: 18.4 },
-  { name: '游戏娱乐', value: 12.8 },
-  { name: '社交通讯', value: 5.0 }
-])
-
-// 网络质量数据
-const networkQualityData = ref([
-  { name: '延迟', value: 85, max: 100 },
-  { name: '丢包率', value: 95, max: 100 },
-  { name: '带宽利用率', value: 78, max: 100 },
-  { name: '连接稳定性', value: 92, max: 100 },
-  { name: '服务质量', value: 88, max: 100 }
-])
+const startTime = ref('')
+const endTime = ref('')
 
 // 流量数据
 const trafficData = ref([
   {
     key: '1',
-    username: 'zhangsan',
-    ip: '192.168.1.100',
-    totalTraffic: 45.2,
-    uploadTraffic: 12.3,
-    downloadTraffic: 32.9,
-    protocols: ['HTTPS', 'HTTP', 'FTP'],
-    lastActive: '2024-01-15 10:30:00',
-    isOnline: true
+    time: '2024-01-15 10:30:01',
+    user: '张三',
+    srcIp: '192.168.1.100',
+    mac: '00:1B:44:11:3A:B7',
+    dstIp: '8.8.8.8',
+    url: 'https://google.com/search?q=test',
+    srcPort: '192.168.1.100',
+    dstPort: '8.8.8.8',
+    port: 443,
+    browser: 'Chrome',
+    protocol: 'HTTPS',
+    status: '允许'
   },
   {
     key: '2',
-    username: 'lisi',
-    ip: '192.168.1.101',
-    totalTraffic: 38.7,
-    uploadTraffic: 8.9,
-    downloadTraffic: 29.8,
-    protocols: ['HTTPS', 'HTTP'],
-    lastActive: '2024-01-15 10:25:00',
-    isOnline: true
+    time: '2024-01-15 10:30:02',
+    user: '李四',
+    srcIp: '192.168.1.101',
+    mac: '00:1B:44:11:3A:B8',
+    dstIp: '114.114.114.114',
+    url: 'https://baidu.com',
+    srcPort: '192.168.1.101',
+    dstPort: '114.114.114.114',
+    port: 443,
+    browser: 'Chrome',
+    protocol: 'HTTPS',
+    status: '允许'
   },
   {
     key: '3',
-    username: 'wangwu',
-    ip: '192.168.1.102',
-    totalTraffic: 52.1,
-    uploadTraffic: 15.6,
-    downloadTraffic: 36.5,
-    protocols: ['HTTPS', 'TCP', 'UDP'],
-    lastActive: '2024-01-15 10:20:00',
-    isOnline: false
-  },
-  {
-    key: '4',
-    username: 'zhaoliu',
-    ip: '192.168.1.103',
-    totalTraffic: 29.8,
-    uploadTraffic: 7.2,
-    downloadTraffic: 22.6,
-    protocols: ['HTTPS', 'HTTP', 'DNS'],
-    lastActive: '2024-01-15 10:15:00',
-    isOnline: true
-  },
-  {
-    key: '5',
-    username: 'sunqi',
-    ip: '192.168.1.104',
-    totalTraffic: 41.3,
-    uploadTraffic: 11.8,
-    downloadTraffic: 29.5,
-    protocols: ['HTTPS', 'TCP'],
-    lastActive: '2024-01-15 10:10:00',
-    isOnline: true
+    time: '2024-01-15 10:30:03',
+    user: '王五',
+    srcIp: '192.168.1.102',
+    mac: '00:1B:44:11:3A:B9',
+    dstIp: '123.45.67.89',
+    url: 'https://suspicious-site.com',
+    srcPort: '192.168.1.102',
+    dstPort: '123.45.67.89',
+    port: 443,
+    browser: 'Chrome',
+    protocol: 'HTTPS',
+    status: '拒绝'
   }
 ])
-
-// 过滤后的流量数据
-const filteredTrafficData = computed(() => {
-  if (!searchKeyword.value) {
-    return trafficData.value
-  }
-  return trafficData.value.filter(item => 
-    item.username.toLowerCase().includes(searchKeyword.value.toLowerCase()) ||
-    item.ip.includes(searchKeyword.value)
-  )
-})
 
 // 表格列配置
 const trafficColumns = [
   {
-    title: '用户信息',
-    dataIndex: 'username',
-    slotName: 'userInfo',
-    width: 200
-  },
-  {
-    title: '总流量',
-    dataIndex: 'totalTraffic',
-    slotName: 'traffic',
-    width: 150,
-    sortable: {
-      sortDirections: ['ascend', 'descend']
-    }
-  },
-  {
-    title: '上传(GB)',
-    dataIndex: 'uploadTraffic',
-    width: 100,
-    sortable: {
-      sortDirections: ['ascend', 'descend']
-    }
-  },
-  {
-    title: '下载(GB)',
-    dataIndex: 'downloadTraffic',
-    width: 100,
-    sortable: {
-      sortDirections: ['ascend', 'descend']
-    }
-  },
-  {
-    title: '协议',
-    dataIndex: 'protocols',
-    slotName: 'protocol',
+    title: '时间',
+    dataIndex: 'time',
     width: 150
   },
   {
-    title: '状态',
-    dataIndex: 'isOnline',
-    slotName: 'status',
+    title: '用户',
+    dataIndex: 'user',
+    slotName: 'user',
     width: 80
   },
   {
-    title: '最后活跃',
-    dataIndex: 'lastActive',
-    width: 160
+    title: '源IP',
+    dataIndex: 'srcIp',
+    slotName: 'srcIp',
+    width: 120
   },
   {
-    title: '操作',
-    slotName: 'actions',
-    width: 120,
-    fixed: 'right'
+    title: 'MAC',
+    dataIndex: 'mac',
+    width: 130
+  },
+  {
+    title: '目标IP',
+    dataIndex: 'dstIp',
+    slotName: 'dstIp',
+    width: 120
+  },
+  {
+    title: 'URL',
+    dataIndex: 'url',
+    slotName: 'url',
+    width: 250
+  },
+  {
+    title: '源端口',
+    dataIndex: 'srcPort',
+    width: 120
+  },
+  {
+    title: '目标端口',
+    dataIndex: 'dstPort',
+    width: 120
+  },
+  {
+    title: '端口',
+    dataIndex: 'port',
+    width: 60
+  },
+  {
+    title: '浏览器',
+    dataIndex: 'browser',
+    slotName: 'browser',
+    width: 80
+  },
+  {
+    title: '协议',
+    dataIndex: 'protocol',
+    slotName: 'protocol',
+    width: 80
+  },
+  {
+    title: '状态',
+    dataIndex: 'status',
+    slotName: 'status',
+    width: 80
   }
 ]
-
-// 定时器
-let dataUpdateTimer: NodeJS.Timeout | null = null
-
-// 获取用户头像颜色
-const getUserAvatarColor = (username: string) => {
-  const colors = ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2']
-  const index = username.charCodeAt(0) % colors.length
-  return colors[index]
-}
-
-// 获取进度条颜色
-const getProgressColor = (traffic: number) => {
-  if (traffic > 40) return '#f5222d'
-  if (traffic > 25) return '#faad14'
-  return '#52c41a'
-}
 
 // 获取协议颜色
 const getProtocolColor = (protocol: string) => {
@@ -468,175 +341,119 @@ const getProtocolColor = (protocol: string) => {
   return colorMap[protocol] || 'gray'
 }
 
+// 获取状态颜色
+const getStatusColor = (status: string) => {
+  return status === '允许' ? 'green' : 'red'
+}
+
 // 刷新数据
 const refreshData = async () => {
   refreshing.value = true
-  
-  // 模拟API调用
-  await new Promise(resolve => setTimeout(resolve, 1500))
-  
-  // 更新模拟数据
-  totalTraffic.value = Math.round((Math.random() * 500 + 1000) * 10) / 10
-  uploadTraffic.value = Math.round((Math.random() * 200 + 300) * 10) / 10
-  downloadTraffic.value = Math.round((Math.random() * 300 + 500) * 10) / 10
-  activeUsers.value = Math.floor(Math.random() * 100) + 200
-  bandwidthUsage.value = Math.floor(Math.random() * 40) + 60
-  
+  await new Promise(resolve => setTimeout(resolve, 1000))
   refreshing.value = false
 }
 
-// 导出报告
-const exportReport = () => {
-  console.log('导出流量报告')
-}
-
-// 刷新表格
-const refreshTable = async () => {
-  tableLoading.value = true
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  tableLoading.value = false
-}
-
-// 搜索处理
-const handleSearch = (value: string) => {
-  console.log('搜索:', value)
-}
-
-// 查看详情
-const viewDetails = (record: any) => {
-  console.log('查看详情:', record)
-}
-
-// 限制用户
-const blockUser = (record: any) => {
-  console.log('限制用户:', record)
-}
-
-// 实时数据更新
-const startDataUpdate = () => {
-  dataUpdateTimer = setInterval(() => {
-    // 模拟实时数据更新
-    bandwidthUsage.value = Math.floor(Math.random() * 40) + 60
-    
-    // 随机更新流量趋势数据
-    const lastValue = trafficTrendData.value[trafficTrendData.value.length - 1].value
-    const newValue = Math.max(0, lastValue + (Math.random() - 0.5) * 100)
-    
-    trafficTrendData.value.shift()
-    trafficTrendData.value.push({
-      name: new Date().toLocaleTimeString().slice(0, 5),
-      value: Math.floor(newValue)
-    })
-  }, 5000)
+// 查询数据
+const queryData = () => {
+  console.log('查询数据:', startTime.value, endTime.value)
 }
 
 // 生命周期
 onMounted(() => {
-  startDataUpdate()
+  // 初始化
 })
 
 onUnmounted(() => {
-  if (dataUpdateTimer) {
-    clearInterval(dataUpdateTimer)
-  }
+  // 清理
 })
 </script>
 
 <style scoped>
 .traffic-page {
   padding: 0;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 .stats-row {
   margin-bottom: 24px;
 }
 
-.charts-row {
+.analysis-tabs {
   margin-bottom: 24px;
 }
 
 .chart-card {
   height: 100%;
-  transition: all 0.3s ease;
 }
 
-.chart-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+.chart-container {
+  height: 300px;
+}
+
+.chart-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7f8fa;
+  border-radius: 6px;
+}
+
+.chart-content {
+  text-align: center;
+  color: #86909c;
+}
+
+.chart-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #c9cdd4;
+}
+
+.filter-card {
+  margin-bottom: 16px;
 }
 
 .table-card {
   margin-bottom: 24px;
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.user-name {
+  font-weight: 500;
+  color: #1d2129;
 }
 
-.user-details {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.ip-address {
+  font-family: monospace;
+  color: #1890ff;
 }
 
-.username {
-  font-weight: 600;
-  color: #262626;
+.url-text {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
 }
 
-.user-ip {
-  font-size: 12px;
-  color: #8c8c8c;
-}
-
-.traffic-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.traffic-value {
-  font-weight: 600;
-  color: #262626;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .user-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  
-  .traffic-info {
-    gap: 4px;
-  }
+.browser-text {
+  color: #52c41a;
 }
 
 :deep(.arco-card) {
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-:deep(.arco-card-header) {
-  border-bottom: 1px solid rgba(240, 240, 240, 0.8);
+:deep(.arco-tabs-content) {
+  padding-top: 0;
 }
 
-:deep(.arco-card-body) {
-  padding: 20px;
+:deep(.arco-table) {
+  font-size: 12px;
 }
 
 :deep(.arco-table-th) {
-  background: rgba(250, 250, 250, 0.8);
-}
-
-:deep(.arco-table-tr:hover) {
-  background: rgba(24, 144, 255, 0.04);
+  background: #fafafa;
+  font-weight: 600;
 }
 </style>
