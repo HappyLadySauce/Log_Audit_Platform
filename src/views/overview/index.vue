@@ -27,9 +27,9 @@
           <EnhancedStatCard
             :icon="IconStorage"
             icon-bg-color="#1890ff"
-            value="8"
+            value="10"
             label="设备监控"
-            subtitle="网络设备6台 · 服务器4台 · 在线总数8"
+            subtitle="网络设备6台 · 服务器4台 · 在线总数10"
             :trend="{ type: 'stable', value: '全部在线' }"
           />
         </a-col>
@@ -38,7 +38,7 @@
           <EnhancedStatCard
             :icon="IconFile"
             icon-bg-color="#52c41a"
-            value="1.9K"
+            value="56842"
             label="今日日志"
             subtitle="日志采集总量"
             :trend="{ type: 'increase', value: '+12%' }"
@@ -49,7 +49,7 @@
           <EnhancedStatCard
             :icon="IconExclamation"
             icon-bg-color="#faad14"
-            value="0"
+            value="4226"
             label="威胁告警"
             subtitle="低风险预警信息"
             :trend="{ type: 'decrease', value: '-8%' }"
@@ -351,8 +351,8 @@ const cpuTrend = ref({ type: 'stable', value: '+2%' })
 const memoryTrend = ref({ type: 'stable', value: '-1%' })
 
 // 核心指标数据 - 保持与日志数据一致
-const todayLogs = ref('1.9K')
-const onlineDevices = ref(8)
+const todayLogs = ref('56842')
+const onlineDevices = ref(10)
 const threatAlerts = ref({
   error: 0,
   warning: 250,
@@ -590,7 +590,7 @@ const initLogData = () => {
 
 // 设备状态统计数据
 const deviceStatusData = ref([
-  { name: '在线', value: 8 },
+  { name: '在线', value: 10 },
   { name: '离线', value: 0 },
   { name: '告警', value: 0 }
 ])
@@ -919,7 +919,7 @@ const updateCoreMetrics = () => {
   totalTraffic.value = newTraffic.toFixed(1) + 'G'
   
   // 设备在线数量保持稳定
-  onlineDevices.value = 8
+  onlineDevices.value = 10
 }
 
 // 组件挂载时初始化数据和定时器

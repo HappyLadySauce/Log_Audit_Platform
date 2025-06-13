@@ -28,7 +28,7 @@
         <StatCard
           :icon="IconDesktop"
           icon-bg-color="#1890ff"
-          :value="18"
+          :value="10"
           label="总资产数"
           subtitle="设备总量"
         />
@@ -37,7 +37,7 @@
         <StatCard
           :icon="IconCheck"
           icon-bg-color="#52c41a"
-          :value="18"
+          :value="10"
           label="在线设备"
           subtitle="正常运行"
         />
@@ -147,16 +147,6 @@ const assetData = ref([
   // 网络设备 - 防火墙
   {
     key: '1',
-    name: '总部防火墙',
-    model: 'Fortinet FortiGate 600E',
-    type: 'security',
-    ip: '10.10.10.1',
-    location: '总部机房A-01',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:30:00'
-  },
-  {
-    key: '2',
     name: '分部防火墙',
     model: 'Fortinet FortiGate 400E',
     type: 'security',
@@ -167,7 +157,7 @@ const assetData = ref([
   },
   // 网络设备 - 交换机
   {
-    key: '3',
+    key: '2',
     name: '分部集群接入交换机',
     model: 'Cisco Catalyst 9300',
     type: 'network',
@@ -177,7 +167,7 @@ const assetData = ref([
     lastUpdate: '2024-01-15 10:25:00'
   },
   {
-    key: '4',
+    key: '3',
     name: '分部彩光交换机',
     model: 'H3C S6520-SI',
     type: 'network',
@@ -187,7 +177,7 @@ const assetData = ref([
     lastUpdate: '2024-01-15 10:22:00'
   },
   {
-    key: '5',
+    key: '4',
     name: '分部无线控制器',
     model: 'Cisco WLC 3504',
     type: 'network',
@@ -197,7 +187,7 @@ const assetData = ref([
     lastUpdate: '2024-01-15 10:20:00'
   },
   {
-    key: '6',
+    key: '5',
     name: '分部用户接入交换机',
     model: 'H3C S5560-EI',
     type: 'network',
@@ -207,7 +197,7 @@ const assetData = ref([
     lastUpdate: '2024-01-15 10:18:00'
   },
   {
-    key: '7',
+    key: '6',
     name: '分部AP',
     model: 'Cisco Aironet 2802I',
     type: 'network',
@@ -218,67 +208,7 @@ const assetData = ref([
   },
   // 服务器设备
   {
-    key: '8',
-    name: '总部Karmada控制服务器',
-    model: 'Dell PowerEdge R750',
-    type: 'server',
-    ip: '10.10.10.6',
-    location: '总部机房A-02',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:35:00'
-  },
-  {
-    key: '9',
-    name: '总部Karmada节点服务器',
-    model: 'Dell PowerEdge R740',
-    type: 'server',
-    ip: '10.10.10.7',
-    location: '总部机房A-03',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:32:00'
-  },
-  {
-    key: '10',
-    name: '总部K8S控制节点1',
-    model: 'HPE ProLiant DL380',
-    type: 'server',
-    ip: '10.10.10.2',
-    location: '总部机房A-04',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:30:00'
-  },
-  {
-    key: '11',
-    name: '总部K8S控制节点2',
-    model: 'HPE ProLiant DL380',
-    type: 'server',
-    ip: '10.10.10.3',
-    location: '总部机房A-05',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:28:00'
-  },
-  {
-    key: '12',
-    name: '总部K8S工作节点1',
-    model: 'Dell PowerEdge R640',
-    type: 'server',
-    ip: '10.10.10.4',
-    location: '总部机房A-06',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:26:00'
-  },
-  {
-    key: '13',
-    name: '总部K8S工作节点2',
-    model: 'Dell PowerEdge R640',
-    type: 'server',
-    ip: '10.10.10.5',
-    location: '总部机房A-07',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:24:00'
-  },
-  {
-    key: '14',
+    key: '7',
     name: '分部K8S控制节点1',
     model: 'HPE ProLiant DL360',
     type: 'server',
@@ -288,7 +218,7 @@ const assetData = ref([
     lastUpdate: '2024-01-15 10:22:00'
   },
   {
-    key: '15',
+    key: '8',
     name: '分部K8S控制节点2',
     model: 'HPE ProLiant DL360',
     type: 'server',
@@ -298,7 +228,7 @@ const assetData = ref([
     lastUpdate: '2024-01-15 10:20:00'
   },
   {
-    key: '16',
+    key: '9',
     name: '分部K8S工作节点1',
     model: 'Dell PowerEdge R540',
     type: 'server',
@@ -308,7 +238,7 @@ const assetData = ref([
     lastUpdate: '2024-01-15 10:18:00'
   },
   {
-    key: '17',
+    key: '10',
     name: '分部K8S工作节点2',
     model: 'Dell PowerEdge R540',
     type: 'server',
@@ -316,16 +246,6 @@ const assetData = ref([
     location: '分部机房B-09',
     status: '在线',
     lastUpdate: '2024-01-15 10:16:00'
-  },
-  {
-    key: '18',
-    name: 'DNS邮件服务器',
-    model: 'Dell PowerEdge R630',
-    type: 'server',
-    ip: '10.10.20.254',
-    location: '总部机房A-08',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:14:00'
   }
 ])
 
