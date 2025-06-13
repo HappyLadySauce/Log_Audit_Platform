@@ -210,7 +210,7 @@
           <a-card :bordered="false">
             <template #title>
               <div class="ai-card-title">
-                <icon-line-chart style="margin-right: 8px; color: #1890ff;" />
+                <icon-bar-chart style="margin-right: 8px; color: #1890ff;" />
                 系统性能监控预测
                 <a-tag color="processing" size="small" style="margin-left: 8px;">AI预测</a-tag>
               </div>
@@ -224,13 +224,38 @@
                 </a-radio-group>
               </div>
             </template>
-            <DashboardChart
-              type="area"
-              :data="aiTrendData"
-              :height="350"
-              :smooth="true"
-              :colors="['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1']"
-            />
+            
+            <div class="ai-prediction-container">
+              <!-- 图表区域 -->
+              <div class="chart-area">
+                <DashboardChart
+                  type="area"
+                  :data="aiTrendData"
+                  :height="250"
+                  :smooth="true"
+                  :colors="['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1']"
+                />
+              </div>
+              
+              <!-- 预测日志区域 -->
+              <div class="prediction-logs">
+                <div class="logs-header">
+                  <h4>AI预测日志</h4>
+                  <a-tag color="arcoblue" size="small">实时更新</a-tag>
+                </div>
+                <div class="logs-content">
+                  <div 
+                    v-for="log in predictionLogs" 
+                    :key="log.id" 
+                    class="log-item"
+                  >
+                    <span class="log-time">{{ log.time }}</span>
+                    <span class="log-type" :class="'type-' + log.level">{{ log.type }}</span>
+                    <span class="log-message">{{ log.message }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </a-card>
         </a-col>
 
@@ -238,18 +263,42 @@
           <a-card :bordered="false">
             <template #title>
               <div class="ai-card-title">
-                <icon-pie-chart style="margin-right: 8px; color: #52c41a;" />
+                <icon-fire style="margin-right: 8px; color: #52c41a;" />
                 AI分析统计
                 <a-tag color="success" size="small" style="margin-left: 8px;">实时</a-tag>
               </div>
             </template>
-            <DashboardChart
-              type="pie"
-              :data="aiAnalysisData"
-              :height="350"
-              :show-legend="true"
-              :colors="['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1']"
-            />
+            
+            <div class="ai-analysis-container">
+              <!-- 饼图区域 -->
+              <div class="chart-area">
+                <DashboardChart
+                  type="pie"
+                  :data="aiAnalysisData"
+                  :height="200"
+                  :show-legend="true"
+                  :colors="['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1']"
+                />
+              </div>
+              
+              <!-- 分析日志区域 -->
+              <div class="analysis-logs">
+                <div class="logs-header">
+                  <h4>AI分析日志</h4>
+                  <a-tag color="green" size="small">智能分析</a-tag>
+                </div>
+                <div class="logs-content">
+                  <div 
+                    v-for="log in analysisLogs" 
+                    :key="log.id" 
+                    class="log-item"
+                  >
+                    <span class="log-time">{{ log.time }}</span>
+                    <span class="log-message" :class="'message-' + log.level">{{ log.message }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </a-card>
         </a-col>
       </a-row>
@@ -381,8 +430,8 @@ import {
   IconEdit,
   IconDelete,
   IconRobot,
-  IconLineChart,
-  IconPieChart
+  IconBarChart,
+  IconFire
 } from '@arco-design/web-vue/es/icon'
 
 // 系统监控状态
@@ -407,6 +456,7 @@ const chartTimeRange = ref('today')
 let cpuMemoryTimer: NodeJS.Timeout
 let aiTrendTimer: NodeJS.Timeout
 let networkTrafficTimer: NodeJS.Timeout
+let logsTimer: NodeJS.Timeout
 
 // 初始化CPU和内存趋势数据
 const initResourceData = () => {
@@ -573,6 +623,79 @@ const networkTrafficData = ref([
   { name: '17:00', value: 1.8 },
   { name: '18:00', value: 1.3 },
   { name: '现在', value: 2.3 }
+])
+
+// AI预测日志数据
+const predictionLogs = ref([
+  {
+    id: 1,
+    time: '20:03:45',
+    type: 'CPU',
+    level: 'info',
+    message: 'CPU使用率预测：未来1小时保持在35-40%正常范围'
+  },
+  {
+    id: 2,
+    time: '20:03:40',
+    type: '内存',
+    level: 'info',
+    message: '内存优化建议：当前45%，预计晚高峰将达到60%'
+  },
+  {
+    id: 3,
+    time: '20:03:35',
+    type: '磁盘',
+    level: 'warning',
+    message: '磁盘I/O异常检测：/var/log目录增长速度异常'
+  },
+  {
+    id: 4,
+    time: '20:03:30',
+    type: '风扇',
+    level: 'success',
+    message: '风扇状态良好：所有设备风扇转速正常，温度控制稳定'
+  },
+  {
+    id: 5,
+    time: '20:03:25',
+    type: '电源',
+    level: 'success',
+    message: '电源供应稳定：UPS备用电源100%，市电供应正常'
+  }
+])
+
+// AI分析日志数据
+const analysisLogs = ref([
+  {
+    id: 1,
+    time: '20:03:45',
+    level: 'info',
+    message: 'AI建议：CPU性能优化完成，效率提升12%'
+  },
+  {
+    id: 2,
+    time: '20:03:40',
+    level: 'success',
+    message: '内存清理：释放2.1GB缓存，系统响应速度提升'
+  },
+  {
+    id: 3,
+    time: '20:03:35',
+    level: 'warning',
+    message: '磁盘预警：建议清理临时文件，预计可释放5.2GB'
+  },
+  {
+    id: 4,
+    time: '20:03:30',
+    level: 'info',
+    message: '风扇智能调节：根据温度变化自动调整转速'
+  },
+  {
+    id: 5,
+    time: '20:03:25',
+    level: 'success',
+    message: '电源管理：节能模式已启用，功耗降低15%'
+  }
 ])
 
 // 设备列表 - 使用真实的设备数据
@@ -771,12 +894,109 @@ const updateNetworkTrafficData = () => {
   })
 }
 
+// 生成新的预测日志
+const generatePredictionLog = () => {
+  const now = new Date()
+  const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  
+  const logTypes = ['CPU', '内存', '磁盘', '风扇', '电源']
+  const logMessages = {
+    'CPU': [
+      'CPU使用率预测：未来1小时保持在30-45%正常范围',
+      'AI分析：CPU负载均衡良好，性能稳定',
+      'CPU温度监控：核心温度保持在安全范围内',
+      'CPU频率调节：智能降频节能模式已启用'
+    ],
+    '内存': [
+      '内存优化建议：当前使用率适中，无需清理',
+      '内存泄漏检测：未发现异常进程占用',
+      '内存压缩：启用内存压缩，可用空间增加15%',
+      '内存预测：晚高峰预计使用率将达到65%'
+    ],
+    '磁盘': [
+      '磁盘I/O正常：读写速度在正常范围内',
+      '磁盘空间预警：/tmp目录建议定期清理',
+      '磁盘碎片整理：建议在低峰期进行优化',
+      '磁盘健康检查：所有存储设备状态良好'
+    ],
+    '风扇': [
+      '风扇状态优良：所有设备散热正常',
+      '智能调速：根据温度自动调整风扇转速',
+      '风扇维护提醒：定期清理灰尘保持效率',
+      '温控系统：环境温度监控正常'
+    ],
+    '电源': [
+      '电源供应稳定：UPS后备电源充足',
+      '功耗优化：节能模式降低15%能耗',
+      '电源质量良好：电压波动在正常范围',
+      '备用电源测试：应急供电系统正常'
+    ]
+  }
+  
+  const levels = ['info', 'success', 'warning']
+  const randomType = logTypes[Math.floor(Math.random() * logTypes.length)]
+  const randomMessage = logMessages[randomType][Math.floor(Math.random() * logMessages[randomType].length)]
+  const randomLevel = levels[Math.floor(Math.random() * levels.length)]
+  
+  const newLog = {
+    id: Date.now(),
+    time: timeStr,
+    type: randomType,
+    level: randomLevel,
+    message: randomMessage
+  }
+  
+  // 添加新日志，保持最多5条
+  predictionLogs.value.unshift(newLog)
+  if (predictionLogs.value.length > 5) {
+    predictionLogs.value.pop()
+  }
+}
+
+// 生成新的分析日志
+const generateAnalysisLog = () => {
+  const now = new Date()
+  const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  
+  const analysisMessages = [
+    'AI建议：系统性能优化完成，整体效率提升',
+    '智能分析：检测到内存使用模式异常，已自动优化',
+    '性能监控：磁盘I/O性能良好，响应时间稳定',
+    '资源管理：CPU资源分配均衡，负载合理',
+    '系统诊断：所有核心组件运行状态正常',
+    '预测模型：基于历史数据预测系统负载趋势',
+    '优化建议：检测到可优化项，建议执行清理任务',
+    '安全扫描：系统安全状态良好，无异常访问',
+    '容量规划：存储空间充足，无扩容需求',
+    '网络分析：网络流量正常，延迟在可接受范围'
+  ]
+  
+  const levels = ['info', 'success', 'warning']
+  const randomMessage = analysisMessages[Math.floor(Math.random() * analysisMessages.length)]
+  const randomLevel = levels[Math.floor(Math.random() * levels.length)]
+  
+  const newLog = {
+    id: Date.now(),
+    time: timeStr,
+    level: randomLevel,
+    message: randomMessage
+  }
+  
+  // 添加新日志，保持最多5条
+  analysisLogs.value.unshift(newLog)
+  if (analysisLogs.value.length > 5) {
+    analysisLogs.value.pop()
+  }
+}
+
 // 刷新数据
 const refreshData = () => {
   Message.success('数据刷新成功')
   updateResourceData()
   updateAiTrendData()
   updateNetworkTrafficData()
+  generatePredictionLog()
+  generateAnalysisLog()
   
   // 更新核心指标数据
   todayLogs.value += Math.floor(Math.random() * 100)
@@ -828,12 +1048,12 @@ onMounted(() => {
     }
   }, 3000)
   
-  // AI趋势预测数据每3秒更新一次
+  // AI趋势预测数据每30秒更新一次
   aiTrendTimer = setInterval(() => {
     if (isMonitoringEnabled.value) {
       updateAiTrendData()
     }
-  }, 3000)
+  }, 30000)
   
   // 网络流量数据每3秒更新一次
   networkTrafficTimer = setInterval(() => {
@@ -841,6 +1061,18 @@ onMounted(() => {
       updateNetworkTrafficData()
     }
   }, 3000)
+  
+  // AI日志每15秒更新一次
+  logsTimer = setInterval(() => {
+    if (isMonitoringEnabled.value) {
+      // 随机生成预测日志或分析日志
+      if (Math.random() > 0.5) {
+        generatePredictionLog()
+      } else {
+        generateAnalysisLog()
+      }
+    }
+  }, 15000)
 })
 
 // 组件卸载时清理定时器
@@ -853,6 +1085,9 @@ onUnmounted(() => {
   }
   if (networkTrafficTimer) {
     clearInterval(networkTrafficTimer)
+  }
+  if (logsTimer) {
+    clearInterval(logsTimer)
   }
 })
 </script>
@@ -1034,6 +1269,140 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* AI预测和分析容器样式 */
+.ai-prediction-container,
+.ai-analysis-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chart-area {
+  flex-shrink: 0;
+}
+
+.prediction-logs,
+.analysis-logs {
+  flex: 1;
+  margin-top: 16px;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 12px;
+}
+
+.logs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.logs-header h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.logs-content {
+  max-height: 120px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  padding: 0;
+}
+
+.log-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 12px;
+  line-height: 1.5;
+  transition: background-color 0.2s;
+}
+
+.log-item:last-child {
+  border-bottom: none;
+}
+
+.log-item:hover {
+  background-color: #fafafa;
+}
+
+.log-time {
+  color: #999999;
+  font-family: 'Courier New', monospace;
+  margin-right: 12px;
+  flex-shrink: 0;
+  min-width: 70px;
+  font-size: 11px;
+}
+
+.log-type {
+  font-weight: 500;
+  margin-right: 12px;
+  flex-shrink: 0;
+  min-width: 50px;
+  font-size: 12px;
+}
+
+.log-type.type-info {
+  color: #1890ff;
+}
+
+.log-type.type-success {
+  color: #52c41a;
+}
+
+.log-type.type-warning {
+  color: #faad14;
+}
+
+.log-type.type-error {
+  color: #f5222d;
+}
+
+.log-message {
+  color: #333333;
+  flex: 1;
+  font-size: 12px;
+}
+
+.log-message.message-info {
+  color: #333333;
+}
+
+.log-message.message-success {
+  color: #52c41a;
+}
+
+.log-message.message-warning {
+  color: #faad14;
+}
+
+.log-message.message-error {
+  color: #f5222d;
+}
+
+/* 日志滚动条样式 */
+.logs-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.logs-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.logs-content::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 3px;
+}
+
+.logs-content::-webkit-scrollbar-thumb:hover {
+  background: #bfbfbf;
 }
 
 /* 设备监控样式 */
