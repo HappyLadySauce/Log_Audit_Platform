@@ -32,12 +32,12 @@
       <a-row :gutter="16" class="monitoring-grid">
         <a-col :span="6">
           <div class="monitor-item">
-            <div class="monitor-icon error">
-              <icon-close />
+            <div class="monitor-icon success">
+              <icon-check />
             </div>
             <div class="monitor-info">
               <div class="monitor-title">系统异常</div>
-              <div class="monitor-desc">异常总数: 17 条</div>
+              <div class="monitor-desc">异常总数: 0 条</div>
             </div>
             <div class="monitor-action">
               <a-button size="mini" type="outline">处理</a-button>
@@ -47,12 +47,12 @@
         
         <a-col :span="6">
           <div class="monitor-item">
-            <div class="monitor-icon warning">
-              <icon-exclamation />
+            <div class="monitor-icon success">
+              <icon-check />
             </div>
             <div class="monitor-info">
               <div class="monitor-title">API调用</div>
-              <div class="monitor-desc">失败响应数</div>
+              <div class="monitor-desc">失败响应数: 0</div>
             </div>
             <div class="monitor-action">
               <a-button size="mini" type="outline">查看</a-button>
@@ -98,21 +98,24 @@
         <a-col :span="12">
           <a-card title="CPU使用率" :bordered="false">
             <div class="resource-chart">
-              <div class="resource-progress">
-                <a-progress 
-                  :percent="cpuUsage" 
-                  :color="getProgressColor(cpuUsage)"
-                  :show-text="false"
-                  size="large"
+              <div class="chart-container">
+                <DashboardChart
+                  type="line"
+                  :data="cpuTrendData"
+                  height="180px"
+                  :smooth="true"
+                  :colors="['#1890ff']"
+                  :show-legend="false"
+                  :show-grid="true"
                 />
-                <div class="resource-text">
-                  <span class="resource-value">{{ cpuUsage }}%</span>
-                  <span class="resource-trend" :class="cpuTrend.type">
-                    <icon-arrow-up v-if="cpuTrend.type === 'up'" />
-                    <icon-arrow-down v-if="cpuTrend.type === 'down'" />
-                    {{ cpuTrend.value }}
-                  </span>
-                </div>
+              </div>
+              <div class="resource-text">
+                <span class="resource-value">{{ currentCpuUsage }}%</span>
+                <span class="resource-trend" :class="cpuTrend.type">
+                  <icon-arrow-up v-if="cpuTrend.type === 'up'" />
+                  <icon-arrow-down v-if="cpuTrend.type === 'down'" />
+                  {{ cpuTrend.value }}
+                </span>
               </div>
             </div>
           </a-card>
@@ -121,21 +124,24 @@
         <a-col :span="12">
           <a-card title="内存使用率" :bordered="false">
             <div class="resource-chart">
-              <div class="resource-progress">
-                <a-progress 
-                  :percent="memoryUsage" 
-                  :color="getProgressColor(memoryUsage)"
-                  :show-text="false"
-                  size="large"
+              <div class="chart-container">
+                <DashboardChart
+                  type="line"
+                  :data="memoryTrendData"
+                  height="180px"
+                  :smooth="true"
+                  :colors="['#52c41a']"
+                  :show-legend="false"
+                  :show-grid="true"
                 />
-                <div class="resource-text">
-                  <span class="resource-value">{{ memoryUsage }}%</span>
-                  <span class="resource-trend" :class="memoryTrend.type">
-                    <icon-arrow-up v-if="memoryTrend.type === 'up'" />
-                    <icon-arrow-down v-if="memoryTrend.type === 'down'" />
-                    {{ memoryTrend.value }}
-                  </span>
-                </div>
+              </div>
+              <div class="resource-text">
+                <span class="resource-value">{{ currentMemoryUsage }}%</span>
+                <span class="resource-trend" :class="memoryTrend.type">
+                  <icon-arrow-up v-if="memoryTrend.type === 'up'" />
+                  <icon-arrow-down v-if="memoryTrend.type === 'down'" />
+                  {{ memoryTrend.value }}
+                </span>
               </div>
             </div>
           </a-card>
@@ -147,82 +153,102 @@
     <div class="stats-section">
       <h3>核心指标</h3>
       <a-row :gutter="16">
-                 <a-col :span="6">
-           <EnhancedStatCard
-             :icon="IconStorage"
-             icon-bg-color="#1890ff"
-             :value="18"
-             label="网络设备"
-             subtitle="在线监控数量"
-             :trend="{ type: 'stable', value: '12%' }"
-           />
-         </a-col>
+        <a-col :span="6">
+          <EnhancedStatCard
+            :icon="IconStorage"
+            icon-bg-color="#1890ff"
+            :value="19"
+            label="设备监控"
+            subtitle="网络设备7台 · 服务器11台"
+            :trend="{ type: 'stable', value: '全部在线' }"
+          />
+        </a-col>
         
         <a-col :span="6">
           <EnhancedStatCard
             :icon="IconFile"
             icon-bg-color="#52c41a"
-            :value="4500"
+            :value="todayLogs"
             label="今日日志"
             subtitle="日志采集总量"
             :trend="{ type: 'increase', value: '82%' }"
           />
         </a-col>
 
-                 <a-col :span="6">
-           <EnhancedStatCard
-             :icon="IconExclamation"
-             icon-bg-color="#faad14"
-             :value="10"
-             label="威胁告警"
-             subtitle="需要处理数量"
-             :trend="{ type: 'decrease', value: '13%' }"
-           />
-         </a-col>
+        <a-col :span="6">
+          <EnhancedStatCard
+            :icon="IconExclamation"
+            icon-bg-color="#faad14"
+            :value="threatAlerts"
+            label="威胁告警"
+            subtitle="需要处理数量"
+            :trend="{ type: 'decrease', value: '13%' }"
+          />
+        </a-col>
 
-         <a-col :span="6">
-           <EnhancedStatCard
-             :icon="IconNotification"
-             icon-bg-color="#f5222d"
-             :value="933"
-             label="今日请求"
-             subtitle="API调用统计"
-             :trend="{ type: 'increase', value: '32%' }"
-           />
-         </a-col>
+        <a-col :span="6">
+          <EnhancedStatCard
+            :icon="IconNotification"
+            icon-bg-color="#f5222d"
+            :value="'2.3G'"
+            label="流量审计"
+            subtitle="网络流量统计"
+            :trend="{ type: 'increase', value: '32%' }"
+          />
+        </a-col>
       </a-row>
     </div>
 
-    <!-- 数据趋势和分布 -->
+    <!-- AI数据趋势预测 -->
     <div class="charts-section">
-      <h3>数据趋势</h3>
+      <h3>
+        <icon-robot style="margin-right: 8px; color: #722ed1;" />
+        AI数据趋势预测
+      </h3>
       <a-row :gutter="16">
         <a-col :span="16">
-          <a-card title="日志分类分析" :bordered="false">
-            <div class="chart-controls">
-              <a-radio-group v-model="chartTimeRange" size="small">
-                <a-radio-button value="day">天</a-radio-button>
-                <a-radio-button value="week">周</a-radio-button>
-                <a-radio-button value="month">月</a-radio-button>
-              </a-radio-group>
-            </div>
+          <a-card :bordered="false">
+            <template #title>
+              <div class="ai-card-title">
+                <icon-line-chart style="margin-right: 8px; color: #1890ff;" />
+                系统性能监控预测
+                <a-tag color="processing" size="small" style="margin-left: 8px;">AI预测</a-tag>
+              </div>
+            </template>
+            <template #extra>
+              <div class="chart-controls">
+                <a-radio-group v-model="chartTimeRange" size="small">
+                  <a-radio-button value="today">今日</a-radio-button>
+                  <a-radio-button value="week">本周</a-radio-button>
+                  <a-radio-button value="month">本月</a-radio-button>
+                </a-radio-group>
+              </div>
+            </template>
             <DashboardChart
               type="area"
-              :data="logTrendData"
+              :data="aiTrendData"
               :height="350"
               :smooth="true"
-              :colors="['#1890ff', '#52c41a', '#faad14', '#f5222d']"
+              :colors="['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1']"
             />
           </a-card>
         </a-col>
 
         <a-col :span="8">
-          <a-card title="分析统计" :bordered="false">
+          <a-card :bordered="false">
+            <template #title>
+              <div class="ai-card-title">
+                <icon-pie-chart style="margin-right: 8px; color: #52c41a;" />
+                AI分析统计
+                <a-tag color="success" size="small" style="margin-left: 8px;">实时</a-tag>
+              </div>
+            </template>
             <DashboardChart
               type="pie"
-              :data="logDistributionData"
+              :data="aiAnalysisData"
               :height="350"
-              :show-legend="false"
+              :show-legend="true"
+              :colors="['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1']"
             />
           </a-card>
         </a-col>
@@ -232,7 +258,48 @@
     <!-- 设备状态监控 -->
     <div class="devices-section">
       <h3>设备状态监控</h3>
-      <a-card :bordered="false">
+      
+      <!-- 设备状态概览 -->
+      <a-row :gutter="16" class="device-overview">
+        <a-col :span="8">
+          <a-card title="设备状态分布" :bordered="false">
+            <DashboardChart
+              type="pie"
+              :data="deviceStatusData"
+              height="200px"
+              :show-legend="true"
+              :colors="['#52c41a', '#f5222d', '#faad14']"
+            />
+          </a-card>
+        </a-col>
+        
+        <a-col :span="8">
+          <a-card title="设备类型分布" :bordered="false">
+            <DashboardChart
+              type="pie"
+              :data="deviceTypeData"
+              height="200px"
+              :show-legend="true"
+              :colors="['#1890ff', '#52c41a']"
+            />
+          </a-card>
+        </a-col>
+        
+        <a-col :span="8">
+          <a-card title="网络流量趋势" :bordered="false">
+            <DashboardChart
+              type="line"
+              :data="networkTrafficData"
+              height="200px"
+              :smooth="true"
+              :colors="['#722ed1']"
+              :show-legend="false"
+            />
+          </a-card>
+        </a-col>
+      </a-row>
+      
+      <a-card :bordered="false" class="device-table-card">
         <template #extra>
           <a-space>
             <span>设备总数: {{ deviceList.length }} 台</span>
@@ -293,7 +360,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { Message } from '@arco-design/web-vue'
 import PageHeader from '@/components/PageHeader.vue'
 import EnhancedStatCard from '@/components/EnhancedStatCard.vue'
@@ -312,78 +379,362 @@ import {
   IconNotification,
   IconEye,
   IconEdit,
-  IconDelete
+  IconDelete,
+  IconRobot,
+  IconLineChart,
+  IconPieChart
 } from '@arco-design/web-vue/es/icon'
 
 // 系统监控状态
 const isMonitoringEnabled = ref(true)
 
-// 资源使用率
-const cpuUsage = ref(54)
-const memoryUsage = ref(82)
-const cpuTrend = ref({ type: 'up', value: '+10%' })
-const memoryTrend = ref({ type: 'down', value: '-3%' })
+// CPU和内存使用率数据
+const cpuTrendData = ref([])
+const memoryTrendData = ref([])
+const currentCpuUsage = ref(35)
+const currentMemoryUsage = ref(38)
+const cpuTrend = ref({ type: 'stable', value: '+2%' })
+const memoryTrend = ref({ type: 'stable', value: '-1%' })
+
+// 核心指标数据
+const todayLogs = ref(14520)
+const threatAlerts = ref(3)
 
 // 图表时间范围
-const chartTimeRange = ref('day')
+const chartTimeRange = ref('today')
 
-// 日志趋势数据
-const logTrendData = ref([
-  { name: '00:00', value: 820 },
-  { name: '02:00', value: 932 },
-  { name: '04:00', value: 901 },
-  { name: '06:00', value: 934 },
-  { name: '08:00', value: 1290 },
-  { name: '10:00', value: 1330 },
-  { name: '12:00', value: 1320 },
-  { name: '14:00', value: 1200 },
-  { name: '16:00', value: 1100 },
-  { name: '18:00', value: 1400 },
-  { name: '20:00', value: 1300 },
-  { name: '22:00', value: 1000 }
+// 定时器引用
+let cpuMemoryTimer: NodeJS.Timeout
+let aiTrendTimer: NodeJS.Timeout
+let networkTrafficTimer: NodeJS.Timeout
+
+// 初始化CPU和内存趋势数据
+const initResourceData = () => {
+  const now = new Date()
+  const cpuData = []
+  const memoryData = []
+  
+  for (let i = 29; i >= 0; i--) {
+    const time = new Date(now.getTime() - i * 60000) // 每分钟一个数据点
+    const timeStr = time.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+    
+    cpuData.push({
+      name: timeStr,
+      value: Math.floor(Math.random() * 10) + 30 // 30-40之间的随机数
+    })
+    
+    memoryData.push({
+      name: timeStr,
+      value: Math.floor(Math.random() * 10) + 30 // 30-40之间的随机数
+    })
+  }
+  
+  cpuTrendData.value = cpuData
+  memoryTrendData.value = memoryData
+  
+  // 设置当前值为最新的数据点
+  currentCpuUsage.value = cpuData[cpuData.length - 1].value
+  currentMemoryUsage.value = memoryData[memoryData.length - 1].value
+}
+
+// 更新CPU和内存数据
+const updateResourceData = () => {
+  const now = new Date()
+  const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  
+  // 移除最旧的数据点，添加新的数据点
+  cpuTrendData.value.shift()
+  memoryTrendData.value.shift()
+  
+  const newCpuValue = Math.floor(Math.random() * 10) + 30
+  const newMemoryValue = Math.floor(Math.random() * 10) + 30
+  
+  cpuTrendData.value.push({ name: timeStr, value: newCpuValue })
+  memoryTrendData.value.push({ name: timeStr, value: newMemoryValue })
+  
+  currentCpuUsage.value = newCpuValue
+  currentMemoryUsage.value = newMemoryValue
+}
+
+// AI趋势预测数据 - 模拟动态数据
+const aiTrendData = ref([
+  {
+    name: 'CPU使用率预测',
+    data: Array.from({ length: 24 }, (_, i) => ({
+      name: String(i).padStart(2, '0') + ':00',
+      value: Math.floor(Math.random() * 20) + 30 // 30-50% 预测范围
+    }))
+  },
+  {
+    name: '内存使用率预测',
+    data: Array.from({ length: 24 }, (_, i) => ({
+      name: String(i).padStart(2, '0') + ':00',
+      value: Math.floor(Math.random() * 25) + 35 // 35-60% 预测范围
+    }))
+  },
+  {
+    name: '磁盘I/O预测',
+    data: Array.from({ length: 24 }, (_, i) => ({
+      name: String(i).padStart(2, '0') + ':00',
+      value: Math.floor(Math.random() * 30) + 20 // 20-50% 预测范围
+    }))
+  },
+  {
+    name: '风扇状态预测',
+    data: Array.from({ length: 24 }, (_, i) => ({
+      name: String(i).padStart(2, '0') + ':00',
+      value: Math.floor(Math.random() * 15) + 85 // 85-100% 正常运行
+    }))
+  },
+  {
+    name: '电源状态预测',
+    data: Array.from({ length: 24 }, (_, i) => ({
+      name: String(i).padStart(2, '0') + ':00',
+      value: Math.floor(Math.random() * 10) + 90 // 90-100% 稳定运行
+    }))
+  }
 ])
 
-// 日志分布数据
-const logDistributionData = ref([
-  { name: '网络设备', value: 35 },
-  { name: '应用日志', value: 25 },
-  { name: '系统日志', value: 20 },
-  { name: 'SNMP日志', value: 20 }
+// 更新AI趋势预测数据
+const updateAiTrendData = () => {
+  aiTrendData.value.forEach((series, index) => {
+    series.data.forEach(point => {
+      let baseValue, variation
+      
+      switch (index) {
+        case 0: // CPU
+          baseValue = 35
+          variation = 15
+          break
+        case 1: // 内存
+          baseValue = 45
+          variation = 20
+          break
+        case 2: // 磁盘I/O
+          baseValue = 30
+          variation = 25
+          break
+        case 3: // 风扇状态
+          baseValue = 92
+          variation = 8
+          break
+        case 4: // 电源状态
+          baseValue = 95
+          variation = 5
+          break
+        default:
+          baseValue = 50
+          variation = 20
+      }
+      
+      // 添加平滑的随机变化
+      const change = (Math.random() - 0.5) * variation * 0.3
+      point.value = Math.max(
+        baseValue - variation / 2,
+        Math.min(baseValue + variation / 2, Math.floor(point.value + change))
+      )
+    })
+  })
+}
+
+// AI分析统计数据
+const aiAnalysisData = ref([
+  { name: 'CPU性能', value: 28 },
+  { name: '内存优化', value: 22 },
+  { name: '磁盘I/O', value: 18 },
+  { name: '风扇运行', value: 16 },
+  { name: '电源稳定', value: 16 }
 ])
 
-// 设备列表
+// 设备状态统计数据
+const deviceStatusData = ref([
+  { name: '在线', value: 18 },
+  { name: '离线', value: 0 },
+  { name: '告警', value: 0 }
+])
+
+// 设备类型统计数据
+const deviceTypeData = ref([
+  { name: '网络设备', value: 7 },
+  { name: '服务器', value: 11 }
+])
+
+// 网络流量趋势数据
+const networkTrafficData = ref([
+  { name: '08:00', value: 1.2 },
+  { name: '09:00', value: 1.8 },
+  { name: '10:00', value: 2.1 },
+  { name: '11:00', value: 2.3 },
+  { name: '12:00', value: 1.9 },
+  { name: '13:00', value: 1.5 },
+  { name: '14:00', value: 2.0 },
+  { name: '15:00', value: 2.4 },
+  { name: '16:00', value: 2.2 },
+  { name: '17:00', value: 1.8 },
+  { name: '18:00', value: 1.3 },
+  { name: '现在', value: 2.3 }
+])
+
+// 设备列表 - 使用真实的设备数据
 const deviceList = ref([
+  // 网络设备
   {
     id: 1,
-    name: '交换机1',
-    ip: '192.168.1.10',
+    name: '总部防火墙',
+    ip: '10.10.10.1',
     status: 'online',
-    lastResponse: '2024-01-15 22:40:37',
+    lastResponse: formatTime(new Date()),
     color: '#52c41a'
   },
   {
     id: 2,
-    name: '交换机2',
-    ip: '192.168.1.11',
+    name: '分部防火墙',
+    ip: '10.10.20.1',
     status: 'online',
-    lastResponse: '2024-01-15 23:47:32',
+    lastResponse: formatTime(new Date()),
     color: '#52c41a'
   },
   {
     id: 3,
-    name: '交换机3',
-    ip: '192.168.1.12',
-    status: 'offline',
-    lastResponse: '2024-01-15 22:07:46',
-    color: '#f5222d'
+    name: '分部集群接入交换机',
+    ip: '10.10.10.150',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#52c41a'
+  },
+  {
+    id: 4,
+    name: '分部彩光交换机',
+    ip: '192.168.100.1',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#52c41a'
+  },
+  {
+    id: 5,
+    name: '分部无线控制器',
+    ip: '192.168.100.2',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#52c41a'
+  },
+  {
+    id: 6,
+    name: '分部用户接入交换机',
+    ip: '192.168.100.3',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#52c41a'
+  },
+  {
+    id: 7,
+    name: '分部AP',
+    ip: '192.168.30.2',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#52c41a'
+  },
+  // 服务器设备
+  {
+    id: 8,
+    name: '总部Karmada控制服务器',
+    ip: '10.10.10.6',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#1890ff'
+  },
+  {
+    id: 9,
+    name: '总部Karmada节点服务器',
+    ip: '10.10.10.7',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#1890ff'
+  },
+  {
+    id: 10,
+    name: '总部K8S控制节点1',
+    ip: '10.10.10.2',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#1890ff'
+  },
+  {
+    id: 11,
+    name: '总部K8S控制节点2',
+    ip: '10.10.10.3',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#1890ff'
+  },
+  {
+    id: 12,
+    name: '总部K8S工作节点1',
+    ip: '10.10.10.4',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#1890ff'
+  },
+  {
+    id: 13,
+    name: '总部K8S工作节点2',
+    ip: '10.10.10.5',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#1890ff'
+  },
+  {
+    id: 14,
+    name: '分部K8S控制节点1',
+    ip: '10.10.20.2',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#1890ff'
+  },
+  {
+    id: 15,
+    name: '分部K8S控制节点2',
+    ip: '10.10.20.3',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#1890ff'
+  },
+  {
+    id: 16,
+    name: '分部K8S工作节点1',
+    ip: '10.10.20.4',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#1890ff'
+  },
+  {
+    id: 17,
+    name: '分部K8S工作节点2',
+    ip: '10.10.20.5',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#1890ff'
+  },
+  {
+    id: 18,
+    name: 'DNS邮件服务器',
+    ip: '10.10.10.254',
+    status: 'online',
+    lastResponse: formatTime(new Date()),
+    color: '#1890ff'
   }
 ])
 
-// 获取进度条颜色
-const getProgressColor = (value: number) => {
-  if (value < 50) return '#52c41a'
-  if (value < 80) return '#faad14'  
-  return '#f5222d'
+// 格式化时间
+function formatTime(date: Date): string {
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  })
 }
 
 // 获取状态颜色
@@ -406,12 +757,35 @@ const getStatusText = (status: string) => {
   }
 }
 
+// 更新网络流量数据
+const updateNetworkTrafficData = () => {
+  // 移除最旧的数据点，添加新的数据点
+  networkTrafficData.value.shift()
+  const newValue = Math.random() * 1.5 + 1.5 // 1.5-3.0G 范围
+  const now = new Date()
+  const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  
+  networkTrafficData.value.push({
+    name: timeStr,
+    value: parseFloat(newValue.toFixed(1))
+  })
+}
+
 // 刷新数据
 const refreshData = () => {
   Message.success('数据刷新成功')
-  // 模拟数据更新
-  cpuUsage.value = Math.floor(Math.random() * 100)
-  memoryUsage.value = Math.floor(Math.random() * 100)
+  updateResourceData()
+  updateAiTrendData()
+  updateNetworkTrafficData()
+  
+  // 更新核心指标数据
+  todayLogs.value += Math.floor(Math.random() * 100)
+  threatAlerts.value = Math.floor(Math.random() * 5)
+  
+  // 更新设备最后响应时间
+  deviceList.value.forEach(device => {
+    device.lastResponse = formatTime(new Date())
+  })
 }
 
 // 导出报告
@@ -422,6 +796,9 @@ const exportReport = () => {
 // 刷新设备状态
 const refreshDevices = () => {
   Message.success('设备状态已刷新')
+  deviceList.value.forEach(device => {
+    device.lastResponse = formatTime(new Date())
+  })
 }
 
 // 查看设备
@@ -439,14 +816,44 @@ const deleteDevice = (device: any) => {
   Message.warning(`删除设备: ${device.name}`)
 }
 
-// 模拟数据定时更新
+// 组件挂载时初始化数据和定时器
 onMounted(() => {
-  setInterval(() => {
+  // 初始化资源数据
+  initResourceData()
+  
+  // CPU和内存数据每3秒更新一次，增加数据流动感  
+  cpuMemoryTimer = setInterval(() => {
     if (isMonitoringEnabled.value) {
-      cpuUsage.value = Math.floor(Math.random() * 100)
-      memoryUsage.value = Math.floor(Math.random() * 100)
+      updateResourceData()
     }
-  }, 30000) // 30秒更新一次
+  }, 3000)
+  
+  // AI趋势预测数据每3秒更新一次
+  aiTrendTimer = setInterval(() => {
+    if (isMonitoringEnabled.value) {
+      updateAiTrendData()
+    }
+  }, 3000)
+  
+  // 网络流量数据每3秒更新一次
+  networkTrafficTimer = setInterval(() => {
+    if (isMonitoringEnabled.value) {
+      updateNetworkTrafficData()
+    }
+  }, 3000)
+})
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+  if (cpuMemoryTimer) {
+    clearInterval(cpuMemoryTimer)
+  }
+  if (aiTrendTimer) {
+    clearInterval(aiTrendTimer)
+  }
+  if (networkTrafficTimer) {
+    clearInterval(networkTrafficTimer)
+  }
 })
 </script>
 
@@ -543,7 +950,12 @@ onMounted(() => {
 }
 
 .resource-chart {
-  padding: 20px 0;
+  padding: 16px 0;
+}
+
+.chart-container {
+  height: 200px;
+  margin-bottom: 16px;
 }
 
 .resource-progress {
@@ -556,6 +968,7 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-top: 12px;
+  padding: 0 8px;
 }
 
 .resource-value {
@@ -577,6 +990,10 @@ onMounted(() => {
 
 .resource-trend.down {
   color: #52c41a;
+}
+
+.resource-trend.stable {
+  color: #1890ff;
 }
 
 /* 统计卡片样式 */
@@ -601,13 +1018,22 @@ onMounted(() => {
   font-size: 18px;
   font-weight: 600;
   color: #262626;
+  display: flex;
+  align-items: center;
+}
+
+.ai-card-title {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
 }
 
 .chart-controls {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* 设备监控样式 */
@@ -620,6 +1046,14 @@ onMounted(() => {
   font-size: 18px;
   font-weight: 600;
   color: #262626;
+}
+
+.device-overview {
+  margin-bottom: 24px;
+}
+
+.device-table-card {
+  margin-top: 16px;
 }
 
 .device-name {
