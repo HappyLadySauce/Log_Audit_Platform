@@ -15,11 +15,7 @@
       
       <div class="card-body">
         <div class="main-value">
-          <CountUp
-            :end-val="numericValue"
-            :duration="animationDuration"
-            :options="countUpOptions"
-          />
+          <span class="value-display">{{ displayValue }}</span>
           <span class="value-unit" v-if="unit">{{ unit }}</span>
         </div>
         <div class="card-labels">
@@ -149,10 +145,33 @@ const CountUp = {
   template: '<span>{{ displayValue.toLocaleString() }}</span>'
 }
 
-// 数值处理
+// 数值处理 - 支持多种格式
 const numericValue = computed(() => {
-  const val = typeof props.value === 'string' ? parseFloat(props.value) : props.value
-  return isNaN(val) ? 0 : val
+  if (typeof props.value === 'number') {
+    return props.value
+  }
+  
+  if (typeof props.value === 'string') {
+    // 处理 "3K", "11.2G" 等格式
+    const str = props.value.toUpperCase()
+    if (str.includes('K')) {
+      return parseFloat(str.replace('K', '')) * 1000
+    } else if (str.includes('G')) {
+      return parseFloat(str.replace('G', '')) * 1000000000
+    } else if (str.includes('M')) {
+      return parseFloat(str.replace('M', '')) * 1000000
+    } else {
+      const val = parseFloat(str)
+      return isNaN(val) ? 0 : val
+    }
+  }
+  
+  return 0
+})
+
+// 显示值 - 保持原始格式
+const displayValue = computed(() => {
+  return props.value
 })
 
 // CountUp 配置
@@ -283,6 +302,12 @@ const trendIcon = computed(() => {
   color: #262626;
   margin-bottom: 8px;
   line-height: 1;
+}
+
+.value-display {
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
 }
 
 .value-unit {

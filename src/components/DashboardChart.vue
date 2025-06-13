@@ -25,6 +25,7 @@ interface Props {
   showLegend?: boolean
   showGrid?: boolean
   smooth?: boolean
+  legendPosition?: 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -34,7 +35,8 @@ const props = withDefaults(defineProps<Props>(), {
   colors: () => ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2'],
   showLegend: true,
   showGrid: true,
-  smooth: false
+  smooth: false,
+  legendPosition: 'bottom'
 })
 
 const emit = defineEmits<{
@@ -47,6 +49,37 @@ const commonStyle = {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
   },
   color: props.colors
+}
+
+// 获取图例配置
+const getLegendConfig = () => {
+  const baseConfig = {
+    show: props.showLegend,
+    textStyle: {
+      color: '#595959'
+    }
+  }
+
+  switch (props.legendPosition) {
+    case 'top':
+      return { ...baseConfig, top: 10 }
+    case 'bottom':
+      return { ...baseConfig, bottom: 10 }
+    case 'left':
+      return { ...baseConfig, left: 10, orient: 'vertical' }
+    case 'right':
+      return { ...baseConfig, right: 10, orient: 'vertical' }
+    case 'top-left':
+      return { ...baseConfig, top: 10, left: 10, orient: 'vertical' }
+    case 'top-right':
+      return { ...baseConfig, top: 10, right: 10, orient: 'vertical' }
+    case 'bottom-left':
+      return { ...baseConfig, bottom: 10, left: 10, orient: 'vertical' }
+    case 'bottom-right':
+      return { ...baseConfig, bottom: 10, right: 10, orient: 'vertical' }
+    default:
+      return { ...baseConfig, bottom: 10 }
+  }
 }
 
 // 线图配置
@@ -76,13 +109,7 @@ const getLineOption = () => ({
       }
     }
   },
-  legend: {
-    show: props.showLegend,
-    bottom: 10,
-    textStyle: {
-      color: '#595959'
-    }
-  },
+  legend: getLegendConfig(),
   grid: {
     show: props.showGrid,
     left: '3%',
@@ -228,13 +255,7 @@ const getPieOption = () => ({
     },
     formatter: '{a} <br/>{b}: {c} ({d}%)'
   },
-  legend: {
-    show: props.showLegend,
-    bottom: 10,
-    textStyle: {
-      color: '#595959'
-    }
-  },
+  legend: getLegendConfig(),
   series: [{
     name: props.title || '数据分布',
     type: 'pie',
@@ -361,13 +382,7 @@ const getRadarOption = () => ({
       color: '#262626'
     }
   },
-  legend: {
-    show: props.showLegend,
-    bottom: 10,
-    textStyle: {
-      color: '#595959'
-    }
-  },
+  legend: getLegendConfig(),
   radar: {
     indicator: props.data.map(item => ({
       name: item.name,
