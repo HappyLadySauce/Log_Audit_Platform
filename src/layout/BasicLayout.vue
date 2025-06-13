@@ -14,6 +14,7 @@
       </div>
       <a-menu
         v-model:selected-keys="selectedKeys"
+        v-model:open-keys="openKeys"
         :style="{ width: '100%', border: 'none' }"
         theme="dark"
         mode="vertical"
@@ -51,12 +52,26 @@
           <span>日志管理</span>
         </a-menu-item>
 
-        <a-menu-item key="alert-management">
+        <a-sub-menu key="alert-management">
           <template #icon>
             <icon-notification />
           </template>
-          <span>告警管理</span>
-        </a-menu-item>
+          <template #title>
+            <span>告警管理</span>
+          </template>
+          <a-menu-item key="alert-rule-management">
+            <template #icon>
+              <icon-settings />
+            </template>
+            <span>告警规则配置</span>
+          </a-menu-item>
+          <a-menu-item key="alert-record-query">
+            <template #icon>
+              <icon-info-circle />
+            </template>
+            <span>告警记录查询</span>
+          </a-menu-item>
+        </a-sub-menu>
 
         <a-menu-item key="ai-analysis">
           <template #icon>
@@ -134,7 +149,9 @@ import {
   IconMenuUnfold,
   IconSearch,
   IconHistory,
-  IconUser
+  IconUser,
+  IconSettings,
+  IconInfoCircle
 } from '@arco-design/web-vue/es/icon'
 
 const router = useRouter()
@@ -145,6 +162,7 @@ const searchValue = ref('')
 
 // 根据当前路由设置选中的菜单项
 const selectedKeys = ref<string[]>([])
+const openKeys = ref<string[]>([])
 
 // 菜单路由映射
 const menuRouteMap: Record<string, string> = {
@@ -155,7 +173,8 @@ const menuRouteMap: Record<string, string> = {
   'kubernetes': '/log-collection/kubernetes',
   'internet-traffic': '/log-collection/internet-traffic',
   'log-management': '/log-management',
-  'alert-management': '/alert-management',
+  'alert-rule-management': '/alert-management/rule-management',
+  'alert-record-query': '/alert-management/record-query',
   'ai-analysis': '/ai-analysis'
 }
 
@@ -166,6 +185,11 @@ watch(
     for (const [key, path] of Object.entries(menuRouteMap)) {
       if (newPath === path || newPath.startsWith(path + '/')) {
         selectedKeys.value = [key]
+        
+        // 如果是告警管理的子菜单，展开父菜单
+        if (key.startsWith('alert-')) {
+          openKeys.value = ['alert-management']
+        }
         break
       }
     }

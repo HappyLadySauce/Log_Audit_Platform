@@ -355,9 +355,9 @@ const todayLogs = ref('56842')
 const onlineDevices = ref(10)
 const threatAlerts = ref({
   error: 0,
-  warning: 250,
+  warning: 4226,
   info: 1650,
-  total: 1900
+  total: 5876
 })
 const totalTraffic = ref('8.8G')
 

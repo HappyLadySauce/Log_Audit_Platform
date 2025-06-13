@@ -57,28 +57,30 @@ const getLegendConfig = () => {
     show: props.showLegend,
     textStyle: {
       color: '#595959'
-    }
+    },
+    itemGap: 20, // 增加图例项之间的间距
+    padding: [20, 0] // 增加图例的内边距，与图表保持距离
   }
 
   switch (props.legendPosition) {
     case 'top':
-      return { ...baseConfig, top: 10 }
+      return { ...baseConfig, top: 20 }
     case 'bottom':
-      return { ...baseConfig, bottom: 10 }
+      return { ...baseConfig, bottom: 20 }
     case 'left':
-      return { ...baseConfig, left: 10, orient: 'vertical' }
+      return { ...baseConfig, left: 20, orient: 'vertical' }
     case 'right':
-      return { ...baseConfig, right: 10, orient: 'vertical' }
+      return { ...baseConfig, right: 20, orient: 'vertical' }
     case 'top-left':
-      return { ...baseConfig, top: 10, left: 10, orient: 'vertical' }
+      return { ...baseConfig, top: 20, left: 20, orient: 'vertical' }
     case 'top-right':
-      return { ...baseConfig, top: 10, right: 10, orient: 'vertical' }
+      return { ...baseConfig, top: 20, right: 20, orient: 'vertical' }
     case 'bottom-left':
-      return { ...baseConfig, bottom: 10, left: 10, orient: 'vertical' }
+      return { ...baseConfig, bottom: 20, left: 20, orient: 'vertical' }
     case 'bottom-right':
-      return { ...baseConfig, bottom: 10, right: 10, orient: 'vertical' }
+      return { ...baseConfig, bottom: 20, right: 20, orient: 'vertical' }
     default:
-      return { ...baseConfig, bottom: 10 }
+      return { ...baseConfig, bottom: 20 }
   }
 }
 
@@ -114,7 +116,7 @@ const getLineOption = () => ({
     show: props.showGrid,
     left: '3%',
     right: '4%',
-    bottom: props.showLegend ? '15%' : '3%',
+    bottom: props.showLegend ? '20%' : '3%',
     containLabel: true,
     borderColor: '#f0f0f0'
   },

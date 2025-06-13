@@ -68,10 +68,25 @@ const router = createRouter({
     },
     {
       path: '/alert-management',
-      name: 'alert-management',
-      component: () => import('@/views/alert_management/index.vue'),
+      redirect: '/alert-management/record-query',
       meta: {
         title: '告警管理'
+      }
+    },
+    {
+      path: '/alert-management/rule-management',
+      name: 'alert-rule-management',
+      component: () => import('@/views/alert_management/rule_management.vue'),
+      meta: {
+        title: '告警规则管理'
+      }
+    },
+    {
+      path: '/alert-management/record-query',
+      name: 'alert-record-query',
+      component: () => import('@/views/alert_management/record_query.vue'),
+      meta: {
+        title: '告警记录查询'
       }
     },
     {
