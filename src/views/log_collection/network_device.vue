@@ -28,7 +28,7 @@
         <StatCard
           :icon="IconDesktop"
           icon-bg-color="#52c41a"
-          :value="12"
+          :value="7"
           label="在线设备"
           subtitle="网络设备总数"
         />
@@ -37,7 +37,7 @@
         <StatCard
           :icon="IconDownload"
           icon-bg-color="#1890ff"
-          :value="8"
+          :value="7"
           label="采集中"
           subtitle="正在采集日志"
         />
@@ -46,7 +46,7 @@
         <StatCard
           :icon="IconFile"
           icon-bg-color="#faad14"
-          :value="15420"
+          :value="18420"
           label="今日日志"
           subtitle="条数统计"
         />
@@ -55,7 +55,7 @@
         <StatCard
           :icon="IconCloudDownload"
           icon-bg-color="#722ed1"
-          :value="2.8"
+          :value="8.2"
           label="今日流量(GB)"
           subtitle="网络流量统计"
         />
@@ -239,20 +239,62 @@ import {
 
 // 设备数据
 const deviceData = ref([
+  // 网络设备 - 防火墙
   {
     key: '1',
-    deviceName: '核心路由器-01',
-    ip: '192.168.1.1',
-    deviceType: 'router',
-    protocol: 'snmp',
+    deviceName: '总部防火墙',
+    ip: '10.10.10.1',
+    deviceType: 'firewall',
+    protocol: 'snmpv2',
     status: '在线'
   },
   {
     key: '2',
-    deviceName: '汇聚交换机-01',
-    ip: '192.168.1.10',
+    deviceName: '分部防火墙',
+    ip: '10.10.20.1',
+    deviceType: 'firewall',
+    protocol: 'snmpv2',
+    status: '在线'
+  },
+  // 网络设备 - 交换机
+  {
+    key: '3',
+    deviceName: '分部集群接入交换机',
+    ip: '10.10.10.150',
     deviceType: 'switch',
-    protocol: 'syslog',
+    protocol: 'snmpv2',
+    status: '在线'
+  },
+  {
+    key: '4',
+    deviceName: '分部彩光交换机',
+    ip: '192.168.100.1',
+    deviceType: 'switch',
+    protocol: 'snmpv2',
+    status: '在线'
+  },
+  {
+    key: '5',
+    deviceName: '分部无线控制器',
+    ip: '192.168.100.2',
+    deviceType: 'wireless',
+    protocol: 'snmpv2',
+    status: '在线'
+  },
+  {
+    key: '6',
+    deviceName: '分部用户接入交换机',
+    ip: '192.168.100.3',
+    deviceType: 'switch',
+    protocol: 'snmpv2',
+    status: '在线'
+  },
+  {
+    key: '7',
+    deviceName: '分部AP',
+    ip: '192.168.30.2',
+    deviceType: 'wireless',
+    protocol: 'snmpv2',
     status: '在线'
   }
 ])
@@ -303,10 +345,26 @@ const networkIn = ref(78)
 const networkOut = ref(23)
 
 // 日志内容
-const logContent = ref(`[2024-01-15 10:30:15] INFO: 设备连接正常
-[2024-01-15 10:29:45] DEBUG: 开始日志采集任务
-[2024-01-15 10:29:30] INFO: SNMP连接建立成功
-[2024-01-15 10:29:15] INFO: 设备认证通过`)
+const logContent = ref(`[2024-01-15 10:35:22] INFO: 总部防火墙(10.10.10.1) - SNMPv2连接正常，CPU使用率: 25%
+[2024-01-15 10:35:18] INFO: 分部防火墙(10.10.20.1) - 流量监控正常，当前带宽: 850Mbps
+[2024-01-15 10:35:15] DEBUG: 分部集群接入交换机(10.10.10.150) - 端口状态检查完成，24端口全部在线
+[2024-01-15 10:35:12] INFO: 分部彩光交换机(192.168.100.1) - VLAN配置更新成功，VLAN100-105已激活
+[2024-01-15 10:35:08] INFO: 分部无线控制器(192.168.100.2) - 接入用户数: 156，信号强度良好
+[2024-01-15 10:35:05] INFO: 分部用户接入交换机(192.168.100.3) - 端口利用率: 67%，PoE供电正常
+[2024-01-15 10:35:02] DEBUG: 分部AP(192.168.30.2) - 2.4G/5G双频正常工作，连接客户端: 43
+[2024-01-15 10:34:58] INFO: 网络设备性能监控正常，平均响应时间: 12ms
+[2024-01-15 10:34:55] INFO: 防火墙策略更新完成，新增安全规则5条
+[2024-01-15 10:34:52] DEBUG: 交换机生成树协议收敛正常，无环路检测
+[2024-01-15 10:34:48] INFO: 无线网络漫游功能正常，切换成功率: 98.5%
+[2024-01-15 10:34:45] INFO: 网络流量分析完成，峰值流量: 1.2Gbps
+[2024-01-15 10:34:42] DEBUG: SNMP采集器状态检查，OID查询成功率: 100%
+[2024-01-15 10:34:38] INFO: 防火墙威胁检测正常，拦截恶意连接: 15次
+[2024-01-15 10:34:35] INFO: 交换机MAC地址表更新，学习到新地址: 8个
+[2024-01-15 10:34:32] DEBUG: 无线控制器固件版本检查正常
+[2024-01-15 10:34:28] INFO: 网络QoS策略生效，关键业务优先级保障
+[2024-01-15 10:34:25] INFO: 设备温度监控正常，最高温度: 42°C
+[2024-01-15 10:34:22] DEBUG: SNMPv2采集任务完成，共采集7台网络设备数据
+[2024-01-15 10:34:18] INFO: 网络流量统计更新，总流量: 8.2GB`)
 
 // 获取设备类型颜色
 const getDeviceTypeColor = (type: string) => {
@@ -317,6 +375,10 @@ const getDeviceTypeColor = (type: string) => {
       return 'green'
     case 'firewall':
       return 'red'
+    case 'wireless':
+      return 'purple'
+    case 'server':
+      return 'orange'
     default:
       return 'gray'
   }
