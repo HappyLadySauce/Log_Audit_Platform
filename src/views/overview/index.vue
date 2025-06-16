@@ -38,7 +38,7 @@
           <EnhancedStatCard
             :icon="IconFile"
             icon-bg-color="#52c41a"
-            value="56842"
+            value="2067"
             label="今日日志"
             subtitle="日志采集总量"
             :trend="{ type: 'increase', value: '+12%' }"
@@ -49,7 +49,7 @@
           <EnhancedStatCard
             :icon="IconExclamation"
             icon-bg-color="#faad14"
-            value="4226"
+            value="109"
             label="威胁告警"
             subtitle="低风险预警信息"
             :trend="{ type: 'decrease', value: '-8%' }"
@@ -60,7 +60,7 @@
           <EnhancedStatCard
             :icon="IconNotification"
             icon-bg-color="#f5222d"
-            value="8.8G"
+            value="2.5G"
             label="流量审计"
             subtitle="总流量统计"
             :trend="{ type: 'increase', value: '+15%' }"
@@ -167,9 +167,10 @@
                 <DashboardChart
                   type="pie"
                   :data="logStatsData"
-                  height="200px"
-                  :show-legend="true"
-                  :colors="['#52c41a', '#faad14']"
+                  height="220px"
+                  :showLegend="true"
+                  legendPosition="top-left"
+                  :colors="['#52c41a', '#faad14', '#f5222d']"
                 />
               </div>
               
@@ -208,9 +209,9 @@
             <DashboardChart
               type="pie"
               :data="deviceStatusData"
-              height="200px"
-              :show-legend="true"
-              legend-position="top-left"
+              height="250px"
+              :showLegend="true"
+              legendPosition="top-left"
               :colors="['#52c41a', '#f5222d', '#faad14']"
             />
           </a-card>
@@ -221,9 +222,9 @@
             <DashboardChart
               type="pie"
               :data="deviceTypeData"
-              height="200px"
-              :show-legend="true"
-              legend-position="top-left"
+              height="250px"
+              :showLegend="true"
+              legendPosition="top-left"
               :colors="['#1890ff', '#52c41a']"
             />
           </a-card>
@@ -237,7 +238,7 @@
               height="200px"
               :smooth="true"
               :colors="['#722ed1']"
-              :show-legend="false"
+              :showLegend="false"
             />
           </a-card>
         </a-col>
@@ -351,15 +352,15 @@ const cpuTrend = ref({ type: 'stable', value: '+2%' })
 const memoryTrend = ref({ type: 'stable', value: '-1%' })
 
 // 核心指标数据 - 保持与日志数据一致
-const todayLogs = ref('56842')
+const todayLogs = ref('2067')
 const onlineDevices = ref(10)
 const threatAlerts = ref({
   error: 0,
-  warning: 4226,
+  warning: 109,
   info: 1650,
   total: 5876
 })
-const totalTraffic = ref('8.8G')
+const totalTraffic = ref('2.5G')
 
 // 图表时间范围  
 const chartTimeRange = ref('today')
@@ -1214,7 +1215,7 @@ onUnmounted(() => {
 .ai-analysis-container {
   display: flex;
   flex-direction: column;
-  height: 350px;
+  height: 400px;
 }
 
 .log-stats-chart {

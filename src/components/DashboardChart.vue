@@ -72,7 +72,7 @@ const getLegendConfig = () => {
     case 'right':
       return { ...baseConfig, right: 20, orient: 'vertical' }
     case 'top-left':
-      return { ...baseConfig, top: 20, left: 20, orient: 'vertical' }
+      return { ...baseConfig, top: 30, left: 30, orient: 'vertical', itemGap: 15 }
     case 'top-right':
       return { ...baseConfig, top: 20, right: 20, orient: 'vertical' }
     case 'bottom-left':
@@ -261,8 +261,8 @@ const getPieOption = () => ({
   series: [{
     name: props.title || '数据分布',
     type: 'pie',
-    radius: ['40%', '70%'],
-    center: ['50%', '50%'],
+    radius: ['35%', '55%'],
+    center: props.legendPosition === 'top-left' ? ['60%', '55%'] : ['50%', '50%'],
     data: props.data.map(item => ({
       name: item.name,
       value: item.value
@@ -276,10 +276,13 @@ const getPieOption = () => ({
     },
     label: {
       show: true,
-      formatter: '{b}: {d}%'
+      formatter: '{b}: {d}%',
+      position: 'outside'
     },
     labelLine: {
-      show: true
+      show: true,
+      length: 15,
+      length2: 10
     }
   }]
 })

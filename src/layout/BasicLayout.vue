@@ -24,7 +24,7 @@
           <template #icon>
             <icon-dashboard />
           </template>
-          <span>仪表板</span>
+          <span>首页</span>
         </a-menu-item>
         
         <a-menu-item key="assets">
