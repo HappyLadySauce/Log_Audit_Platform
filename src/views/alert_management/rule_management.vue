@@ -349,6 +349,7 @@ const ruleStats = ref({
 
 // 规则表单数据
 const ruleForm = ref({
+  key: '',
   name: '',
   category: '',
   severity: '',
@@ -356,7 +357,9 @@ const ruleForm = ref({
   condition: '',
   description: '',
   interval: '5分钟',
-  enabled: true
+  enabled: true,
+  triggerCount: 0,
+  lastTrigger: '-'
 })
 
 // 规则数据 - 45条规则数据
@@ -1128,6 +1131,7 @@ const refreshRules = async () => {
 const showAddRule = () => {
   editingRule.value = false
   ruleForm.value = {
+    key: '',
     name: '',
     category: '',
     severity: '',
@@ -1135,7 +1139,9 @@ const showAddRule = () => {
     condition: '',
     description: '',
     interval: '5分钟',
-    enabled: true
+    enabled: true,
+    triggerCount: 0,
+    lastTrigger: '-'
   }
   ruleModalVisible.value = true
 }
@@ -1214,7 +1220,11 @@ const saveRule = () => {
     // 编辑现有规则
     const index = ruleData.value.findIndex(rule => rule.key === ruleForm.value.key)
     if (index > -1) {
-      ruleData.value[index] = { ...ruleForm.value }
+      ruleData.value[index] = { 
+        ...ruleForm.value,
+        triggerCount: ruleData.value[index].triggerCount,
+        lastTrigger: ruleData.value[index].lastTrigger
+      }
       Message.success('规则编辑成功')
     }
   } else {

@@ -123,7 +123,7 @@
           <a-tag color="blue">{{ filteredAlertData.length }}条记录</a-tag>
           <a-tag color="orange">{{ pendingCount }}条待处理</a-tag>
           <a-badge :count="newAlertCount" :dot="newAlertCount > 0">
-            <a-button size="small" @click="autoRefresh = !autoRefresh" :type="autoRefresh ? 'primary' : 'default'">
+            <a-button size="small" @click="autoRefresh = !autoRefresh" :type="autoRefresh ? 'primary' : 'outline'">
               <template #icon>
                 <icon-sync />
               </template>
@@ -294,7 +294,7 @@ import {
 const refreshing = ref(false)
 const tableLoading = ref(false)
 const detailModalVisible = ref(false)
-const currentAlert = ref(null)
+const currentAlert = ref<any>(null)
 const autoRefresh = ref(true)
 const newAlertCount = ref(0)
 const searchKeyword = ref('')

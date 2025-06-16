@@ -1,0 +1,16 @@
+services:
+  logsystem-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - logsystem-network
+
+networks:
+  logsystem-network:
+    driver: bridge 

@@ -167,7 +167,7 @@
                 <DashboardChart
                   type="pie"
                   :data="logStatsData"
-                  :height="200"
+                  height="200px"
                   :show-legend="true"
                   :colors="['#52c41a', '#faad14']"
                 />
@@ -343,8 +343,8 @@ import {
 const isMonitoringEnabled = ref(true)
 
 // CPU和内存使用率数据
-const cpuTrendData = ref([])
-const memoryTrendData = ref([])
+const cpuTrendData = ref<any[]>([])
+const memoryTrendData = ref<any[]>([])
 const currentCpuUsage = ref(35)
 const currentMemoryUsage = ref(38)
 const cpuTrend = ref({ type: 'stable', value: '+2%' })
@@ -368,10 +368,10 @@ const chartTimeRange = ref('today')
 const logFilter = ref('all')
 
 // 定时器引用
-let cpuMemoryTimer: NodeJS.Timeout
-let aiTrendTimer: NodeJS.Timeout
-let networkTrafficTimer: NodeJS.Timeout
-let aiPredictionTimer: NodeJS.Timeout
+let cpuMemoryTimer: any
+let aiTrendTimer: any
+let networkTrafficTimer: any
+let aiPredictionTimer: any
 
 // 初始化CPU和内存趋势数据
 const initResourceData = () => {
@@ -462,7 +462,7 @@ const generateNewLogEntry = () => {
   
   const device = devices[Math.floor(Math.random() * devices.length)]
   const type = logTypes[Math.floor(Math.random() * logTypes.length)]
-  const messages = logMessages[type]
+  const messages = logMessages[type as keyof typeof logMessages]
   const message = messages[Math.floor(Math.random() * messages.length)]
   
   const now = new Date()
@@ -483,7 +483,7 @@ const generateNewLogEntry = () => {
 }
 
 // 日志数据
-const logData = ref([])
+const logData = ref<any[]>([])
 
 // 日志统计数据 - 与实际日志类型分布保持一致
 const logStatsData = ref([
@@ -563,7 +563,7 @@ const initLogData = () => {
   for (let i = 0; i < 50; i++) {
     const device = devices[Math.floor(Math.random() * devices.length)]
     const type = logTypes[Math.floor(Math.random() * logTypes.length)]
-    const messages = logMessages[type]
+    const messages = logMessages[type as keyof typeof logMessages]
     const message = messages[Math.floor(Math.random() * messages.length)]
     
     const now = new Date()
@@ -585,7 +585,7 @@ const initLogData = () => {
   }
   
   // 按时间倒序排列
-  logData.value = logs.sort((a, b) => b.rawTimestamp - a.rawTimestamp)
+  logData.value = logs.sort((a, b) => new Date(b.rawTimestamp).getTime() - new Date(a.rawTimestamp).getTime())
 }
 
 // 设备状态统计数据
@@ -602,7 +602,7 @@ const deviceTypeData = ref([
 ])
 
 // 网络流量趋势数据 (Mbps) - 初始化30个数据点，保留历史数据
-const networkTrafficData = ref([])
+const networkTrafficData = ref<any[]>([])
 
 // 初始化网络流量数据
 const initNetworkTrafficData = () => {

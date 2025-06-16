@@ -123,7 +123,7 @@
 
     <!-- 时间筛选 -->
     <a-card :bordered="false" class="filter-card">
-      <a-row align="middle" justify="space-between">
+      <a-row align="center" justify="space-between">
         <a-col>
           <a-space>
             <span>开始时间</span>
@@ -195,11 +195,8 @@ import {
   IconCloudDownload,
   IconLink,
   IconExclamationCircle,
-  IconLineChart,
-  IconPieChart,
-  IconBarChart,
-  IconThunder,
-  IconFileText
+  IconFile,
+  IconThunderbolt
 } from '@arco-design/web-vue/es/icon'
 
 // 响应式数据
