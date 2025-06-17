@@ -331,21 +331,178 @@
                 :text="selectedPod?.status"
               />
             </a-descriptions-item>
+            <a-descriptions-item label="UID">{{ selectedPod?.uid }}</a-descriptions-item>
+            <a-descriptions-item label="镜像">{{ selectedPod?.image }}</a-descriptions-item>
             <a-descriptions-item label="重启次数">{{ selectedPod?.restarts }}</a-descriptions-item>
             <a-descriptions-item label="创建时间">{{ selectedPod?.createdTime }}</a-descriptions-item>
-            <a-descriptions-item label="UID">abc123-def456-ghi789</a-descriptions-item>
-            <a-descriptions-item label="资源使用">
-              <div>CPU: {{ selectedPod?.cpu }}%, 内存: {{ selectedPod?.memory }}%</div>
+            <a-descriptions-item label="CPU使用率">
+              <div class="resource-usage">
+                <a-progress
+                  :percent="selectedPod?.cpu"
+                  :color="selectedPod?.cpu > 80 ? '#f5222d' : selectedPod?.cpu > 60 ? '#faad14' : '#52c41a'"
+                  size="small"
+                />
+                <span class="usage-text">{{ selectedPod?.cpu }}%</span>
+              </div>
+            </a-descriptions-item>
+            <a-descriptions-item label="内存使用率">
+              <div class="resource-usage">
+                <a-progress
+                  :percent="selectedPod?.memory"
+                  :color="selectedPod?.memory > 80 ? '#f5222d' : selectedPod?.memory > 60 ? '#faad14' : '#52c41a'"
+                  size="small"
+                />
+                <span class="usage-text">{{ selectedPod?.memory }}%</span>
+              </div>
             </a-descriptions-item>
           </a-descriptions>
+          
+          <!-- 标签和注解 -->
+          <a-divider>标签和注解</a-divider>
+          <a-row :gutter="24">
+            <a-col :span="12">
+              <h4>标签</h4>
+              <div class="labels-container">
+                <a-tag
+                  v-for="(value, key) in selectedPod?.labels"
+                  :key="key"
+                  color="blue"
+                  class="label-tag"
+                >
+                  {{ key }}: {{ value }}
+                </a-tag>
+              </div>
+            </a-col>
+            <a-col :span="12">
+              <h4>注解</h4>
+              <div class="annotations-container">
+                <a-tag
+                  v-for="(value, key) in selectedPod?.annotations"
+                  :key="key"
+                  color="green"
+                  class="annotation-tag"
+                >
+                  {{ key }}: {{ value }}
+                </a-tag>
+              </div>
+            </a-col>
+          </a-row>
         </a-tab-pane>
+        <a-tab-pane key="containers" title="容器详情">
+          <a-table
+            :columns="containerColumns"
+            :data="selectedPod?.containers || []"
+            :pagination="false"
+            size="small"
+            class="container-table"
+          >
+            <template #containerName="{ record }">
+              <div class="container-info">
+                <a-avatar size="small" class="container-avatar">
+                  <icon-apps />
+                </a-avatar>
+                <div class="container-details">
+                  <div class="container-name">{{ record.name }}</div>
+                  <div class="container-image">{{ record.image }}</div>
+                </div>
+              </div>
+            </template>
+
+            <template #status="{ record }">
+              <a-badge
+                :status="record.status === 'Running' ? 'success' : 'error'"
+                :text="record.status"
+              />
+            </template>
+
+            <template #ready="{ record }">
+              <a-tag :color="record.ready ? 'green' : 'red'" size="small">
+                {{ record.ready ? '就绪' : '未就绪' }}
+              </a-tag>
+            </template>
+
+            <template #ports="{ record }">
+              <div class="ports-container">
+                <a-tag
+                  v-for="port in record.ports"
+                  :key="port"
+                  color="blue"
+                  size="small"
+                  class="port-tag"
+                >
+                  {{ port }}
+                </a-tag>
+                <span v-if="record.ports.length === 0" class="no-ports">无端口</span>
+              </div>
+            </template>
+
+            <template #resources="{ record }">
+              <div class="resource-details">
+                <div class="resource-section">
+                  <strong>请求:</strong>
+                  <div>CPU: {{ record.resources?.requests?.cpu || 'N/A' }}</div>
+                  <div>内存: {{ record.resources?.requests?.memory || 'N/A' }}</div>
+                </div>
+                <div class="resource-section">
+                  <strong>限制:</strong>
+                  <div>CPU: {{ record.resources?.limits?.cpu || 'N/A' }}</div>
+                  <div>内存: {{ record.resources?.limits?.memory || 'N/A' }}</div>
+                </div>
+              </div>
+            </template>
+          </a-table>
+        </a-tab-pane>
+
         <a-tab-pane key="resource-monitor" title="资源监控">
-          <div class="chart-placeholder">
-            <div class="chart-content">
-              <icon-settings class="chart-icon" />
-              <p>CPU使用率和内存使用率监控图表</p>
-            </div>
-          </div>
+          <a-row :gutter="24">
+            <a-col :span="12">
+              <a-card size="small">
+                <DashboardChart
+                  type="area"
+                  :data="cpuChartData"
+                  title="CPU使用率趋势"
+                  height="200px"
+                  :smooth="true"
+                />
+              </a-card>
+            </a-col>
+            <a-col :span="12">
+              <a-card size="small">
+                <DashboardChart
+                  type="area"
+                  :data="memoryChartData"
+                  title="内存使用率趋势"
+                  height="200px"
+                  :smooth="true"
+                />
+              </a-card>
+            </a-col>
+          </a-row>
+          
+          <a-row :gutter="24" style="margin-top: 16px;">
+            <a-col :span="12">
+              <a-card size="small">
+                <DashboardChart
+                  type="line"
+                  :data="networkChartData"
+                  title="网络I/O"
+                  height="200px"
+                  :smooth="true"
+                />
+              </a-card>
+            </a-col>
+            <a-col :span="12">
+              <a-card size="small">
+                <DashboardChart
+                  type="line"
+                  :data="diskChartData"
+                  title="磁盘I/O"
+                  height="200px"
+                  :smooth="true"
+                />
+              </a-card>
+            </a-col>
+          </a-row>
         </a-tab-pane>
         <a-tab-pane key="event-logs" title="事件日志">
           <a-table
@@ -386,9 +543,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onUnmounted } from 'vue'
+import { ref, nextTick, onUnmounted, computed } from 'vue'
 import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
+import DashboardChart from '@/components/DashboardChart.vue'
 import {
   IconRefresh,
   IconPlus,
@@ -462,47 +620,351 @@ const nodeData = ref([
 const podData = ref([
   {
     key: '1',
-    podName: 'nginx-deployment-7d6b5f8b4c-xmk2p',
-    namespace: 'default',
-    node: 'worker-node-1',
-    status: 'Running',
-    restarts: 0,
-    cpu: 35,
-    memory: 42,
-    createdTime: '2024-01-15 09:30:00'
-  },
-  {
-    key: '2',
-    podName: 'mysql-statefulset-0',
-    namespace: 'database',
-    node: 'worker-node-2',
-    status: 'Running',
-    restarts: 1,
-    cpu: 68,
-    memory: 73,
-    createdTime: '2024-01-14 15:20:00'
-  },
-  {
-    key: '3',
-    podName: 'redis-cluster-0',
-    namespace: 'cache',
-    node: 'worker-node-1',
+    podName: 'extensions-museum-5f7b8c6d9b-xk8v2',
+    namespace: 'kubesphere-system',
+    node: 'control-plane-1',
     status: 'Running',
     restarts: 0,
     cpu: 25,
-    memory: 38,
-    createdTime: '2024-01-15 08:45:00'
+    memory: 45,
+    createdTime: '2025-06-17 19:03:21',
+    image: 'kubesphere/extensions-museum:v3.4.1',
+    uid: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    containers: [
+      {
+        name: 'extensions-museum',
+        image: 'kubesphere/extensions-museum:v3.4.1',
+        status: 'Running',
+        ready: true,
+        restarts: 0,
+        ports: [8080],
+        resources: {
+          requests: { cpu: '100m', memory: '128Mi' },
+          limits: { cpu: '500m', memory: '512Mi' }
+        }
+      }
+    ],
+    labels: {
+      'app': 'extensions-museum',
+      'version': 'v3.4.1',
+      'tier': 'backend'
+    },
+    annotations: {
+      'deployment.kubernetes.io/revision': '1',
+      'kubesphere.io/creator': 'admin'
+    }
+  },
+  {
+    key: '2',
+    podName: 'app-deployment-c958c4d7b-8m2n4',
+    namespace: 'default',
+    node: 'worker-node-1',
+    status: 'Running',
+    restarts: 2,
+    cpu: 78,
+    memory: 82,
+    createdTime: '2025-06-17 18:55:31',
+    image: 'app:v4',
+    uid: 'b2c3d4e5-f6g7-8901-bcde-f23456789012',
+    containers: [
+      {
+        name: 'app',
+        image: 'app:v4',
+        status: 'Running',
+        ready: true,
+        restarts: 2,
+        ports: [8080, 8090],
+        resources: {
+          requests: { cpu: '200m', memory: '256Mi' },
+          limits: { cpu: '1000m', memory: '1Gi' }
+        }
+      }
+    ],
+    labels: {
+      'app': 'financial-backend',
+      'version': 'v1.2',
+      'env': 'production'
+    },
+    annotations: {
+      'deployment.kubernetes.io/revision': '3',
+      'kubesphere.io/creator': 'platform-admin'
+    }
+  },
+  {
+    key: '3',
+    podName: 'tigera-operator-7f9d5c8b6f-h4k9j',
+    namespace: 'tigera-operator',
+    node: 'control-plane-1',
+    status: 'Running',
+    restarts: 1,
+    cpu: 15,
+    memory: 35,
+    createdTime: '2025-06-17 13:18:31',
+    image: 'quay.io/tigera/operator:v1.30.9',
+    uid: 'c3d4e5f6-g7h8-9012-cdef-345678901234',
+    containers: [
+      {
+        name: 'tigera-operator',
+        image: 'quay.io/tigera/operator:v1.30.9',
+        status: 'Running',
+        ready: true,
+        restarts: 1,
+        ports: [9443],
+        resources: {
+          requests: { cpu: '50m', memory: '128Mi' },
+          limits: { cpu: '200m', memory: '256Mi' }
+        }
+      }
+    ],
+    labels: {
+      'app': 'tigera-operator',
+      'k8s-app': 'tigera-operator'
+    },
+    annotations: {
+      'deployment.kubernetes.io/revision': '2'
+    }
   },
   {
     key: '4',
-    podName: 'api-gateway-5f7c8d9b-h6k4m',
-    namespace: 'default',
+    podName: 'calico-apiserver-6c8d7b9f5e-p3q7r',
+    namespace: 'calico-apiserver',
+    node: 'control-plane-2',
+    status: 'Running',
+    restarts: 0,
+    cpu: 32,
+    memory: 51,
+    createdTime: '2025-06-17 13:18:18',
+    image: 'calico/apiserver:v3.26.4',
+    uid: 'd4e5f6g7-h8i9-0123-defg-456789012345',
+    containers: [
+      {
+        name: 'calico-apiserver',
+        image: 'calico/apiserver:v3.26.4',
+        status: 'Running',
+        ready: true,
+        restarts: 0,
+        ports: [5443],
+        resources: {
+          requests: { cpu: '100m', memory: '128Mi' },
+          limits: { cpu: '300m', memory: '512Mi' }
+        }
+      }
+    ],
+    labels: {
+      'app': 'calico-apiserver',
+      'k8s-app': 'calico-apiserver'
+    },
+    annotations: {
+      'deployment.kubernetes.io/revision': '1'
+    }
+  },
+  {
+    key: '5',
+    podName: 'calico-kube-controllers-5d6f8c7b4a-t8y2u',
+    namespace: 'calico-system',
+    node: 'control-plane-1',
+    status: 'Running',
+    restarts: 1,
+    cpu: 18,
+    memory: 28,
+    createdTime: '2025-06-17 13:17:38',
+    image: 'calico/kube-controllers:v3.26.4',
+    uid: 'e5f6g7h8-i9j0-1234-efgh-567890123456',
+    containers: [
+      {
+        name: 'calico-kube-controllers',
+        image: 'calico/kube-controllers:v3.26.4',
+        status: 'Running',
+        ready: true,
+        restarts: 1,
+        ports: [],
+        resources: {
+          requests: { cpu: '30m', memory: '64Mi' },
+          limits: { cpu: '100m', memory: '256Mi' }
+        }
+      }
+    ],
+    labels: {
+      'app': 'calico-kube-controllers',
+      'k8s-app': 'calico-kube-controllers'
+    },
+    annotations: {
+      'deployment.kubernetes.io/revision': '2'
+    }
+  },
+  {
+    key: '6',
+    podName: 'ingress-nginx-controller-9b8f7c6d5e-v4w9x',
+    namespace: 'ingress-nginx',
+    node: 'worker-node-1',
+    status: 'Running',
+    restarts: 0,
+    cpu: 45,
+    memory: 67,
+    createdTime: '2025-06-17 13:17:36',
+    image: 'registry.k8s.io/ingress-nginx/controller:v1.8.2',
+    uid: 'f6g7h8i9-j0k1-2345-fghi-678901234567',
+    containers: [
+      {
+        name: 'controller',
+        image: 'registry.k8s.io/ingress-nginx/controller:v1.8.2',
+        status: 'Running',
+        ready: true,
+        restarts: 0,
+        ports: [80, 443, 8443],
+        resources: {
+          requests: { cpu: '100m', memory: '90Mi' },
+          limits: { cpu: '1000m', memory: '1Gi' }
+        }
+      }
+    ],
+    labels: {
+      'app.kubernetes.io/name': 'ingress-nginx',
+      'app.kubernetes.io/instance': 'ingress-nginx',
+      'app.kubernetes.io/component': 'controller'
+    },
+    annotations: {
+      'deployment.kubernetes.io/revision': '1'
+    }
+  },
+  {
+    key: '7',
+    podName: 'karmada-agent-8c7f9b6d5a-z2x3y',
+    namespace: 'karmada-system',
+    node: 'control-plane-2',
+    status: 'Running',
+    restarts: 0,
+    cpu: 28,
+    memory: 42,
+    createdTime: '2025-06-17 13:17:36',
+    image: 'karmada/karmada-agent:v1.7.0',
+    uid: 'g7h8i9j0-k1l2-3456-ghij-789012345678',
+    containers: [
+      {
+        name: 'karmada-agent',
+        image: 'karmada/karmada-agent:v1.7.0',
+        status: 'Running',
+        ready: true,
+        restarts: 0,
+        ports: [10357],
+        resources: {
+          requests: { cpu: '100m', memory: '128Mi' },
+          limits: { cpu: '500m', memory: '512Mi' }
+        }
+      }
+    ],
+    labels: {
+      'app': 'karmada-agent',
+      'app.kubernetes.io/managed-by': 'karmada-operator'
+    },
+    annotations: {
+      'deployment.kubernetes.io/revision': '1'
+    }
+  },
+  {
+    key: '8',
+    podName: 'ks-apiserver-6f9d8c7b5e-m5n8p',
+    namespace: 'kubesphere-system',
+    node: 'control-plane-1',
+    status: 'Running',
+    restarts: 0,
+    cpu: 38,
+    memory: 55,
+    createdTime: '2025-06-17 03:36:11',
+    image: 'kubesphere/ks-apiserver:v3.4.1',
+    uid: 'h8i9j0k1-l2m3-4567-hijk-890123456789',
+    containers: [
+      {
+        name: 'ks-apiserver',
+        image: 'kubesphere/ks-apiserver:v3.4.1',
+        status: 'Running',
+        ready: true,
+        restarts: 0,
+        ports: [9090],
+        resources: {
+          requests: { cpu: '100m', memory: '128Mi' },
+          limits: { cpu: '1000m', memory: '1Gi' }
+        }
+      }
+    ],
+    labels: {
+      'app': 'ks-apiserver',
+      'tier': 'backend',
+      'version': 'v3.4.1'
+    },
+    annotations: {
+      'deployment.kubernetes.io/revision': '1'
+    }
+  },
+  {
+    key: '9',
+    podName: 'ks-console-7b8f9c6d5a-q4r7s',
+    namespace: 'kubesphere-system',
+    node: 'worker-node-2',
+    status: 'Running',
+    restarts: 1,
+    cpu: 42,
+    memory: 58,
+    createdTime: '2025-06-17 03:36:11',
+    image: 'kubesphere/ks-console:v3.4.1',
+    uid: 'i9j0k1l2-m3n4-5678-ijkl-901234567890',
+    containers: [
+      {
+        name: 'ks-console',
+        image: 'kubesphere/ks-console:v3.4.1',
+        status: 'Running',
+        ready: true,
+        restarts: 1,
+        ports: [8000],
+        resources: {
+          requests: { cpu: '20m', memory: '100Mi' },
+          limits: { cpu: '1000m', memory: '1Gi' }
+        }
+      }
+    ],
+    labels: {
+      'app': 'ks-console',
+      'tier': 'frontend',
+      'version': 'v3.4.1'
+    },
+    annotations: {
+      'deployment.kubernetes.io/revision': '2'
+    }
+  },
+  {
+    key: '10',
+    podName: 'ks-controller-manager-8c9f7b6d5e-t6u9v',
+    namespace: 'kubesphere-system',
     node: 'worker-node-2',
     status: 'Running',
     restarts: 0,
     cpu: 52,
     memory: 61,
-    createdTime: '2024-01-15 10:12:00'
+    createdTime: '2025-06-17 03:36:10',
+    image: 'kubesphere/ks-controller-manager:v3.4.1',
+    uid: 'j0k1l2m3-n4o5-6789-jklm-012345678901',
+    containers: [
+      {
+        name: 'ks-controller-manager',
+        image: 'kubesphere/ks-controller-manager:v3.4.1',
+        status: 'Running',
+        ready: true,
+        restarts: 0,
+        ports: [8080, 8443],
+        resources: {
+          requests: { cpu: '30m', memory: '50Mi' },
+          limits: { cpu: '1000m', memory: '1000Mi' }
+        }
+      }
+    ],
+    labels: {
+      'app': 'ks-controller-manager',
+      'control-plane': 'controller-manager',
+      'version': 'v3.4.1'
+    },
+    annotations: {
+      'deployment.kubernetes.io/revision': '1'
+    }
   }
 ])
 
@@ -636,6 +1098,45 @@ const podColumns = [
   }
 ]
 
+// 容器表格列配置
+const containerColumns = [
+  {
+    title: '容器名称',
+    dataIndex: 'name',
+    slotName: 'containerName',
+    width: 200
+  },
+  {
+    title: '状态',
+    dataIndex: 'status',
+    slotName: 'status',
+    width: 80
+  },
+  {
+    title: '就绪状态',
+    dataIndex: 'ready',
+    slotName: 'ready',
+    width: 80
+  },
+  {
+    title: '重启次数',
+    dataIndex: 'restarts',
+    width: 80
+  },
+  {
+    title: '端口',
+    dataIndex: 'ports',
+    slotName: 'ports',
+    width: 120
+  },
+  {
+    title: '资源配置',
+    dataIndex: 'resources',
+    slotName: 'resources',
+    width: 200
+  }
+]
+
 // 事件表格列配置
 const eventColumns = [
   {
@@ -667,15 +1168,50 @@ const eventData = ref([
     key: '1',
     type: 'Normal',
     reason: 'Scheduled',
-    message: 'Successfully assigned default/nginx-deployment-xxx to worker-node-1',
-    time: '2024-01-15 09:30:00'
+    message: 'Successfully assigned kubesphere-system/extensions-museum-xxx to control-plane-1',
+    time: '2025-06-17 19:03:15'
   },
   {
     key: '2',
     type: 'Normal',
     reason: 'Pulled',
-    message: 'Container image "nginx:1.20" already present on machine',
-    time: '2024-01-15 09:30:05'
+    message: 'Container image "kubesphere/extensions-museum:v3.4.1" already present on machine',
+    time: '2025-06-17 19:03:18'
+  },
+  {
+    key: '3',
+    type: 'Normal',
+    reason: 'Created',
+    message: 'Created container extensions-museum',
+    time: '2025-06-17 19:03:19'
+  },
+  {
+    key: '4',
+    type: 'Normal',
+    reason: 'Started',
+    message: 'Started container extensions-museum',
+    time: '2025-06-17 19:03:20'
+  },
+  {
+    key: '5',
+    type: 'Normal',
+    reason: 'Killing',
+    message: 'Stopping container extensions-museum',
+    time: '2025-06-17 15:22:10'
+  },
+  {
+    key: '6',
+    type: 'Warning',
+    reason: 'BackOff',
+    message: 'Back-off restarting failed container',
+    time: '2025-06-17 12:15:30'
+  },
+  {
+    key: '7',
+    type: 'Normal',
+    reason: 'SuccessfulMountVolume',
+    message: 'MountVolume.SetUp succeeded for volume "kube-api-access-token"',
+    time: '2025-06-17 19:03:16'
   }
 ])
 
@@ -708,6 +1244,35 @@ const podLogRef = ref<HTMLElement>()
 let clusterLogTimer: any = null
 let nodeLogTimer: any = null
 let podLogTimer: any = null
+
+// Pod资源监控数据
+const cpuChartData = computed(() => 
+  ['14:30', '14:35', '14:40', '14:45', '14:50', '14:55'].map((time, index) => ({
+    name: time,
+    value: [45, 52, 48, 65, 78, 82][index]
+  }))
+)
+
+const memoryChartData = computed(() => 
+  ['14:30', '14:35', '14:40', '14:45', '14:50', '14:55'].map((time, index) => ({
+    name: time,
+    value: [62, 68, 71, 75, 80, 82][index]
+  }))
+)
+
+const networkChartData = computed(() => 
+  ['14:30', '14:35', '14:40', '14:45', '14:50', '14:55'].map((time, index) => ({
+    name: time,
+    value: [120, 135, 142, 158, 165, 172][index] // 入站流量 KB/s
+  }))
+)
+
+const diskChartData = computed(() => 
+  ['14:30', '14:35', '14:40', '14:45', '14:50', '14:55'].map((time, index) => ({
+    name: time,
+    value: [25, 32, 28, 35, 42, 38][index] // 磁盘读取 MB/s
+  }))
+)
 
 // 显示集群详情
 const showClusterDetail = (cluster: any) => {
@@ -1110,6 +1675,10 @@ const getLogLevelColor = (level: string) => {
   border-radius: 6px;
 }
 
+.chart-placeholder.small {
+  height: 180px;
+}
+
 .chart-content {
   text-align: center;
   color: #86909c;
@@ -1119,6 +1688,99 @@ const getLogLevelColor = (level: string) => {
   font-size: 48px;
   margin-bottom: 16px;
   color: #c9cdd4;
+}
+
+/* 标签和注解样式 */
+.labels-container,
+.annotations-container {
+  min-height: 100px;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 6px;
+  border: 1px solid #f0f0f0;
+}
+
+.label-tag,
+.annotation-tag {
+  margin: 4px;
+  font-size: 12px;
+}
+
+/* 容器信息样式 */
+.container-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.container-avatar {
+  background: #52c41a;
+}
+
+.container-details {
+  flex: 1;
+}
+
+.container-name {
+  font-weight: 500;
+  color: #1d2129;
+  margin-bottom: 2px;
+}
+
+.container-image {
+  font-size: 12px;
+  color: #86909c;
+}
+
+.ports-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.port-tag {
+  font-size: 11px;
+}
+
+.no-ports {
+  color: #86909c;
+  font-size: 12px;
+}
+
+.resource-details {
+  font-size: 12px;
+}
+
+.resource-section {
+  margin-bottom: 8px;
+}
+
+.resource-section:last-child {
+  margin-bottom: 0;
+}
+
+.resource-section strong {
+  color: #1d2129;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.resource-section div {
+  color: #86909c;
+  margin-left: 8px;
+}
+
+/* 资源使用率样式 */
+.resource-usage {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.usage-text {
+  font-weight: 500;
+  color: #1d2129;
+  min-width: 40px;
 }
 
 .log-container {
