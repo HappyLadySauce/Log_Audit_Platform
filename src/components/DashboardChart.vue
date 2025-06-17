@@ -261,8 +261,9 @@ const getPieOption = () => ({
   series: [{
     name: props.title || '数据分布',
     type: 'pie',
-    radius: ['35%', '55%'],
-    center: props.legendPosition === 'top-left' ? ['60%', '55%'] : ['50%', '50%'],
+    radius: ['30%', '50%'],
+    center: props.legendPosition === 'top-left' ? ['60%', '55%'] : 
+            props.legendPosition === 'bottom' ? ['50%', '45%'] : ['50%', '50%'],
     data: props.data.map(item => ({
       name: item.name,
       value: item.value
@@ -277,12 +278,13 @@ const getPieOption = () => ({
     label: {
       show: true,
       formatter: '{b}: {d}%',
-      position: 'outside'
+      position: 'outside',
+      fontSize: 11
     },
     labelLine: {
       show: true,
-      length: 15,
-      length2: 10
+      length: 10,
+      length2: 8
     }
   }]
 })

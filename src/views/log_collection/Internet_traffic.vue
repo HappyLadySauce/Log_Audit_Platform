@@ -22,34 +22,34 @@
         <StatCard
           :icon="IconCloudDownload"
           icon-bg-color="#1890ff"
-          :value="1234.5"
-          label="总流量(GB)"
-          subtitle="今日统计"
+          :value="currentTraffic"
+          label="总流量(Mbps)"
+          subtitle="实时流量"
         />
       </a-col>
       <a-col :span="6">
         <StatCard
           :icon="IconUser"
           icon-bg-color="#52c41a"
-          :value="156"
-          label="活跃用户"
-          subtitle="在线人数"
+          :value="13"
+          label="活跃设备"
+          subtitle="集群+数据库节点"
         />
       </a-col>
       <a-col :span="6">
         <StatCard
           :icon="IconLink"
           icon-bg-color="#faad14"
-          :value="2346"
-          label="访问网站"
-          subtitle="网站数量"
+          :value="12"
+          label="服务端点"
+          subtitle="API/DNS/DB同步"
         />
       </a-col>
       <a-col :span="6">
         <StatCard
           :icon="IconExclamationCircle"
           icon-bg-color="#f5222d"
-          :value="23"
+          :value="0"
           label="异常告警"
           subtitle="安全事件"
         />
@@ -62,26 +62,26 @@
         <a-row :gutter="24">
           <a-col :span="16">
             <a-card title="流量趋势" :bordered="false" class="chart-card">
-              <div class="chart-container">
-                <div class="chart-placeholder">
-                  <div class="chart-content">
-                    <icon-line-chart class="chart-icon" />
-                    <p>流量趋势分析图表</p>
-                  </div>
-                </div>
-              </div>
+              <DashboardChart
+                type="line"
+                :data="trafficTrendData"
+                height="280px"
+                :smooth="true"
+                :colors="['#1890ff', '#52c41a', '#faad14']"
+                :showLegend="true"
+              />
             </a-card>
           </a-col>
           <a-col :span="8">
-            <a-card title="协议分布" :bordered="false" class="chart-card">
-              <div class="chart-container">
-                <div class="chart-placeholder">
-                  <div class="chart-content">
-                    <icon-pie-chart class="chart-icon" />
-                    <p>协议类型分布图</p>
-                  </div>
-                </div>
-              </div>
+            <a-card title="协议分布" :bordered="false" class="chart-card protocol-chart">
+              <DashboardChart
+                type="pie"
+                :data="protocolData"
+                height="300px"
+                :showLegend="true"
+                legendPosition="bottom"
+                :colors="['#52c41a', '#1890ff', '#faad14', '#722ed1']"
+              />
             </a-card>
           </a-col>
         </a-row>
@@ -142,15 +142,16 @@
       <a-table
         :columns="trafficColumns"
         :data="trafficData"
-        :pagination="{ pageSize: 10, showTotal: true }"
+        :pagination="{ 
+          pageSize: 15, 
+          showTotal: true,
+          showSizeChanger: true,
+          pageSizeOptions: ['15', '30', '50']
+        }"
         :loading="tableLoading"
         row-key="key"
         size="small"
       >
-        <template #user="{ record }">
-          <span class="user-name">{{ record.user }}</span>
-        </template>
-
         <template #srcIp="{ record }">
           <span class="ip-address">{{ record.srcIp }}</span>
         </template>
@@ -171,10 +172,6 @@
           </a-tag>
         </template>
 
-        <template #browser="{ record }">
-          <span class="browser-text">{{ record.browser }}</span>
-        </template>
-
         <template #status="{ record }">
           <a-tag :color="getStatusColor(record.status)" size="small">
             {{ record.status }}
@@ -189,6 +186,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
+import DashboardChart from '@/components/DashboardChart.vue'
 import {
   IconRefresh,
   IconUser,
@@ -199,60 +197,241 @@ import {
   IconThunderbolt
 } from '@arco-design/web-vue/es/icon'
 
+// 定义流量记录类型
+interface TrafficRecord {
+  key: string
+  time: string
+  srcIp: string
+  mac: string
+  dstIp: string
+  url: string
+  srcPort: string
+  dstPort: string
+  port: number
+  protocol: string
+  status: string
+}
+
 // 响应式数据
 const refreshing = ref(false)
 const tableLoading = ref(false)
 const startTime = ref('')
 const endTime = ref('')
 
-// 流量数据
-const trafficData = ref([
-  {
-    key: '1',
-    time: '2024-01-15 10:30:01',
-    user: '张三',
-    srcIp: '192.168.1.100',
-    mac: '00:1B:44:11:3A:B7',
-    dstIp: '8.8.8.8',
-    url: 'https://google.com/search?q=test',
-    srcPort: '192.168.1.100',
-    dstPort: '8.8.8.8',
-    port: 443,
-    browser: 'Chrome',
-    protocol: 'HTTPS',
-    status: '允许'
-  },
-  {
-    key: '2',
-    time: '2024-01-15 10:30:02',
-    user: '李四',
-    srcIp: '192.168.1.101',
-    mac: '00:1B:44:11:3A:B8',
-    dstIp: '114.114.114.114',
-    url: 'https://baidu.com',
-    srcPort: '192.168.1.101',
-    dstPort: '114.114.114.114',
-    port: 443,
-    browser: 'Chrome',
-    protocol: 'HTTPS',
-    status: '允许'
-  },
-  {
-    key: '3',
-    time: '2024-01-15 10:30:03',
-    user: '王五',
-    srcIp: '192.168.1.102',
-    mac: '00:1B:44:11:3A:B9',
-    dstIp: '123.45.67.89',
-    url: 'https://suspicious-site.com',
-    srcPort: '192.168.1.102',
-    dstPort: '123.45.67.89',
-    port: 443,
-    browser: 'Chrome',
-    protocol: 'HTTPS',
-    status: '拒绝'
+// 定时器
+let trafficTimer: number | null = null
+let trendTimer: number | null = null
+
+// 实时流量值
+const currentTraffic = ref(245)
+
+// 时间更新计数器
+let timeUpdateCounter = 0
+
+// 流量趋势数据
+const trafficTrendData = ref<Array<{name: string, value: number}>>([])
+
+// 生成实时时间点
+const generateTimePoints = () => {
+  const now = new Date()
+  const points = []
+  
+  // 生成最近8个时间点，每15分钟一个间隔
+  for (let i = 7; i >= 0; i--) {
+    const time = new Date(now)
+    time.setMinutes(time.getMinutes() - (i * 15))
+    const timeStr = `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`
+    points.push({
+      name: timeStr,
+      value: Math.floor(Math.random() * 100) + 200 // 200-300 范围
+    })
   }
+  
+  return points
+}
+
+// 初始化时间数据
+const initTimeData = () => {
+  trafficTrendData.value = generateTimePoints()
+}
+
+// 协议分布数据
+const protocolData = ref([
+  { name: 'HTTPS', value: 45 },
+  { name: 'HTTP', value: 25 },
+  { name: 'TCP', value: 20 },
+  { name: 'UDP', value: 10 }
 ])
+
+// 流量数据
+const trafficData = ref<TrafficRecord[]>([])
+
+// 生成随机流量记录
+const generateRandomTrafficRecord = (index: number) => {
+  const protocols = ['HTTPS', 'HTTP', 'TCP', 'UDP']
+  const srcIps = ['10.10.10.2', '10.10.10.3', '10.10.10.4', '10.10.10.5', '10.10.20.2', '10.10.20.3', '10.10.20.4']
+  const dstIps = ['10.10.10.6', '10.10.10.7', '10.10.20.5', '192.168.1.100', '8.8.8.8', '114.114.114.114']
+  const urls = [
+    'https://api.server.com/data',
+    'http://web.service.com/api',
+    'tcp://database.local:3306',
+    'udp://dns.server.com:53',
+    'https://auth.service.com/login',
+    'http://monitor.local/health',
+    'tcp://cache.server.com:6379',
+    'udp://ntp.server.com:123'
+  ]
+  
+  const protocol = protocols[Math.floor(Math.random() * protocols.length)]
+  const srcIp = srcIps[Math.floor(Math.random() * srcIps.length)]
+  const dstIp = dstIps[Math.floor(Math.random() * dstIps.length)]
+  const url = urls[Math.floor(Math.random() * urls.length)]
+  
+  const portMap = {
+    'HTTPS': 443,
+    'HTTP': 80,
+    'TCP': Math.floor(Math.random() * 9000) + 1000,
+    'UDP': Math.floor(Math.random() * 9000) + 1000
+  }
+  
+  const now = new Date()
+  const time = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
+  
+  return {
+    key: String(index),
+    time,
+    srcIp,
+    mac: `00:50:56:C0:00:${String(Math.floor(Math.random() * 256)).padStart(2, '0')}`,
+    dstIp,
+    url,
+    srcPort: srcIp,
+    dstPort: dstIp,
+    port: portMap[protocol as keyof typeof portMap],
+    protocol,
+    status: Math.random() > 0.1 ? '允许' : '拒绝'
+  }
+}
+
+// 初始化流量数据
+const initTrafficData = () => {
+  const data = []
+  for (let i = 1; i <= 15; i++) {
+    data.push(generateRandomTrafficRecord(i))
+  }
+  trafficData.value = data
+}
+
+// 更新流量趋势数据
+const updateTrafficTrend = () => {
+  const now = new Date()
+  const currentData = [...trafficTrendData.value]
+  
+  // 每次更新都滚动时间点（每2秒），模拟实时数据流
+  timeUpdateCounter++
+  
+  if (currentData.length > 0) {
+    // 移除第一个时间点，添加新的最新时间点
+    currentData.shift()
+    
+    // 计算新的时间点（基于当前时间和更新次数）
+    const newTime = new Date(now)
+    newTime.setSeconds(newTime.getSeconds() - (8 - timeUpdateCounter) * 2) // 每2秒一个点
+    const latestTimeStr = `${String(newTime.getHours()).padStart(2, '0')}:${String(newTime.getMinutes()).padStart(2, '0')}`
+    
+    // 基于上一个时间点的值进行小幅变化
+    const lastValue = currentData[currentData.length - 1]?.value || 250
+    const change = (Math.random() - 0.5) * 30 // -15 到 +15
+    let newValue = lastValue + change
+    newValue = Math.max(200, Math.min(300, newValue))
+    
+    currentData.push({
+      name: latestTimeStr,
+      value: Math.round(newValue)
+    })
+    
+    // 同时对其他点进行小幅数值更新
+    currentData.slice(0, -1).forEach((item) => {
+      const change = (Math.random() - 0.5) * 10 // 较小的变化 ±5
+      let newValue = item.value + change
+      newValue = Math.max(200, Math.min(300, newValue))
+      item.value = Math.round(newValue)
+    })
+  }
+  
+  trafficTrendData.value = currentData
+  
+  // 更新当前流量统计值（取最新时间点的值）
+  const latestValue = currentData[currentData.length - 1]?.value || 245
+  currentTraffic.value = latestValue
+}
+
+// 更新协议分布数据
+const updateProtocolData = () => {
+  const newData = protocolData.value.map(item => {
+    // 在当前值基础上小幅度变化 ±1-3%
+    const change = (Math.random() - 0.5) * 6 // -3% 到 +3%
+    let newValue = item.value + change
+    // 确保值在合理范围内（5%-60%）
+    newValue = Math.max(5, Math.min(60, newValue))
+    return {
+      ...item,
+      value: Math.round(newValue)
+    }
+  })
+  
+  // 重新归一化到100%
+  const total = newData.reduce((sum, item) => sum + item.value, 0)
+  const normalizedData = newData.map(item => ({
+    ...item,
+    value: Math.round((item.value / total) * 100)
+  }))
+  
+  protocolData.value = normalizedData
+}
+
+// 更新流量列表数据
+const updateTrafficData = () => {
+  // 移除最后几条记录，添加新记录到开头
+  const currentData = [...trafficData.value]
+  const newRecordsCount = Math.floor(Math.random() * 3) + 1 // 1-3条新记录
+  
+  // 生成新记录
+  const newRecords = []
+  for (let i = 0; i < newRecordsCount; i++) {
+    const newIndex = Date.now() + i
+    newRecords.push(generateRandomTrafficRecord(newIndex))
+  }
+  
+  // 保持总记录数在15条左右
+  const updatedData = [...newRecords, ...currentData.slice(0, 15 - newRecordsCount)]
+  trafficData.value = updatedData
+}
+
+// 开始实时更新
+const startRealTimeUpdates = () => {
+  // 每2秒更新流量数据
+  trafficTimer = setInterval(() => {
+    updateTrafficData()
+    updateProtocolData()
+  }, 2000)
+  
+  // 每2秒更新趋势图
+  trendTimer = setInterval(() => {
+    updateTrafficTrend()
+  }, 2000)
+}
+
+// 停止实时更新
+const stopRealTimeUpdates = () => {
+  if (trafficTimer) {
+    clearInterval(trafficTimer)
+    trafficTimer = null
+  }
+  if (trendTimer) {
+    clearInterval(trendTimer)
+    trendTimer = null
+  }
+}
 
 // 表格列配置
 const trafficColumns = [
@@ -260,12 +439,6 @@ const trafficColumns = [
     title: '时间',
     dataIndex: 'time',
     width: 150
-  },
-  {
-    title: '用户',
-    dataIndex: 'user',
-    slotName: 'user',
-    width: 80
   },
   {
     title: '源IP',
@@ -306,12 +479,6 @@ const trafficColumns = [
     width: 60
   },
   {
-    title: '浏览器',
-    dataIndex: 'browser',
-    slotName: 'browser',
-    width: 80
-  },
-  {
     title: '协议',
     dataIndex: 'protocol',
     slotName: 'protocol',
@@ -331,9 +498,7 @@ const getProtocolColor = (protocol: string) => {
     'HTTPS': 'green',
     'HTTP': 'blue',
     'TCP': 'orange',
-    'UDP': 'purple',
-    'FTP': 'red',
-    'DNS': 'cyan'
+    'UDP': 'purple'
   }
   return colorMap[protocol] || 'gray'
 }
@@ -357,11 +522,16 @@ const queryData = () => {
 
 // 生命周期
 onMounted(() => {
-  // 初始化
+  // 初始化数据
+  initTimeData()
+  initTrafficData()
+  // 启动实时更新
+  startRealTimeUpdates()
 })
 
 onUnmounted(() => {
-  // 清理
+  // 清理定时器
+  stopRealTimeUpdates()
 })
 </script>
 
@@ -380,6 +550,17 @@ onUnmounted(() => {
 
 .chart-card {
   height: 100%;
+}
+
+.protocol-chart {
+  height: 350px; /* 增加协议分布卡片高度，为图例留出空间 */
+}
+
+.protocol-chart :deep(.arco-card-body) {
+  padding: 16px;
+  height: calc(100% - 60px);
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-container {
@@ -414,11 +595,6 @@ onUnmounted(() => {
   margin-bottom: 24px;
 }
 
-.user-name {
-  font-weight: 500;
-  color: #1d2129;
-}
-
 .ip-address {
   font-family: monospace;
   color: #1890ff;
@@ -431,10 +607,6 @@ onUnmounted(() => {
   white-space: nowrap;
   display: inline-block;
   vertical-align: middle;
-}
-
-.browser-text {
-  color: #52c41a;
 }
 
 :deep(.arco-card) {

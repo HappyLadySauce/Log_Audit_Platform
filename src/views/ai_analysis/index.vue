@@ -382,7 +382,7 @@ const analysisResults = ref([
     type: 'performance',
     level: '正常',
     dataSource: '分部6台网络设备日志（防火墙、交换机、AP等）',
-    analysis: '基于15680条网络设备日志分析，设备运行状态良好。防火墙流量850Mbps，交换机端口利用率67%，无线AP连接28个客户端，信号覆盖正常。',
+    analysis: '基于829条网络设备日志分析，设备运行状态良好。防火墙流量850Mbps，交换机端口利用率67%，无线AP连接28个客户端，信号覆盖正常。',
     suggestion: '建议继续监控交换机端口利用率，当超过80%时考虑扩容。无线网络运行稳定，可适当优化信道配置提升性能。',
     confidence: 95,
     timestamp: '2024-01-15 10:35:00'
@@ -393,7 +393,7 @@ const analysisResults = ref([
     type: 'health',
     level: '警告',
     dataSource: '分部K8s集群4个节点，40个Pod的运行日志',
-    analysis: '基于12560条K8s日志分析，集群整体健康。控制节点CPU使用率45%，工作节点负载较高（72%）。检测到3个Pod重启事件，nginx-deployment重启1次。',
+    analysis: '基于596条K8s日志分析，集群整体健康。控制节点CPU使用率45%，工作节点负载较高（72%）。检测到3个Pod重启事件，nginx-deployment重启1次。',
     suggestion: '建议关注工作节点1的资源使用情况，考虑Pod调度优化。监控nginx-deployment的重启原因，可能存在内存泄漏问题。',
     confidence: 88,
     timestamp: '2024-01-15 10:30:00'
@@ -415,7 +415,7 @@ const analysisResults = ref([
     type: 'anomaly',
     level: '异常',
     dataSource: '上网流量审计数据，156个活跃用户的访问记录',
-    analysis: '基于2346个网站访问记录分析，发现23个异常告警。检测到可疑网站访问行为，部分用户访问了被标记为风险的域名。',
+    analysis: '基于4个网站访问记录分析，发现23个异常告警。检测到可疑网站访问行为，部分用户访问了被标记为风险的域名。',
     suggestion: '建议立即审查异常访问记录，更新防火墙黑名单。加强用户网络安全培训，建立访问行为监控机制。',
     confidence: 85,
     timestamp: '2024-01-15 10:20:00'

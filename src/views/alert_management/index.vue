@@ -75,7 +75,7 @@
         <StatCard
           :icon="IconExclamation"
           icon-bg-color="#faad14"
-          :value="4226"
+          :value="104"
           label="活跃告警"
           subtitle="待处理告警"
         />

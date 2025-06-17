@@ -130,7 +130,8 @@
           <template #title>
             <a-space>
               <span>日志记录</span>
-              <a-tag color="blue">{{ currentLogCount.toLocaleString() }}条</a-tag>
+              <a-tag color="blue">{{ TOTAL_LOGS.toLocaleString() }}条</a-tag>
+              <a-tag color="purple">共{{ totalPages }}页</a-tag>
               <a-badge :count="onlineDevices" :number-style="{ backgroundColor: '#52c41a' }">
                 <a-tag color="green">在线设备</a-tag>
               </a-badge>
@@ -155,11 +156,15 @@
             :columns="logColumns"
             :data="filteredLogData"
             :pagination="{ 
-              pageSize: 15, 
-              total: 56842,
+              pageSize: pageSize, 
+              current: currentPage,
+              total: TOTAL_LOGS,
               showTotal: true,
               showSizeChanger: true,
-              pageSizeOptions: ['15', '30', '50', '100']
+              pageSizeOptions: ['30', '50', '100'],
+              onChange: handlePageChange,
+              onPageSizeChange: handlePageSizeChange,
+              showQuickJumper: true
             }"
             :scroll="{ x: '100%' }"
             :loading="tableLoading"
@@ -218,7 +223,7 @@
                 <a-statistic title="在线设备" :value="6" suffix="台" />
               </a-col>
               <a-col :span="6">
-                <a-statistic title="今日日志" :value="15680" suffix="条" />
+                <a-statistic title="今日日志" :value="829" suffix="条" />
               </a-col>
               <a-col :span="6">
                 <a-statistic title="异常事件" :value="12" suffix="个" />
@@ -260,7 +265,7 @@
                 <a-statistic title="Pod数量" :value="40" suffix="个" />
               </a-col>
               <a-col :span="6">
-                <a-statistic title="今日日志" :value="12560" suffix="条" />
+                <a-statistic title="今日日志" :value="596" suffix="条" />
               </a-col>
               <a-col :span="6">
                 <a-statistic title="容器重启" :value="3" suffix="次" />
@@ -321,6 +326,9 @@ import {
   IconDelete
 } from '@arco-design/web-vue/es/icon'
 
+// 日志总数常量
+const TOTAL_LOGS = 2067
+
 // 响应式数据
 const refreshing = ref(false)
 const tableLoading = ref(false)
@@ -336,13 +344,16 @@ const selectedLog = ref<any>(null)
 
 // 统计数据
 const todayStats = ref({
-  total: 56842,
-  info: 52198,
-  warn: 4226,
-  error: 418
+  total: TOTAL_LOGS,
+  info: 1958,
+  warn: 104,
+  error: 5
 })
 
 const onlineDevices = ref(10)
+
+// 计算总页数
+const totalPages = computed(() => Math.ceil(TOTAL_LOGS / pageSize.value))
 
 // 基础日志数据（前两页30条）
 const baseLogData = ref([
@@ -708,73 +719,93 @@ const baseLogData = ref([
   }
 ])
 
-// 生成完整的日志数据（56842条）
-const generateLogData = () => {
-  const totalLogs = 56842
-  const pageSize = 15
+// 生成分页日志数据（按需加载）
+const generatePageLogData = (page: number, pageSize: number) => {
   const baseLogs = baseLogData.value
-  const totalPages = Math.ceil(totalLogs / pageSize)
+  const logs = []
+  const totalLogs = TOTAL_LOGS
   
-  const allLogs = []
+  // 计算当前页应该生成多少条数据
+  const startIndex = page * pageSize
+  const actualPageSize = Math.min(pageSize, totalLogs - startIndex)
   
-  for (let page = 0; page < totalPages; page++) {
-    for (let i = 0; i < pageSize && allLogs.length < totalLogs; i++) {
-      // 使用前30条数据循环
-      const baseIndex = i % baseLogs.length
-      const baseLog = baseLogs[baseIndex]
-      
-      // 为每条日志生成唯一的key
-      const uniqueKey = (page * pageSize + i + 1).toString()
-      
-      // 调整时间戳，使其看起来更真实
-      const baseTime = new Date('2024-01-15 10:35:18')
-      const offsetMinutes = Math.floor(allLogs.length / 10) // 每10条日志时间往前推1分钟
-      const adjustedTime = new Date(baseTime.getTime() - offsetMinutes * 60000)
-      
-      const logEntry = {
-        ...baseLog,
-        key: uniqueKey,
-        timestamp: adjustedTime.toLocaleString('zh-CN', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
-        }).replace(/\//g, '-')
-      }
-      
-      allLogs.push(logEntry)
-    }
+  // 如果超出总数据范围，返回空数组
+  if (startIndex >= totalLogs) {
+    return []
   }
   
-  return allLogs
+  for (let i = 0; i < actualPageSize; i++) {
+    // 使用基础数据循环
+    const baseIndex = i % baseLogs.length
+    const baseLog = baseLogs[baseIndex]
+    
+    // 为每条日志生成唯一的key
+    const uniqueKey = (startIndex + i + 1).toString()
+    
+    // 调整时间戳，使其看起来更真实
+    const baseTime = new Date('2024-01-15 10:35:18')
+    const offsetMinutes = Math.floor((startIndex + i) / 10) // 每10条日志时间往前推1分钟
+    const adjustedTime = new Date(baseTime.getTime() - offsetMinutes * 60000)
+    
+    const logEntry = {
+      ...baseLog,
+      key: uniqueKey,
+      timestamp: adjustedTime.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).replace(/\//g, '-')
+    }
+    
+    logs.push(logEntry)
+  }
+  
+  return logs
+  }
+
+// 当前页日志数据（只加载当前页）
+const currentPage = ref(1)
+const pageSize = ref(50)
+const logDataCache = new Map() // 缓存已加载的页面数据
+
+// 获取页面数据（带缓存）
+const getPageData = (page: number, size: number) => {
+  const cacheKey = `${page}-${size}`
+  if (logDataCache.has(cacheKey)) {
+    return logDataCache.get(cacheKey)
+  }
+  
+  const data = generatePageLogData(page, size)
+  logDataCache.set(cacheKey, data)
+  return data
 }
 
-// 日志数据
-const logData = ref(generateLogData())
+const logData = ref(getPageData(0, pageSize.value))
 
 // 过滤后的日志数据
 const filteredLogData = computed(() => {
   let filtered = logData.value
   
   if (searchKeyword.value) {
-    filtered = filtered.filter(log => 
+    filtered = filtered.filter((log: any) => 
       log.message.toLowerCase().includes(searchKeyword.value.toLowerCase()) ||
       log.host.toLowerCase().includes(searchKeyword.value.toLowerCase())
     )
   }
   
   if (selectedLevel.value) {
-    filtered = filtered.filter(log => log.level === selectedLevel.value)
+    filtered = filtered.filter((log: any) => log.level === selectedLevel.value)
   }
   
   if (selectedSource.value) {
-    filtered = filtered.filter(log => log.source === selectedSource.value)
+    filtered = filtered.filter((log: any) => log.source === selectedSource.value)
   }
   
   if (selectedHost.value) {
-    filtered = filtered.filter(log => log.host === selectedHost.value)
+    filtered = filtered.filter((log: any) => log.host === selectedHost.value)
   }
   
   return filtered
@@ -902,12 +933,30 @@ const getSourceName = (source: string) => {
 // 事件处理函数
 const refreshLogs = async () => {
   refreshing.value = true
-  await new Promise(resolve => setTimeout(resolve, 1500))
+  tableLoading.value = true
+  
+  await new Promise(resolve => setTimeout(resolve, 800))
+  
+  // 重新生成当前页数据
+  logDataCache.clear()
+  logData.value = getPageData(currentPage.value - 1, pageSize.value)
+  
   refreshing.value = false
+  tableLoading.value = false
 }
 
 const handleSearch = () => {
-  console.log('搜索日志')
+  // 重置到第一页
+  currentPage.value = 1
+  tableLoading.value = true
+  
+  // 模拟搜索延迟
+  setTimeout(() => {
+    // 清空缓存以获取最新数据
+    logDataCache.clear()
+    logData.value = getPageData(0, pageSize.value)
+    tableLoading.value = false
+  }, 500)
 }
 
 const showAdvancedSearch = () => {
@@ -924,6 +973,16 @@ const clearSearch = () => {
   selectedSource.value = ''
   selectedHost.value = ''
   dateRange.value = []
+  
+  // 重置到第一页并刷新数据
+  currentPage.value = 1
+  tableLoading.value = true
+  
+  setTimeout(() => {
+    logDataCache.clear()
+    logData.value = getPageData(0, pageSize.value)
+    tableLoading.value = false
+  }, 300)
 }
 
 const showLogDetail = (record: any) => {
@@ -959,6 +1018,33 @@ const stopAutoRefresh = () => {
     clearInterval(refreshTimer)
     refreshTimer = null
   }
+}
+
+// 分页处理
+const handlePageChange = (page: number) => {
+  currentPage.value = page
+  tableLoading.value = true
+  
+  // 模拟异步加载
+  setTimeout(() => {
+    logData.value = getPageData(page - 1, pageSize.value)
+    tableLoading.value = false
+  }, 200)
+}
+
+const handlePageSizeChange = (newPageSize: number) => {
+  pageSize.value = newPageSize
+  currentPage.value = 1
+  tableLoading.value = true
+  
+  // 清空缓存（因为页面大小改变了）
+  logDataCache.clear()
+  
+  // 模拟异步加载
+  setTimeout(() => {
+    logData.value = getPageData(0, newPageSize)
+    tableLoading.value = false
+  }, 200)
 }
 
 // 生命周期

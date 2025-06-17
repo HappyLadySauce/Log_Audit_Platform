@@ -1,23 +1,5 @@
 <template>
   <div class="overview-container">
-    <!-- 页面标题 -->
-    <PageHeader 
-      title="日志审计平台仪表盘" 
-      description="实时监控系统运行状态，掌握各项关键指标"
-    >
-      <template #extra>
-        <a-space>
-          <a-button type="primary" @click="refreshData">
-            <template #icon><icon-refresh /></template>
-            刷新数据
-          </a-button>
-          <a-button @click="exportReport">
-            <template #icon><icon-download /></template>
-            导出报告
-          </a-button>
-        </a-space>
-      </template>
-    </PageHeader>
 
     <!-- 核心指标统计 -->
     <div class="stats-section">
@@ -82,7 +64,7 @@
               <div class="ai-card-title-large">
                 <icon-file style="margin-right: 8px; color: #1890ff;" />
                 日志采集概览
-                <a-tag color="processing" size="medium" style="margin-left: 8px;">实时监控</a-tag>
+                <a-tag color="blue" size="medium" style="margin-left: 8px;">实时监控</a-tag>
               </div>
             </template>
             <template #extra>
@@ -158,28 +140,13 @@
                 <icon-robot style="margin-right: 8px; color: #722ed1;" />
                 AI预测分析
                 <a-tag color="purple" size="medium" style="margin-left: 8px;">智能分析</a-tag>
+                <a-tag color="blue" size="medium" style="margin-left: 8px;">每 1 小时分析一次</a-tag>
               </div>
             </template>
             
             <div class="ai-analysis-container">
-              <!-- 日志统计图表 -->
-              <div class="log-stats-chart">
-                <DashboardChart
-                  type="pie"
-                  :data="logStatsData"
-                  height="220px"
-                  :showLegend="true"
-                  legendPosition="top-left"
-                  :colors="['#52c41a', '#faad14', '#f5222d']"
-                />
-              </div>
-              
               <!-- AI预测指标 -->
               <div class="ai-predictions">
-                <h4 class="ai-prediction-title">
-                  <icon-fire style="margin-right: 4px; color: #722ed1;" />
-                  AI预测分析
-                </h4>
                 
                 <div class="prediction-item-large" v-for="prediction in aiPredictions" :key="prediction.id">
                   <div class="prediction-header">
@@ -198,12 +165,14 @@
       </a-row>
     </div>
 
-    <!-- 设备状态监控 -->
     <div class="devices-section">
-      <h3>设备状态监控</h3>
+      <h3 class="large-section-title">
+        <icon-storage style="margin-right: 8px; color: #722ed1;" />
+        设备状态监控
+      </h3>
       
       <!-- 设备状态概览 -->
-      <a-row :gutter="16" class="device-overview">
+      <!-- <a-row :gutter="16" class="device-overview">
         <a-col :span="8">
           <a-card title="设备状态分布" :bordered="false">
             <DashboardChart
@@ -242,7 +211,7 @@
             />
           </a-card>
         </a-col>
-      </a-row>
+      </a-row> -->
       
       <a-card :bordered="false" class="device-table-card">
         <template #extra>
@@ -355,10 +324,10 @@ const memoryTrend = ref({ type: 'stable', value: '-1%' })
 const todayLogs = ref('2067')
 const onlineDevices = ref(10)
 const threatAlerts = ref({
-  error: 0,
-  warning: 109,
+  error: 5,
+  warning: 10,
   info: 1650,
-  total: 5876
+  total: 1765
 })
 const totalTraffic = ref('2.5G')
 

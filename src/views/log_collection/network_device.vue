@@ -46,7 +46,7 @@
         <StatCard
           :icon="IconFile"
           icon-bg-color="#faad14"
-          :value="15680"
+          :value="829"
           label="今日日志"
           subtitle="条数统计"
         />
