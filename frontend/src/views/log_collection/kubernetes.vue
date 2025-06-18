@@ -1,9 +1,6 @@
 <template>
   <div class="k8s-page">
-    <PageHeader
-      title="K8s集群日志"
-      description="管理和监控Kubernetes集群的日志采集"
-    >
+    <PageHeader title="K8s集群日志" description="管理和监控Kubernetes集群的日志采集">
       <template #extra>
         <a-space>
           <a-button>
@@ -12,7 +9,7 @@
             </template>
             刷新
           </a-button>
-          <a-button type="primary">
+          <a-button type="primary" @click="showAddClusterModal">
             <template #icon>
               <icon-plus />
             </template>
@@ -28,7 +25,7 @@
         <StatCard
           :icon="IconCloud"
           icon-bg-color="#1890ff"
-          :value="1"
+          :value="clusterCount"
           label="集群数量"
           subtitle="K8s集群"
         />
@@ -37,7 +34,7 @@
         <StatCard
           :icon="IconApps"
           icon-bg-color="#52c41a"
-          :value="40"
+          :value="podCount"
           label="Pod数量"
           subtitle="运行中"
         />
@@ -46,7 +43,7 @@
         <StatCard
           :icon="IconFile"
           icon-bg-color="#faad14"
-          :value="596"
+          :value="logCount"
           label="今日日志"
           subtitle="条数统计"
         />
@@ -55,7 +52,7 @@
         <StatCard
           :icon="IconStorage"
           icon-bg-color="#722ed1"
-          :value="3.8"
+          :value="storageSize"
           label="存储空间(GB)"
           subtitle="日志占用"
         />
@@ -73,7 +70,7 @@
               <a-tag color="green">Pod监控</a-tag>
             </a-space>
           </template>
-          
+
           <!-- 集群列表 -->
           <a-table
             :columns="clusterColumns"
@@ -109,7 +106,9 @@
 
             <template #actions="{ record }">
               <a-space>
-                <a-button type="text" size="small" @click="showClusterDetail(record)">查看日志详情</a-button>
+                <a-button type="text" size="small" @click="showClusterDetail(record)"
+                  >查看日志详情</a-button
+                >
               </a-space>
             </template>
           </a-table>
@@ -138,10 +137,7 @@
             </template>
 
             <template #nodeType="{ record }">
-              <a-tag
-                :color="record.nodeType === 'control-plane' ? 'blue' : 'green'"
-                size="small"
-              >
+              <a-tag :color="record.nodeType === 'control-plane' ? 'blue' : 'green'" size="small">
                 {{ record.nodeType === 'control-plane' ? '控制平面节点' : '工作节点' }}
               </a-tag>
             </template>
@@ -162,7 +158,9 @@
 
             <template #actions="{ record }">
               <a-space>
-                <a-button type="text" size="small" @click="showNodeDetail(record)">查看详情</a-button>
+                <a-button type="text" size="small" @click="showNodeDetail(record)"
+                  >查看详情</a-button
+                >
               </a-space>
             </template>
           </a-table>
@@ -236,7 +234,9 @@
                 :text="selectedCluster?.status === 'running' ? '运行中' : '异常'"
               />
             </a-descriptions-item>
-            <a-descriptions-item label="API端点">{{ selectedCluster?.endpoint }}</a-descriptions-item>
+            <a-descriptions-item label="API端点">{{
+              selectedCluster?.endpoint
+            }}</a-descriptions-item>
           </a-descriptions>
         </a-tab-pane>
         <a-tab-pane key="real-time-logs" title="实时日志">
@@ -334,12 +334,20 @@
             <a-descriptions-item label="UID">{{ selectedPod?.uid }}</a-descriptions-item>
             <a-descriptions-item label="镜像">{{ selectedPod?.image }}</a-descriptions-item>
             <a-descriptions-item label="重启次数">{{ selectedPod?.restarts }}</a-descriptions-item>
-            <a-descriptions-item label="创建时间">{{ selectedPod?.createdTime }}</a-descriptions-item>
+            <a-descriptions-item label="创建时间">{{
+              selectedPod?.createdTime
+            }}</a-descriptions-item>
             <a-descriptions-item label="CPU使用率">
               <div class="resource-usage">
                 <a-progress
                   :percent="selectedPod?.cpu"
-                  :color="selectedPod?.cpu > 80 ? '#f5222d' : selectedPod?.cpu > 60 ? '#faad14' : '#52c41a'"
+                  :color="
+                    selectedPod?.cpu > 80
+                      ? '#f5222d'
+                      : selectedPod?.cpu > 60
+                        ? '#faad14'
+                        : '#52c41a'
+                  "
                   size="small"
                 />
                 <span class="usage-text">{{ selectedPod?.cpu }}%</span>
@@ -349,14 +357,20 @@
               <div class="resource-usage">
                 <a-progress
                   :percent="selectedPod?.memory"
-                  :color="selectedPod?.memory > 80 ? '#f5222d' : selectedPod?.memory > 60 ? '#faad14' : '#52c41a'"
+                  :color="
+                    selectedPod?.memory > 80
+                      ? '#f5222d'
+                      : selectedPod?.memory > 60
+                        ? '#faad14'
+                        : '#52c41a'
+                  "
                   size="small"
                 />
                 <span class="usage-text">{{ selectedPod?.memory }}%</span>
               </div>
             </a-descriptions-item>
           </a-descriptions>
-          
+
           <!-- 标签和注解 -->
           <a-divider>标签和注解</a-divider>
           <a-row :gutter="24">
@@ -478,8 +492,8 @@
               </a-card>
             </a-col>
           </a-row>
-          
-          <a-row :gutter="24" style="margin-top: 16px;">
+
+          <a-row :gutter="24" style="margin-top: 16px">
             <a-col :span="12">
               <a-card size="small">
                 <DashboardChart
@@ -505,12 +519,7 @@
           </a-row>
         </a-tab-pane>
         <a-tab-pane key="event-logs" title="事件日志">
-          <a-table
-            :columns="eventColumns"
-            :data="eventData"
-            :pagination="false"
-            size="small"
-          >
+          <a-table :columns="eventColumns" :data="eventData" :pagination="false" size="small">
             <template #eventType="{ record }">
               <a-tag :color="record.type === 'Normal' ? 'green' : 'red'" size="small">
                 {{ record.type }}
@@ -539,11 +548,100 @@
         </a-tab-pane>
       </a-tabs>
     </a-modal>
+
+    <!-- 接入新集群模态框 -->
+    <a-modal
+      v-model:visible="addClusterVisible"
+      title="接入新集群"
+      width="650px"
+      :ok-loading="connecting"
+      @ok="addCluster"
+      @cancel="cancelAddCluster"
+    >
+      <a-form ref="addClusterFormRef" :model="addClusterForm" layout="vertical">
+        <a-form-item
+          label="集群名称"
+          field="name"
+          :rules="[{ required: true, message: '请输入集群名称' }]"
+        >
+          <a-input
+            v-model="addClusterForm.name"
+            placeholder="例如：分部K8S集群"
+            :disabled="connecting"
+          />
+        </a-form-item>
+
+        <a-form-item
+          label="Kubeconfig 配置文件"
+          field="kubeconfig"
+          :rules="[{ required: true, message: '请上传或粘贴kubeconfig配置文件' }]"
+        >
+          <a-tabs default-active-key="upload" size="small">
+            <a-tab-pane key="upload" title="文件上传">
+              <a-upload
+                :custom-request="handleKubeconfigUpload"
+                :show-file-list="false"
+                accept=".yaml,.yml,.config"
+                :disabled="connecting"
+              >
+                <template #upload-button>
+                  <div class="upload-area">
+                    <div class="upload-icon">
+                      <icon-upload />
+                    </div>
+                    <div class="upload-text">
+                      <div>点击上传 kubeconfig 文件</div>
+                      <div class="upload-tip">支持 .yaml、.yml、.config 格式</div>
+                    </div>
+                  </div>
+                </template>
+              </a-upload>
+              <div v-if="uploadedFileName" class="uploaded-file">
+                <icon-check-circle style="color: #52c41a" />
+                <span>{{ uploadedFileName }}</span>
+              </div>
+            </a-tab-pane>
+
+            <a-tab-pane key="paste" title="直接粘贴">
+              <a-textarea
+                v-model="addClusterForm.kubeconfig"
+                placeholder="请粘贴完整的 kubeconfig 内容..."
+                :rows="8"
+                :disabled="connecting"
+              />
+              <div class="config-tip">
+                <icon-info />
+                <span>请确保 kubeconfig 内容完整且格式正确</span>
+              </div>
+            </a-tab-pane>
+          </a-tabs>
+        </a-form-item>
+
+        <div v-if="connecting" class="connecting-status">
+          <a-spin />
+          <span>正在解析配置并验证连接...</span>
+        </div>
+
+        <div v-if="kubeconfigPreview" class="config-preview">
+          <h4>配置预览</h4>
+          <a-descriptions :column="1" size="small" bordered>
+            <a-descriptions-item label="集群地址">{{
+              kubeconfigPreview.server
+            }}</a-descriptions-item>
+            <a-descriptions-item label="集群名称">{{
+              kubeconfigPreview.clusterName
+            }}</a-descriptions-item>
+            <a-descriptions-item label="用户">{{ kubeconfigPreview.user }}</a-descriptions-item>
+          </a-descriptions>
+        </div>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, nextTick, onUnmounted, computed } from 'vue'
+import { Message } from '@arco-design/web-vue'
 import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
 import DashboardChart from '@/components/DashboardChart.vue'
@@ -555,418 +653,39 @@ import {
   IconFile,
   IconStorage,
   IconSettings,
-  IconDesktop
+  IconDesktop,
+  IconUpload,
+  IconCheckCircle,
+  IconInfo,
 } from '@arco-design/web-vue/es/icon'
 
-// 集群数据
-const clusterData = ref([
-  {
-    key: '1',
-    name: 'k8s-02',
-    version: 'v1.28.2',
-    nodes: 4,
-    pods: 40,
-    status: 'running',
-    logLevel: 'INFO',
-    endpoint: 'http://10.10.20.2:16443'
-  }
-])
+// 集群数据 - 初始为空
+const clusterData = ref<any[]>([])
 
-// 节点数据
-const nodeData = ref([
-  {
-    key: '1',
-    nodeName: '分部K8S控制节点1',
-    ip: '10.10.20.2',
-    nodeType: 'control-plane',
-    system: 'Ubuntu 22.04',
-    status: '在线',
-    cpu: 45,
-    memory: 62
-  },
-  {
-    key: '2',
-    nodeName: '分部K8S控制节点2',
-    ip: '10.10.20.3',
-    nodeType: 'control-plane',
-    system: 'Ubuntu 22.04',
-    status: '在线',
-    cpu: 38,
-    memory: 55
-  },
-  {
-    key: '3',
-    nodeName: '分部K8S工作节点1',
-    ip: '10.10.20.4',
-    nodeType: 'worker',
-    system: 'Ubuntu 22.04',
-    status: '在线',
-    cpu: 72,
-    memory: 68
-  },
-  {
-    key: '4',
-    nodeName: '分部K8S工作节点2',
-    ip: '10.10.20.5',
-    nodeType: 'worker',
-    system: 'Ubuntu 22.04',
-    status: '在线',
-    cpu: 58,
-    memory: 71
-  }
-])
+// 统计数据
+const clusterCount = computed(() => clusterData.value.length)
+const podCount = computed(() =>
+  clusterData.value.reduce((sum, cluster) => sum + (cluster.pods || 0), 0),
+)
+const logCount = ref(0)
+const storageSize = ref(0)
 
-// Pod数据
-const podData = ref([
-  {
-    key: '1',
-    podName: 'extensions-museum-5f7b8c6d9b-xk8v2',
-    namespace: 'kubesphere-system',
-    node: 'control-plane-1',
-    status: 'Running',
-    restarts: 0,
-    cpu: 25,
-    memory: 45,
-    createdTime: '2025-06-17 19:03:21',
-    image: 'kubesphere/extensions-museum:v3.4.1',
-    uid: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-    containers: [
-      {
-        name: 'extensions-museum',
-        image: 'kubesphere/extensions-museum:v3.4.1',
-        status: 'Running',
-        ready: true,
-        restarts: 0,
-        ports: [8080],
-        resources: {
-          requests: { cpu: '100m', memory: '128Mi' },
-          limits: { cpu: '500m', memory: '512Mi' }
-        }
-      }
-    ],
-    labels: {
-      'app': 'extensions-museum',
-      'version': 'v3.4.1',
-      'tier': 'backend'
-    },
-    annotations: {
-      'deployment.kubernetes.io/revision': '1',
-      'kubesphere.io/creator': 'admin'
-    }
-  },
-  {
-    key: '2',
-    podName: 'app-deployment-c958c4d7b-8m2n4',
-    namespace: 'default',
-    node: 'worker-node-1',
-    status: 'Running',
-    restarts: 2,
-    cpu: 78,
-    memory: 82,
-    createdTime: '2025-06-17 18:55:31',
-    image: 'app:v4',
-    uid: 'b2c3d4e5-f6g7-8901-bcde-f23456789012',
-    containers: [
-      {
-        name: 'app',
-        image: 'app:v4',
-        status: 'Running',
-        ready: true,
-        restarts: 2,
-        ports: [8080, 8090],
-        resources: {
-          requests: { cpu: '200m', memory: '256Mi' },
-          limits: { cpu: '1000m', memory: '1Gi' }
-        }
-      }
-    ],
-    labels: {
-      'app': 'financial-backend',
-      'version': 'v1.2',
-      'env': 'production'
-    },
-    annotations: {
-      'deployment.kubernetes.io/revision': '3',
-      'kubesphere.io/creator': 'platform-admin'
-    }
-  },
-  {
-    key: '3',
-    podName: 'tigera-operator-7f9d5c8b6f-h4k9j',
-    namespace: 'tigera-operator',
-    node: 'control-plane-1',
-    status: 'Running',
-    restarts: 1,
-    cpu: 15,
-    memory: 35,
-    createdTime: '2025-06-17 13:18:31',
-    image: 'quay.io/tigera/operator:v1.30.9',
-    uid: 'c3d4e5f6-g7h8-9012-cdef-345678901234',
-    containers: [
-      {
-        name: 'tigera-operator',
-        image: 'quay.io/tigera/operator:v1.30.9',
-        status: 'Running',
-        ready: true,
-        restarts: 1,
-        ports: [9443],
-        resources: {
-          requests: { cpu: '50m', memory: '128Mi' },
-          limits: { cpu: '200m', memory: '256Mi' }
-        }
-      }
-    ],
-    labels: {
-      'app': 'tigera-operator',
-      'k8s-app': 'tigera-operator'
-    },
-    annotations: {
-      'deployment.kubernetes.io/revision': '2'
-    }
-  },
-  {
-    key: '4',
-    podName: 'calico-apiserver-6c8d7b9f5e-p3q7r',
-    namespace: 'calico-apiserver',
-    node: 'control-plane-2',
-    status: 'Running',
-    restarts: 0,
-    cpu: 32,
-    memory: 51,
-    createdTime: '2025-06-17 13:18:18',
-    image: 'calico/apiserver:v3.26.4',
-    uid: 'd4e5f6g7-h8i9-0123-defg-456789012345',
-    containers: [
-      {
-        name: 'calico-apiserver',
-        image: 'calico/apiserver:v3.26.4',
-        status: 'Running',
-        ready: true,
-        restarts: 0,
-        ports: [5443],
-        resources: {
-          requests: { cpu: '100m', memory: '128Mi' },
-          limits: { cpu: '300m', memory: '512Mi' }
-        }
-      }
-    ],
-    labels: {
-      'app': 'calico-apiserver',
-      'k8s-app': 'calico-apiserver'
-    },
-    annotations: {
-      'deployment.kubernetes.io/revision': '1'
-    }
-  },
-  {
-    key: '5',
-    podName: 'calico-kube-controllers-5d6f8c7b4a-t8y2u',
-    namespace: 'calico-system',
-    node: 'control-plane-1',
-    status: 'Running',
-    restarts: 1,
-    cpu: 18,
-    memory: 28,
-    createdTime: '2025-06-17 13:17:38',
-    image: 'calico/kube-controllers:v3.26.4',
-    uid: 'e5f6g7h8-i9j0-1234-efgh-567890123456',
-    containers: [
-      {
-        name: 'calico-kube-controllers',
-        image: 'calico/kube-controllers:v3.26.4',
-        status: 'Running',
-        ready: true,
-        restarts: 1,
-        ports: [],
-        resources: {
-          requests: { cpu: '30m', memory: '64Mi' },
-          limits: { cpu: '100m', memory: '256Mi' }
-        }
-      }
-    ],
-    labels: {
-      'app': 'calico-kube-controllers',
-      'k8s-app': 'calico-kube-controllers'
-    },
-    annotations: {
-      'deployment.kubernetes.io/revision': '2'
-    }
-  },
-  {
-    key: '6',
-    podName: 'ingress-nginx-controller-9b8f7c6d5e-v4w9x',
-    namespace: 'ingress-nginx',
-    node: 'worker-node-1',
-    status: 'Running',
-    restarts: 0,
-    cpu: 45,
-    memory: 67,
-    createdTime: '2025-06-17 13:17:36',
-    image: 'registry.k8s.io/ingress-nginx/controller:v1.8.2',
-    uid: 'f6g7h8i9-j0k1-2345-fghi-678901234567',
-    containers: [
-      {
-        name: 'controller',
-        image: 'registry.k8s.io/ingress-nginx/controller:v1.8.2',
-        status: 'Running',
-        ready: true,
-        restarts: 0,
-        ports: [80, 443, 8443],
-        resources: {
-          requests: { cpu: '100m', memory: '90Mi' },
-          limits: { cpu: '1000m', memory: '1Gi' }
-        }
-      }
-    ],
-    labels: {
-      'app.kubernetes.io/name': 'ingress-nginx',
-      'app.kubernetes.io/instance': 'ingress-nginx',
-      'app.kubernetes.io/component': 'controller'
-    },
-    annotations: {
-      'deployment.kubernetes.io/revision': '1'
-    }
-  },
-  {
-    key: '7',
-    podName: 'karmada-agent-8c7f9b6d5a-z2x3y',
-    namespace: 'karmada-system',
-    node: 'control-plane-2',
-    status: 'Running',
-    restarts: 0,
-    cpu: 28,
-    memory: 42,
-    createdTime: '2025-06-17 13:17:36',
-    image: 'karmada/karmada-agent:v1.7.0',
-    uid: 'g7h8i9j0-k1l2-3456-ghij-789012345678',
-    containers: [
-      {
-        name: 'karmada-agent',
-        image: 'karmada/karmada-agent:v1.7.0',
-        status: 'Running',
-        ready: true,
-        restarts: 0,
-        ports: [10357],
-        resources: {
-          requests: { cpu: '100m', memory: '128Mi' },
-          limits: { cpu: '500m', memory: '512Mi' }
-        }
-      }
-    ],
-    labels: {
-      'app': 'karmada-agent',
-      'app.kubernetes.io/managed-by': 'karmada-operator'
-    },
-    annotations: {
-      'deployment.kubernetes.io/revision': '1'
-    }
-  },
-  {
-    key: '8',
-    podName: 'ks-apiserver-6f9d8c7b5e-m5n8p',
-    namespace: 'kubesphere-system',
-    node: 'control-plane-1',
-    status: 'Running',
-    restarts: 0,
-    cpu: 38,
-    memory: 55,
-    createdTime: '2025-06-17 03:36:11',
-    image: 'kubesphere/ks-apiserver:v3.4.1',
-    uid: 'h8i9j0k1-l2m3-4567-hijk-890123456789',
-    containers: [
-      {
-        name: 'ks-apiserver',
-        image: 'kubesphere/ks-apiserver:v3.4.1',
-        status: 'Running',
-        ready: true,
-        restarts: 0,
-        ports: [9090],
-        resources: {
-          requests: { cpu: '100m', memory: '128Mi' },
-          limits: { cpu: '1000m', memory: '1Gi' }
-        }
-      }
-    ],
-    labels: {
-      'app': 'ks-apiserver',
-      'tier': 'backend',
-      'version': 'v3.4.1'
-    },
-    annotations: {
-      'deployment.kubernetes.io/revision': '1'
-    }
-  },
-  {
-    key: '9',
-    podName: 'ks-console-7b8f9c6d5a-q4r7s',
-    namespace: 'kubesphere-system',
-    node: 'worker-node-2',
-    status: 'Running',
-    restarts: 1,
-    cpu: 42,
-    memory: 58,
-    createdTime: '2025-06-17 03:36:11',
-    image: 'kubesphere/ks-console:v3.4.1',
-    uid: 'i9j0k1l2-m3n4-5678-ijkl-901234567890',
-    containers: [
-      {
-        name: 'ks-console',
-        image: 'kubesphere/ks-console:v3.4.1',
-        status: 'Running',
-        ready: true,
-        restarts: 1,
-        ports: [8000],
-        resources: {
-          requests: { cpu: '20m', memory: '100Mi' },
-          limits: { cpu: '1000m', memory: '1Gi' }
-        }
-      }
-    ],
-    labels: {
-      'app': 'ks-console',
-      'tier': 'frontend',
-      'version': 'v3.4.1'
-    },
-    annotations: {
-      'deployment.kubernetes.io/revision': '2'
-    }
-  },
-  {
-    key: '10',
-    podName: 'ks-controller-manager-8c9f7b6d5e-t6u9v',
-    namespace: 'kubesphere-system',
-    node: 'worker-node-2',
-    status: 'Running',
-    restarts: 0,
-    cpu: 52,
-    memory: 61,
-    createdTime: '2025-06-17 03:36:10',
-    image: 'kubesphere/ks-controller-manager:v3.4.1',
-    uid: 'j0k1l2m3-n4o5-6789-jklm-012345678901',
-    containers: [
-      {
-        name: 'ks-controller-manager',
-        image: 'kubesphere/ks-controller-manager:v3.4.1',
-        status: 'Running',
-        ready: true,
-        restarts: 0,
-        ports: [8080, 8443],
-        resources: {
-          requests: { cpu: '30m', memory: '50Mi' },
-          limits: { cpu: '1000m', memory: '1000Mi' }
-        }
-      }
-    ],
-    labels: {
-      'app': 'ks-controller-manager',
-      'control-plane': 'controller-manager',
-      'version': 'v3.4.1'
-    },
-    annotations: {
-      'deployment.kubernetes.io/revision': '1'
-    }
-  }
-])
+// 接入新集群相关
+const addClusterVisible = ref(false)
+const connecting = ref(false)
+const addClusterForm = ref({
+  name: '',
+  kubeconfig: '',
+})
+const addClusterFormRef = ref()
+const uploadedFileName = ref('')
+const kubeconfigPreview = ref<any>(null)
+
+// 节点数据 - 初始为空
+const nodeData = ref<any[]>([])
+
+// Pod数据 - 初始为空
+const podData = ref<any[]>([])
 
 // 表格列配置
 const clusterColumns = [
@@ -974,41 +693,41 @@ const clusterColumns = [
     title: '集群信息',
     dataIndex: 'name',
     slotName: 'clusterInfo',
-    width: 200
+    width: 200,
   },
   {
     title: '节点数',
     dataIndex: 'nodes',
-    width: 80
+    width: 80,
   },
   {
     title: 'Pod数',
     dataIndex: 'pods',
-    width: 80
+    width: 80,
   },
   {
     title: '状态',
     dataIndex: 'status',
     slotName: 'status',
-    width: 100
+    width: 100,
   },
   {
     title: '日志级别',
     dataIndex: 'logLevel',
     slotName: 'logLevel',
-    width: 100
+    width: 100,
   },
   {
     title: 'API端点',
     dataIndex: 'endpoint',
-    width: 250
+    width: 250,
   },
   {
     title: '操作',
     slotName: 'actions',
     width: 200,
-    fixed: 'right'
-  }
+    fixed: 'right',
+  },
 ]
 
 // 节点表格列配置
@@ -1017,37 +736,37 @@ const nodeColumns = [
     title: '节点名称',
     dataIndex: 'nodeName',
     slotName: 'nodeName',
-    width: 200
+    width: 200,
   },
   {
     title: '节点类型',
     dataIndex: 'nodeType',
     slotName: 'nodeType',
-    width: 120
+    width: 120,
   },
   {
     title: '系统版本',
     dataIndex: 'system',
-    width: 120
+    width: 120,
   },
   {
     title: '状态',
     dataIndex: 'status',
     slotName: 'status',
-    width: 80
+    width: 80,
   },
   {
     title: '资源使用',
     dataIndex: 'resources',
     slotName: 'resources',
-    width: 120
+    width: 120,
   },
   {
     title: '操作',
     slotName: 'actions',
     width: 120,
-    fixed: 'right'
-  }
+    fixed: 'right',
+  },
 ]
 
 // Pod表格列配置
@@ -1056,46 +775,46 @@ const podColumns = [
     title: 'Pod名称',
     dataIndex: 'podName',
     slotName: 'podName',
-    width: 250
+    width: 250,
   },
   {
     title: '命名空间',
     dataIndex: 'namespace',
-    width: 100
+    width: 100,
   },
   {
     title: '节点',
     dataIndex: 'node',
-    width: 120
+    width: 120,
   },
   {
     title: '状态',
     dataIndex: 'status',
     slotName: 'status',
-    width: 80
+    width: 80,
   },
   {
     title: '重启次数',
     dataIndex: 'restarts',
-    width: 80
+    width: 80,
   },
   {
     title: '资源使用',
     dataIndex: 'resources',
     slotName: 'resources',
-    width: 120
+    width: 120,
   },
   {
     title: '创建时间',
     dataIndex: 'createdTime',
-    width: 150
+    width: 150,
   },
   {
     title: '操作',
     slotName: 'actions',
     width: 180,
-    fixed: 'right'
-  }
+    fixed: 'right',
+  },
 ]
 
 // 容器表格列配置
@@ -1104,37 +823,37 @@ const containerColumns = [
     title: '容器名称',
     dataIndex: 'name',
     slotName: 'containerName',
-    width: 200
+    width: 200,
   },
   {
     title: '状态',
     dataIndex: 'status',
     slotName: 'status',
-    width: 80
+    width: 80,
   },
   {
     title: '就绪状态',
     dataIndex: 'ready',
     slotName: 'ready',
-    width: 80
+    width: 80,
   },
   {
     title: '重启次数',
     dataIndex: 'restarts',
-    width: 80
+    width: 80,
   },
   {
     title: '端口',
     dataIndex: 'ports',
     slotName: 'ports',
-    width: 120
+    width: 120,
   },
   {
     title: '资源配置',
     dataIndex: 'resources',
     slotName: 'resources',
-    width: 200
-  }
+    width: 200,
+  },
 ]
 
 // 事件表格列配置
@@ -1143,23 +862,23 @@ const eventColumns = [
     title: '类型',
     dataIndex: 'type',
     slotName: 'eventType',
-    width: 80
+    width: 80,
   },
   {
     title: '原因',
     dataIndex: 'reason',
-    width: 120
+    width: 120,
   },
   {
     title: '消息',
     dataIndex: 'message',
-    width: 400
+    width: 400,
   },
   {
     title: '时间',
     dataIndex: 'time',
-    width: 150
-  }
+    width: 150,
+  },
 ]
 
 // 事件数据
@@ -1169,50 +888,50 @@ const eventData = ref([
     type: 'Normal',
     reason: 'Scheduled',
     message: 'Successfully assigned kubesphere-system/extensions-museum-xxx to control-plane-1',
-    time: '2025-06-17 19:03:15'
+    time: '2025-06-17 19:03:15',
   },
   {
     key: '2',
     type: 'Normal',
     reason: 'Pulled',
     message: 'Container image "kubesphere/extensions-museum:v3.4.1" already present on machine',
-    time: '2025-06-17 19:03:18'
+    time: '2025-06-17 19:03:18',
   },
   {
     key: '3',
     type: 'Normal',
     reason: 'Created',
     message: 'Created container extensions-museum',
-    time: '2025-06-17 19:03:19'
+    time: '2025-06-17 19:03:19',
   },
   {
     key: '4',
     type: 'Normal',
     reason: 'Started',
     message: 'Started container extensions-museum',
-    time: '2025-06-17 19:03:20'
+    time: '2025-06-17 19:03:20',
   },
   {
     key: '5',
     type: 'Normal',
     reason: 'Killing',
     message: 'Stopping container extensions-museum',
-    time: '2025-06-17 15:22:10'
+    time: '2025-06-17 15:22:10',
   },
   {
     key: '6',
     type: 'Warning',
     reason: 'BackOff',
     message: 'Back-off restarting failed container',
-    time: '2025-06-17 12:15:30'
+    time: '2025-06-17 12:15:30',
   },
   {
     key: '7',
     type: 'Normal',
     reason: 'SuccessfulMountVolume',
     message: 'MountVolume.SetUp succeeded for volume "kube-api-access-token"',
-    time: '2025-06-17 19:03:16'
-  }
+    time: '2025-06-17 19:03:16',
+  },
 ])
 
 // 模态框显示状态
@@ -1246,32 +965,32 @@ let nodeLogTimer: any = null
 let podLogTimer: any = null
 
 // Pod资源监控数据
-const cpuChartData = computed(() => 
+const cpuChartData = computed(() =>
   ['14:30', '14:35', '14:40', '14:45', '14:50', '14:55'].map((time, index) => ({
     name: time,
-    value: [45, 52, 48, 65, 78, 82][index]
-  }))
+    value: [45, 52, 48, 65, 78, 82][index],
+  })),
 )
 
-const memoryChartData = computed(() => 
+const memoryChartData = computed(() =>
   ['14:30', '14:35', '14:40', '14:45', '14:50', '14:55'].map((time, index) => ({
     name: time,
-    value: [62, 68, 71, 75, 80, 82][index]
-  }))
+    value: [62, 68, 71, 75, 80, 82][index],
+  })),
 )
 
-const networkChartData = computed(() => 
+const networkChartData = computed(() =>
   ['14:30', '14:35', '14:40', '14:45', '14:50', '14:55'].map((time, index) => ({
     name: time,
-    value: [120, 135, 142, 158, 165, 172][index] // 入站流量 KB/s
-  }))
+    value: [120, 135, 142, 158, 165, 172][index], // 入站流量 KB/s
+  })),
 )
 
-const diskChartData = computed(() => 
+const diskChartData = computed(() =>
   ['14:30', '14:35', '14:40', '14:45', '14:50', '14:55'].map((time, index) => ({
     name: time,
-    value: [25, 32, 28, 35, 42, 38][index] // 磁盘读取 MB/s
-  }))
+    value: [25, 32, 28, 35, 42, 38][index], // 磁盘读取 MB/s
+  })),
 )
 
 // 显示集群详情
@@ -1301,18 +1020,18 @@ const initClusterLogs = () => {
     {
       time: '2024-01-15 10:35:18',
       level: 'INFO',
-      message: '分部k8s-02集群(10.10.20.2) - 集群状态正常，40个Pod全部运行中'
+      message: '分部k8s-02集群(10.10.20.2) - 集群状态正常，40个Pod全部运行中',
     },
     {
       time: '2024-01-15 10:35:15',
       level: 'DEBUG',
-      message: '分部k8s-02节点状态检查完成，4个节点全部在线'
+      message: '分部k8s-02节点状态检查完成，4个节点全部在线',
     },
     {
       time: '2024-01-15 10:35:12',
       level: 'INFO',
-      message: '分部k8s-02 Pod调度成功，新增服务实例3个'
-    }
+      message: '分部k8s-02 Pod调度成功，新增服务实例3个',
+    },
   ]
 }
 
@@ -1322,18 +1041,18 @@ const initNodeLogs = () => {
     {
       time: '2024-01-15 10:35:18',
       level: 'INFO',
-      message: `${selectedNode.value?.nodeName}(${selectedNode.value?.ip}) - 节点状态正常，资源充足`
+      message: `${selectedNode.value?.nodeName}(${selectedNode.value?.ip}) - 节点状态正常，资源充足`,
     },
     {
       time: '2024-01-15 10:35:15',
       level: 'DEBUG',
-      message: `${selectedNode.value?.nodeName} - 系统资源检查完成，CPU使用率: ${selectedNode.value?.cpu}%`
+      message: `${selectedNode.value?.nodeName} - 系统资源检查完成，CPU使用率: ${selectedNode.value?.cpu}%`,
     },
     {
       time: '2024-01-15 10:35:12',
       level: 'INFO',
-      message: `${selectedNode.value?.nodeName} - kubelet服务运行正常，网络连接稳定`
-    }
+      message: `${selectedNode.value?.nodeName} - kubelet服务运行正常，网络连接稳定`,
+    },
   ]
 }
 
@@ -1343,18 +1062,18 @@ const initPodLogs = () => {
     {
       time: '2024-01-15 10:35:18',
       level: 'INFO',
-      message: `${selectedPod.value?.podName} - 容器启动成功，服务正常运行`
+      message: `${selectedPod.value?.podName} - 容器启动成功，服务正常运行`,
     },
     {
       time: '2024-01-15 10:35:15',
       level: 'DEBUG',
-      message: `${selectedPod.value?.podName} - 健康检查通过，CPU: ${selectedPod.value?.cpu}%, 内存: ${selectedPod.value?.memory}%`
+      message: `${selectedPod.value?.podName} - 健康检查通过，CPU: ${selectedPod.value?.cpu}%, 内存: ${selectedPod.value?.memory}%`,
     },
     {
       time: '2024-01-15 10:35:12',
       level: 'INFO',
-      message: `${selectedPod.value?.podName} - 网络连接正常，存储卷挂载成功`
-    }
+      message: `${selectedPod.value?.podName} - 网络连接正常，存储卷挂载成功`,
+    },
   ]
 }
 
@@ -1392,38 +1111,40 @@ const togglePodLogStream = () => {
 const startClusterLogStream = () => {
   clusterLogTimer = setInterval(() => {
     const now = new Date()
-    const time = now.toLocaleString('zh-CN', { 
-      year: 'numeric', 
-      month: '2-digit', 
-      day: '2-digit', 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
-    }).replace(/\//g, '-')
-    
+    const time = now
+      .toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+      .replace(/\//g, '-')
+
     const messages = [
       '集群健康检查通过，所有组件运行正常',
       'etcd集群状态健康，数据同步完成',
       'API Server响应正常，延迟8ms',
       'Scheduler调度器工作正常',
-      'Controller Manager状态良好'
+      'Controller Manager状态良好',
     ]
-    
+
     const levels = ['INFO', 'DEBUG', 'WARN']
     const randomMessage = messages[Math.floor(Math.random() * messages.length)]
     const randomLevel = levels[Math.floor(Math.random() * levels.length)]
-    
+
     clusterLogs.value.push({
       time,
       level: randomLevel,
-      message: `分部k8s-02集群 - ${randomMessage}`
+      message: `分部k8s-02集群 - ${randomMessage}`,
     })
-    
+
     // 限制日志条数
     if (clusterLogs.value.length > 100) {
       clusterLogs.value.shift()
     }
-    
+
     // 自动滚动到底部
     nextTick(() => {
       if (clusterLogRef.value) {
@@ -1437,37 +1158,39 @@ const startClusterLogStream = () => {
 const startNodeLogStream = () => {
   nodeLogTimer = setInterval(() => {
     const now = new Date()
-    const time = now.toLocaleString('zh-CN', { 
-      year: 'numeric', 
-      month: '2-digit', 
-      day: '2-digit', 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
-    }).replace(/\//g, '-')
-    
+    const time = now
+      .toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+      .replace(/\//g, '-')
+
     const messages = [
       'kubelet服务运行正常',
       '容器运行时状态良好',
       '网络插件工作正常',
       '磁盘空间充足',
-      '系统负载正常'
+      '系统负载正常',
     ]
-    
+
     const levels = ['INFO', 'DEBUG']
     const randomMessage = messages[Math.floor(Math.random() * messages.length)]
     const randomLevel = levels[Math.floor(Math.random() * levels.length)]
-    
+
     nodeLogs.value.push({
       time,
       level: randomLevel,
-      message: `${selectedNode.value?.nodeName} - ${randomMessage}`
+      message: `${selectedNode.value?.nodeName} - ${randomMessage}`,
     })
-    
+
     if (nodeLogs.value.length > 100) {
       nodeLogs.value.shift()
     }
-    
+
     nextTick(() => {
       if (nodeLogRef.value) {
         nodeLogRef.value.scrollTop = nodeLogRef.value.scrollHeight
@@ -1480,37 +1203,39 @@ const startNodeLogStream = () => {
 const startPodLogStream = () => {
   podLogTimer = setInterval(() => {
     const now = new Date()
-    const time = now.toLocaleString('zh-CN', { 
-      year: 'numeric', 
-      month: '2-digit', 
-      day: '2-digit', 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
-    }).replace(/\//g, '-')
-    
+    const time = now
+      .toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+      .replace(/\//g, '-')
+
     const messages = [
       '接收到新的请求',
       '处理业务逻辑',
       '数据库连接正常',
       '缓存命中率: 95%',
-      '响应时间: 120ms'
+      '响应时间: 120ms',
     ]
-    
+
     const levels = ['INFO', 'DEBUG']
     const randomMessage = messages[Math.floor(Math.random() * messages.length)]
     const randomLevel = levels[Math.floor(Math.random() * levels.length)]
-    
+
     podLogs.value.push({
       time,
       level: randomLevel,
-      message: `${selectedPod.value?.podName} - ${randomMessage}`
+      message: `${selectedPod.value?.podName} - ${randomMessage}`,
     })
-    
+
     if (podLogs.value.length > 100) {
       podLogs.value.shift()
     }
-    
+
     nextTick(() => {
       if (podLogRef.value) {
         podLogRef.value.scrollTop = podLogRef.value.scrollHeight
@@ -1552,6 +1277,708 @@ const clearNodeLogs = () => {
 
 const clearPodLogs = () => {
   podLogs.value = []
+}
+
+// 接入新集群相关方法
+const showAddClusterModal = () => {
+  console.log('点击了添加集群按钮')
+  addClusterVisible.value = true
+  addClusterForm.value = {
+    name: '',
+    kubeconfig: '',
+  }
+  uploadedFileName.value = ''
+  kubeconfigPreview.value = null
+}
+
+// 处理kubeconfig文件上传
+const handleKubeconfigUpload = (option: any) => {
+  const { file } = option
+  uploadedFileName.value = file.name
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    if (e.target?.result) {
+      addClusterForm.value.kubeconfig = e.target.result as string
+      parseKubeconfig(e.target.result as string)
+    }
+  }
+  reader.readAsText(file)
+}
+
+// 解析kubeconfig配置
+const parseKubeconfig = (kubeconfigContent: string) => {
+  try {
+    // 模拟解析kubeconfig内容
+    const lines = kubeconfigContent.split('\n')
+    let server = 'https://10.10.20.2:6443'
+    let clusterName = '分部K8S集群'
+    let user = 'kubernetes-admin'
+
+    // 简单解析server地址
+    for (const line of lines) {
+      if (line.includes('server:')) {
+        const match = line.match(/server:\s*(.+)/)
+        if (match) {
+          server = match[1].trim()
+        }
+      } else if (line.includes('name:') && line.includes('cluster')) {
+        const match = line.match(/name:\s*(.+)/)
+        if (match) {
+          clusterName = match[1].trim()
+        }
+      } else if (line.includes('name:') && line.includes('user')) {
+        const match = line.match(/name:\s*(.+)/)
+        if (match) {
+          user = match[1].trim()
+        }
+      }
+    }
+
+    kubeconfigPreview.value = {
+      server,
+      clusterName,
+      user,
+    }
+  } catch (error) {
+    console.error('解析kubeconfig失败:', error)
+  }
+}
+
+const cancelAddCluster = () => {
+  addClusterVisible.value = false
+  connecting.value = false
+  uploadedFileName.value = ''
+  kubeconfigPreview.value = null
+  if (addClusterFormRef.value) {
+    addClusterFormRef.value.resetFields()
+  }
+}
+
+const addCluster = async () => {
+  if (!addClusterFormRef.value) return
+
+  const errors = await addClusterFormRef.value.validate()
+  if (errors) return
+
+  // 开始连接过程
+  connecting.value = true
+
+  try {
+    // 模拟连接验证过程
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+
+    // 添加新集群到列表
+    const endpoint = kubeconfigPreview.value?.server || 'https://10.10.20.2:6443'
+    const newCluster = {
+      key: Date.now().toString(),
+      name: addClusterForm.value.name,
+      version: 'v1.28.2',
+      nodes: 4,
+      pods: 13, // 实际添加的Pod数量
+      status: 'running',
+      logLevel: 'INFO',
+      endpoint: endpoint,
+    }
+
+    clusterData.value.push(newCluster)
+
+    // 添加对应的节点数据
+    let baseIP = '10.10.20.2'
+    try {
+      const url = new URL(endpoint)
+      baseIP = url.hostname
+    } catch (e) {
+      // 如果URL解析失败，使用默认IP
+      console.warn('URL解析失败，使用默认IP', e)
+    }
+
+    const nodeList = [
+      {
+        key: `${newCluster.key}-node-1`,
+        nodeName: `${addClusterForm.value.name}控制节点1`,
+        ip: baseIP,
+        nodeType: 'control-plane',
+        system: 'Ubuntu 22.04',
+        status: '在线',
+        cpu: 45,
+        memory: 62,
+      },
+      {
+        key: `${newCluster.key}-node-2`,
+        nodeName: `${addClusterForm.value.name}控制节点2`,
+        ip: getNextIP(baseIP),
+        nodeType: 'control-plane',
+        system: 'Ubuntu 22.04',
+        status: '在线',
+        cpu: 38,
+        memory: 55,
+      },
+      {
+        key: `${newCluster.key}-node-3`,
+        nodeName: `${addClusterForm.value.name}工作节点1`,
+        ip: getNextIP(baseIP, 2),
+        nodeType: 'worker',
+        system: 'Ubuntu 22.04',
+        status: '在线',
+        cpu: 72,
+        memory: 68,
+      },
+      {
+        key: `${newCluster.key}-node-4`,
+        nodeName: `${addClusterForm.value.name}工作节点2`,
+        ip: getNextIP(baseIP, 3),
+        nodeType: 'worker',
+        system: 'Ubuntu 22.04',
+        status: '在线',
+        cpu: 58,
+        memory: 71,
+      },
+    ]
+
+    nodeData.value.push(...nodeList)
+
+    // 添加一些Pod数据 - 基于真实数据
+    const podList = [
+      // app-deployment 金融审批平台的两个副本
+      {
+        key: `${newCluster.key}-pod-1`,
+        podName: 'app-deployment-c958c4d7b-r8wr2',
+        namespace: 'default',
+        node: 'k8s2-node01.k8s.cn',
+        status: 'Running',
+        restarts: 0,
+        cpu: 15,
+        memory: 35,
+        createdTime: '2025-06-19 02:48:50',
+        image: 'finance/approval-platform:v1.2.3',
+        uid: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        podIP: '10.244.20.77',
+        nodeIP: '10.10.20.4',
+        containers: [
+          {
+            name: 'app-deployment',
+            image: 'finance/approval-platform:v1.2.3',
+            status: 'Running',
+            ready: true,
+            restarts: 0,
+            ports: [8080, 9090],
+            resources: {
+              requests: { cpu: '200m', memory: '256Mi' },
+              limits: { cpu: '1000m', memory: '1Gi' },
+            },
+          },
+        ],
+        labels: {
+          app: 'app-deployment',
+          version: 'v1.2.3',
+          tier: 'frontend',
+          'app.kubernetes.io/name': 'finance-approval-platform',
+        },
+        annotations: {
+          'deployment.kubernetes.io/revision': '1',
+          'kubesphere.io/creator': 'admin',
+          'kubesphere.io/description': '金融审批平台',
+        },
+      },
+      {
+        key: `${newCluster.key}-pod-2`,
+        podName: 'app-deployment-c958c4d7b-csz4g',
+        namespace: 'default',
+        node: 'k8s2-node02.k8s.cn',
+        status: 'Running',
+        restarts: 0,
+        cpu: 18,
+        memory: 42,
+        createdTime: '2025-06-19 02:48:50',
+        image: 'finance/approval-platform:v1.2.3',
+        uid: 'b2c3d4e5-f6g7-8901-bcde-fg2345678901',
+        podIP: '10.244.87.161',
+        nodeIP: '10.10.20.5',
+        containers: [
+          {
+            name: 'app-deployment',
+            image: 'finance/approval-platform:v1.2.3',
+            status: 'Running',
+            ready: true,
+            restarts: 0,
+            ports: [8080, 9090],
+            resources: {
+              requests: { cpu: '200m', memory: '256Mi' },
+              limits: { cpu: '1000m', memory: '1Gi' },
+            },
+          },
+        ],
+        labels: {
+          app: 'app-deployment',
+          version: 'v1.2.3',
+          tier: 'frontend',
+          'app.kubernetes.io/name': 'finance-approval-platform',
+        },
+        annotations: {
+          'deployment.kubernetes.io/revision': '1',
+          'kubesphere.io/creator': 'admin',
+          'kubesphere.io/description': '金融审批平台',
+        },
+      },
+      // ks-controller-manager
+      {
+        key: `${newCluster.key}-pod-3`,
+        podName: 'ks-controller-manager-7f8b9c6d4e-xm9w3',
+        namespace: 'kubesphere-system',
+        node: 'k8s2-node01.k8s.cn',
+        status: 'Running',
+        restarts: 0,
+        cpu: 25,
+        memory: 180,
+        createdTime: '2025-06-18 17:19:01',
+        image: 'kubesphere/ks-controller-manager:v3.4.1',
+        uid: 'c3d4e5f6-g7h8-9012-cdef-gh3456789012',
+        podIP: '10.244.20.78',
+        nodeIP: '10.10.20.4',
+        containers: [
+          {
+            name: 'ks-controller-manager',
+            image: 'kubesphere/ks-controller-manager:v3.4.1',
+            status: 'Running',
+            ready: true,
+            restarts: 0,
+            ports: [8080, 8443],
+            resources: {
+              requests: { cpu: '100m', memory: '128Mi' },
+              limits: { cpu: '1000m', memory: '1Gi' },
+            },
+          },
+        ],
+        labels: {
+          app: 'ks-controller-manager',
+          tier: 'control-plane',
+          version: 'v3.4.1',
+        },
+        annotations: {
+          'deployment.kubernetes.io/revision': '1',
+          'kubesphere.io/creator': 'system',
+        },
+      },
+      // tigera-operator
+      {
+        key: `${newCluster.key}-pod-4`,
+        podName: 'tigera-operator-6b8c9d7e5f-yn4x8',
+        namespace: 'tigera-operator',
+        node: 'k8s2-node01.k8s.cn',
+        status: 'Running',
+        restarts: 0,
+        cpu: 12,
+        memory: 85,
+        createdTime: '2025-06-18 17:18:21',
+        image: 'quay.io/tigera/operator:v1.30.4',
+        uid: 'd4e5f6g7-h8i9-0123-defg-hi4567890123',
+        podIP: '10.244.20.79',
+        nodeIP: '10.10.20.4',
+        containers: [
+          {
+            name: 'tigera-operator',
+            image: 'quay.io/tigera/operator:v1.30.4',
+            status: 'Running',
+            ready: true,
+            restarts: 0,
+            ports: [9443],
+            resources: {
+              requests: { cpu: '100m', memory: '128Mi' },
+              limits: { cpu: '500m', memory: '512Mi' },
+            },
+          },
+        ],
+        labels: {
+          'k8s-app': 'tigera-operator',
+          version: 'v1.30.4',
+        },
+        annotations: {
+          'deployment.kubernetes.io/revision': '1',
+        },
+      },
+      // calico-apiserver
+      {
+        key: `${newCluster.key}-pod-5`,
+        podName: 'calico-apiserver-7c9d8e6f4a-zp5y9',
+        namespace: 'calico-apiserver',
+        node: 'k8s2-node02.k8s.cn',
+        status: 'Running',
+        restarts: 0,
+        cpu: 20,
+        memory: 95,
+        createdTime: '2025-06-18 17:18:18',
+        image: 'calico/apiserver:v3.26.1',
+        uid: 'e5f6g7h8-i9j0-1234-efgh-ij5678901234',
+        podIP: '10.244.87.162',
+        nodeIP: '10.10.20.5',
+        containers: [
+          {
+            name: 'calico-apiserver',
+            image: 'calico/apiserver:v3.26.1',
+            status: 'Running',
+            ready: true,
+            restarts: 0,
+            ports: [5443],
+            resources: {
+              requests: { cpu: '100m', memory: '128Mi' },
+              limits: { cpu: '500m', memory: '512Mi' },
+            },
+          },
+        ],
+        labels: {
+          'k8s-app': 'calico-apiserver',
+          version: 'v3.26.1',
+        },
+        annotations: {
+          'deployment.kubernetes.io/revision': '1',
+        },
+      },
+      // ingress-nginx-controller
+      {
+        key: `${newCluster.key}-pod-6`,
+        podName: 'ingress-nginx-controller-8a0e9f7d5b-aq6z0',
+        namespace: 'ingress-nginx',
+        node: 'k8s2-node01.k8s.cn',
+        status: 'Running',
+        restarts: 0,
+        cpu: 35,
+        memory: 140,
+        createdTime: '2025-06-18 10:08:40',
+        image: 'registry.k8s.io/ingress-nginx/controller:v1.8.1',
+        uid: 'f6g7h8i9-j0k1-2345-fghi-jk6789012345',
+        podIP: '10.244.20.80',
+        nodeIP: '10.10.20.4',
+        containers: [
+          {
+            name: 'controller',
+            image: 'registry.k8s.io/ingress-nginx/controller:v1.8.1',
+            status: 'Running',
+            ready: true,
+            restarts: 0,
+            ports: [80, 443, 8443],
+            resources: {
+              requests: { cpu: '100m', memory: '90Mi' },
+              limits: { cpu: '1000m', memory: '1Gi' },
+            },
+          },
+        ],
+        labels: {
+          app: 'ingress-nginx-controller',
+          version: 'v1.8.1',
+        },
+        annotations: {
+          'deployment.kubernetes.io/revision': '1',
+        },
+      },
+      // extensions-museum
+      {
+        key: `${newCluster.key}-pod-7`,
+        podName: 'extensions-museum-5f7b8c6d9b-xk8v2',
+        namespace: 'kubesphere-system',
+        node: 'k8s2-node02.k8s.cn',
+        status: 'Running',
+        restarts: 0,
+        cpu: 8,
+        memory: 65,
+        createdTime: '2025-06-18 09:38:00',
+        image: 'kubesphere/extensions-museum:v3.4.1',
+        uid: 'g7h8i9j0-k1l2-3456-ghij-kl7890123456',
+        podIP: '10.244.87.163',
+        nodeIP: '10.10.20.5',
+        containers: [
+          {
+            name: 'extensions-museum',
+            image: 'kubesphere/extensions-museum:v3.4.1',
+            status: 'Running',
+            ready: true,
+            restarts: 0,
+            ports: [8080],
+            resources: {
+              requests: { cpu: '100m', memory: '128Mi' },
+              limits: { cpu: '500m', memory: '512Mi' },
+            },
+          },
+        ],
+        labels: {
+          app: 'extensions-museum',
+          version: 'v3.4.1',
+          tier: 'backend',
+        },
+        annotations: {
+          'deployment.kubernetes.io/revision': '1',
+          'kubesphere.io/creator': 'admin',
+        },
+      },
+      // karmada-agent
+      {
+        key: `${newCluster.key}-pod-8`,
+        podName: 'karmada-agent-6d8f7e5c4a-bq7w1',
+        namespace: 'karmada-system',
+        node: 'k8s2-node02.k8s.cn',
+        status: 'Running',
+        restarts: 0,
+        cpu: 15,
+        memory: 75,
+        createdTime: '2025-06-18 09:37:59',
+        image: 'karmada/karmada-agent:v1.7.0',
+        uid: 'h8i9j0k1-l2m3-4567-hijk-lm8901234567',
+        podIP: '10.244.87.164',
+        nodeIP: '10.10.20.5',
+        containers: [
+          {
+            name: 'karmada-agent',
+            image: 'karmada/karmada-agent:v1.7.0',
+            status: 'Running',
+            ready: true,
+            restarts: 0,
+            ports: [10357],
+            resources: {
+              requests: { cpu: '100m', memory: '128Mi' },
+              limits: { cpu: '500m', memory: '512Mi' },
+            },
+          },
+        ],
+        labels: {
+          app: 'karmada-agent',
+          version: 'v1.7.0',
+        },
+        annotations: {
+          'deployment.kubernetes.io/revision': '1',
+        },
+      },
+      // coredns
+      {
+        key: `${newCluster.key}-pod-9`,
+        podName: 'coredns-5d78c9d6bb-mx2n4',
+        namespace: 'kube-system',
+        node: 'k8s2-node01.k8s.cn',
+        status: 'Running',
+        restarts: 0,
+        cpu: 5,
+        memory: 45,
+        createdTime: '2025-06-18 08:22:46',
+        image: 'registry.k8s.io/coredns/coredns:v1.10.1',
+        uid: 'i9j0k1l2-m3n4-5678-ijkl-mn9012345678',
+        podIP: '10.244.20.81',
+        nodeIP: '10.10.20.4',
+        containers: [
+          {
+            name: 'coredns',
+            image: 'registry.k8s.io/coredns/coredns:v1.10.1',
+            status: 'Running',
+            ready: true,
+            restarts: 0,
+            ports: [53],
+            resources: {
+              requests: { cpu: '100m', memory: '70Mi' },
+              limits: { cpu: '500m', memory: '170Mi' },
+            },
+          },
+        ],
+        labels: {
+          'k8s-app': 'kube-dns',
+          version: 'v1.10.1',
+        },
+        annotations: {
+          'deployment.kubernetes.io/revision': '1',
+        },
+      },
+      // calico-kube-controllers
+      {
+        key: `${newCluster.key}-pod-10`,
+        podName: 'calico-kube-controllers-6b7c8d5e4f-cr8s3',
+        namespace: 'calico-system',
+        node: 'k8s2-node01.k8s.cn',
+        status: 'Running',
+        restarts: 0,
+        cpu: 10,
+        memory: 55,
+        createdTime: '2025-06-18 08:17:01',
+        image: 'calico/kube-controllers:v3.26.1',
+        uid: 'j0k1l2m3-n4o5-6789-jklm-no0123456789',
+        podIP: '10.244.20.82',
+        nodeIP: '10.10.20.4',
+        containers: [
+          {
+            name: 'calico-kube-controllers',
+            image: 'calico/kube-controllers:v3.26.1',
+            status: 'Running',
+            ready: true,
+            restarts: 0,
+            ports: [9094],
+            resources: {
+              requests: { cpu: '30m', memory: '64Mi' },
+              limits: { cpu: '500m', memory: '512Mi' },
+            },
+          },
+        ],
+        labels: {
+          'k8s-app': 'calico-kube-controllers',
+          version: 'v3.26.1',
+        },
+        annotations: {
+          'deployment.kubernetes.io/revision': '1',
+        },
+      },
+      // calico-typha
+      {
+        key: `${newCluster.key}-pod-11`,
+        podName: 'calico-typha-7c8d9e6f5a-ds9t4',
+        namespace: 'calico-system',
+        node: 'k8s2-node02.k8s.cn',
+        status: 'Running',
+        restarts: 0,
+        cpu: 12,
+        memory: 68,
+        createdTime: '2025-06-17 03:37:22',
+        image: 'calico/typha:v3.26.1',
+        uid: 'k1l2m3n4-o5p6-7890-klmn-op1234567890',
+        podIP: '10.244.87.165',
+        nodeIP: '10.10.20.5',
+        containers: [
+          {
+            name: 'calico-typha',
+            image: 'calico/typha:v3.26.1',
+            status: 'Running',
+            ready: true,
+            restarts: 0,
+            ports: [5473],
+            resources: {
+              requests: { cpu: '100m', memory: '128Mi' },
+              limits: { cpu: '500m', memory: '512Mi' },
+            },
+          },
+        ],
+        labels: {
+          'k8s-app': 'calico-typha',
+          version: 'v3.26.1',
+        },
+        annotations: {
+          'deployment.kubernetes.io/revision': '1',
+        },
+      },
+      // ks-apiserver (工作负载)
+      {
+        key: `${newCluster.key}-pod-12`,
+        podName: 'ks-apiserver-8d9e0f7g6h-et0u5',
+        namespace: 'kubesphere-system',
+        node: 'k8s2-node01.k8s.cn',
+        status: 'Running',
+        restarts: 0,
+        cpu: 22,
+        memory: 125,
+        createdTime: '2025-06-16 16:01:09',
+        image: 'kubesphere/ks-apiserver:v3.4.1',
+        uid: 'l2m3n4o5-p6q7-8901-lmno-pq2345678901',
+        podIP: '10.244.20.83',
+        nodeIP: '10.10.20.4',
+        containers: [
+          {
+            name: 'ks-apiserver',
+            image: 'kubesphere/ks-apiserver:v3.4.1',
+            status: 'Running',
+            ready: true,
+            restarts: 0,
+            ports: [9090],
+            resources: {
+              requests: { cpu: '100m', memory: '128Mi' },
+              limits: { cpu: '1000m', memory: '1Gi' },
+            },
+          },
+        ],
+        labels: {
+          app: 'ks-apiserver',
+          tier: 'backend',
+          version: 'v3.4.1',
+        },
+        annotations: {
+          'deployment.kubernetes.io/revision': '1',
+          'kubesphere.io/creator': 'system',
+        },
+      },
+      // ks-console (工作负载)
+      {
+        key: `${newCluster.key}-pod-13`,
+        podName: 'ks-console-9e0f1g8h7i-fu1v6',
+        namespace: 'kubesphere-system',
+        node: 'k8s2-node02.k8s.cn',
+        status: 'Running',
+        restarts: 0,
+        cpu: 18,
+        memory: 95,
+        createdTime: '2025-06-16 16:01:09',
+        image: 'kubesphere/ks-console:v3.4.1',
+        uid: 'm3n4o5p6-q7r8-9012-mnop-qr3456789012',
+        podIP: '10.244.87.166',
+        nodeIP: '10.10.20.5',
+        containers: [
+          {
+            name: 'ks-console',
+            image: 'kubesphere/ks-console:v3.4.1',
+            status: 'Running',
+            ready: true,
+            restarts: 0,
+            ports: [8000],
+            resources: {
+              requests: { cpu: '100m', memory: '128Mi' },
+              limits: { cpu: '1000m', memory: '1Gi' },
+            },
+          },
+        ],
+        labels: {
+          app: 'ks-console',
+          tier: 'frontend',
+          version: 'v3.4.1',
+        },
+        annotations: {
+          'deployment.kubernetes.io/revision': '1',
+          'kubesphere.io/creator': 'system',
+        },
+      },
+    ]
+
+    podData.value.push(...podList)
+
+    // 开始统计数据增长
+    startStatisticsGrowth()
+
+    Message.success(`集群 ${addClusterForm.value.name} 接入成功`)
+    addClusterVisible.value = false
+  } catch (error) {
+    Message.error('集群接入失败，请检查连接配置')
+  } finally {
+    connecting.value = false
+  }
+}
+
+// 辅助函数：生成下一个IP
+const getNextIP = (baseIP: string, offset: number = 1) => {
+  const parts = baseIP.split('.')
+  const lastPart = parseInt(parts[3]) + offset
+  return `${parts[0]}.${parts[1]}.${parts[2]}.${lastPart}`
+}
+
+// 开始统计数据增长
+const startStatisticsGrowth = () => {
+  // 日志数量增长
+  const logInterval = setInterval(() => {
+    if (logCount.value < 596) {
+      logCount.value += Math.floor(Math.random() * 5) + 1
+    } else {
+      clearInterval(logInterval)
+    }
+  }, 200)
+
+  // 存储大小增长
+  const storageInterval = setInterval(() => {
+    if (storageSize.value < 3.8) {
+      storageSize.value += Math.floor(Math.random() * 10) / 100
+      storageSize.value = Math.min(storageSize.value, 3.8)
+    } else {
+      clearInterval(storageInterval)
+    }
+  }, 300)
 }
 
 // 组件卸载时清理定时器
@@ -1747,6 +2174,47 @@ const getLogLevelColor = (level: string) => {
   font-size: 12px;
 }
 
+/* 空状态样式 */
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-content {
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.empty-icon {
+  font-size: 64px;
+  color: #c9cdd4;
+  margin-bottom: 16px;
+}
+
+.empty-content h3 {
+  color: #1d2129;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.empty-content p {
+  color: #86909c;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+/* 连接状态样式 */
+.connecting-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #f7f8fa;
+  border-radius: 6px;
+  margin-top: 16px;
+  color: #1d2129;
+}
+
 .resource-details {
   font-size: 12px;
 }
@@ -1865,5 +2333,71 @@ const getLogLevelColor = (level: string) => {
 
 :deep(.arco-tabs-content) {
   padding-top: 0;
+}
+
+/* 文件上传相关样式 */
+.upload-area {
+  border: 2px dashed #d9d9d9;
+  border-radius: 6px;
+  padding: 40px 20px;
+  text-align: center;
+  background: #fafafa;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.upload-area:hover {
+  border-color: #1890ff;
+  background: #f0f8ff;
+}
+
+.upload-icon {
+  font-size: 48px;
+  color: #d9d9d9;
+  margin-bottom: 16px;
+}
+
+.upload-text {
+  color: #666;
+}
+
+.upload-tip {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.uploaded-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 4px;
+  color: #52c41a;
+}
+
+.config-tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
+}
+
+.config-preview {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 6px;
+}
+
+.config-preview h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #333;
 }
 </style>
