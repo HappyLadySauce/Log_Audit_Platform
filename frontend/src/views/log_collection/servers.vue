@@ -256,11 +256,128 @@
         </a-card>
       </a-tab-pane>
     </a-tabs>
+
+    <!-- 服务器详情弹窗 -->
+    <a-modal
+      v-model:visible="detailModalVisible"
+      :title="`服务器详情 - ${selectedServer.hostname}`"
+      width="1200px"
+      :footer="false"
+      @cancel="closeDetailModal"
+    >
+      <div class="server-detail-modal">
+        <!-- 服务器基本信息 -->
+        <a-card title="基本信息" :bordered="false" class="modal-info-card">
+          <a-row :gutter="24">
+            <a-col :span="6">
+              <div class="modal-info-item">
+                <div class="modal-info-label">服务器名称</div>
+                <div class="modal-info-value">{{ selectedServer.hostname }}</div>
+              </div>
+            </a-col>
+            <a-col :span="6">
+              <div class="modal-info-item">
+                <div class="modal-info-label">IP地址</div>
+                <div class="modal-info-value">{{ selectedServer.ip }}</div>
+              </div>
+            </a-col>
+            <a-col :span="6">
+              <div class="modal-info-item">
+                <div class="modal-info-label">操作系统</div>
+                <div class="modal-info-value">{{ selectedServer.serverType }}</div>
+              </div>
+            </a-col>
+            <a-col :span="6">
+              <div class="modal-info-item">
+                <div class="modal-info-label">连接状态</div>
+                <a-badge status="success" text="已连接" />
+              </div>
+            </a-col>
+          </a-row>
+        </a-card>
+
+        <!-- 系统状态 -->
+        <a-card title="系统状态" :bordered="false" class="modal-status-card">
+          <a-row :gutter="16">
+            <a-col :span="8">
+              <div class="modal-status-item">
+                <h4>CPU使用率</h4>
+                <a-progress :percent="modalSystemStats.cpu" :show-text="false" />
+                <span class="modal-status-value">{{ modalSystemStats.cpu }}%</span>
+              </div>
+            </a-col>
+            <a-col :span="8">
+              <div class="modal-status-item">
+                <h4>内存使用率</h4>
+                <a-progress
+                  :percent="modalSystemStats.memory"
+                  :show-text="false"
+                  status="success"
+                />
+                <span class="modal-status-value">{{ modalSystemStats.memory }}%</span>
+              </div>
+            </a-col>
+            <a-col :span="8">
+              <div class="modal-status-item">
+                <h4>磁盘使用率</h4>
+                <a-progress :percent="modalSystemStats.disk" :show-text="false" status="warning" />
+                <span class="modal-status-value">{{ modalSystemStats.disk }}%</span>
+              </div>
+            </a-col>
+          </a-row>
+        </a-card>
+
+        <!-- 实时日志 -->
+        <a-card title="实时日志" :bordered="false" class="modal-log-card">
+          <template #extra>
+            <a-space>
+              <a-button
+                @click="toggleModalAutoRefresh"
+                :type="modalAutoRefresh ? 'primary' : 'outline'"
+                size="small"
+              >
+                <template #icon>
+                  <icon-refresh v-if="!modalAutoRefresh" />
+                  <icon-pause v-else />
+                </template>
+                {{ modalAutoRefresh ? '暂停刷新' : '自动刷新' }}
+              </a-button>
+              <a-button @click="clearModalLogs" size="small">
+                <template #icon>
+                  <icon-delete />
+                </template>
+                清空日志
+              </a-button>
+              <a-tag color="green">实时采集中</a-tag>
+              <span class="modal-log-count">{{ modalLogLines.length }} 条日志</span>
+            </a-space>
+          </template>
+
+          <div class="modal-log-container" ref="modalLogContainer">
+            <div
+              v-for="(log, index) in modalLogLines"
+              :key="index"
+              class="modal-log-line"
+              :class="getModalLogLevelClass(log.level)"
+            >
+              <span class="modal-log-timestamp">{{ log.timestamp }}</span>
+              <span class="modal-log-level">[{{ log.level }}]</span>
+              <span class="modal-log-content">{{ log.content }}</span>
+            </div>
+
+            <div v-if="modalLogLines.length === 0" class="modal-log-empty">
+              <icon-file class="modal-empty-icon" />
+              <p>暂无日志数据</p>
+            </div>
+          </div>
+        </a-card>
+      </div>
+    </a-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
@@ -275,6 +392,8 @@ import {
   IconSearch,
   IconLoading,
   IconSettings,
+  IconPause,
+  IconDelete,
 } from '@arco-design/web-vue/es/icon'
 
 const router = useRouter()
@@ -372,6 +491,36 @@ const storageSize = ref(0)
 
 // 日志内容 - 初始为空，扫描后显示
 const logContent = ref('')
+
+// 弹窗相关状态
+const detailModalVisible = ref(false)
+const selectedServer = ref({
+  hostname: '',
+  ip: '',
+  serverType: '',
+  status: '',
+  collectStatus: '',
+})
+
+// 弹窗日志相关
+const modalLogContainer = ref<HTMLElement>()
+const modalLogLines = ref<
+  Array<{
+    timestamp: string
+    level: string
+    content: string
+  }>
+>([])
+const modalAutoRefresh = ref(true)
+const modalLogInitialized = ref(false)
+let modalRefreshTimer: number | null = null
+
+// 弹窗系统状态
+const modalSystemStats = ref({
+  cpu: 35,
+  memory: 58,
+  disk: 42,
+})
 
 // 获取服务器类型颜色
 const getServerTypeColor = (type: string) => {
@@ -571,14 +720,26 @@ const handleRefresh = () => {
 
 // 查看服务器详情
 const viewServerDetail = (record: any) => {
-  router.push({
-    path: '/log-collection/server-detail',
-    query: {
-      hostname: record.hostname,
-      ip: record.ip,
-      serverType: record.serverType,
-    },
-  })
+  selectedServer.value = {
+    hostname: record.hostname,
+    ip: record.ip,
+    serverType: record.serverType,
+    status: record.status,
+    collectStatus: record.collectStatus,
+  }
+
+  // 初始化弹窗日志
+  modalLogLines.value = []
+  modalLogInitialized.value = false
+
+  // 先显示初始化日志
+  const initLogs = generateInitLogs()
+  modalLogLines.value.push(...initLogs)
+  modalLogInitialized.value = true
+
+  // 开启弹窗并启动定时器
+  detailModalVisible.value = true
+  startModalRefreshTimer()
 }
 
 // 停止采集
@@ -656,9 +817,163 @@ const startStorageSizeIncrement = () => {
   storageSizeTimer.value = window.setTimeout(increment, 1500)
 }
 
+// 弹窗相关函数
+const closeDetailModal = () => {
+  detailModalVisible.value = false
+  modalLogInitialized.value = false
+  stopModalRefreshTimer()
+}
+
+// 生成初始化日志（仅在启动时调用一次）
+const generateInitLogs = (): Array<{ timestamp: string; level: string; content: string }> => {
+  const now = new Date()
+  const baseTime = now.getTime()
+  const logs: Array<{ timestamp: string; level: string; content: string }> = []
+
+  // 模拟应用启动过程的时间间隔
+  const intervals = [0, 500, 800, 1200, 1500, 2000, 2200, 2500]
+
+  const initContents = [
+    `time="${new Date(baseTime).toLocaleString('zh-CN').replace(/\//g, '-')}+08:00" level=info msg="[Database] 尝试连接应用数据库"`,
+    `[3.566ms] [rows:-] SELECT DATABASE()`,
+    `[7.568ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA`,
+    `time="${new Date(baseTime + 1000).toLocaleString('zh-CN').replace(/\//g, '-')}+08:00" level=info msg="[Database] 应用数据库已连接"`,
+    `time="${new Date(baseTime + 1200).toLocaleString('zh-CN').replace(/\//g, '-')}+08:00" level=info msg="[Session Cache] 尝试连接redis服务器"`,
+    `time="${new Date(baseTime + 1500).toLocaleString('zh-CN').replace(/\//g, '-')}+08:00" level=info msg="[Session Cache] redis已连接"`,
+    `[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.`,
+    `[GIN-debug] Listening and serving HTTP on :20000`,
+  ]
+
+  initContents.forEach((content, index) => {
+    const logTime = new Date(baseTime + intervals[index])
+    logs.push({
+      timestamp: logTime.toLocaleString('zh-CN', {
+        hour12: false,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      }),
+      level: content.includes('level=info') ? 'INFO' : 'DEBUG',
+      content,
+    })
+  })
+
+  return logs
+}
+
+// 生成运行时日志（业务日志）
+const generateModalMockLog = (): { timestamp: string; level: string; content: string } => {
+  const now = new Date()
+  const timestamp = now.toLocaleString('zh-CN', {
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+
+  const levels = ['INFO', 'DEBUG']
+  const level = levels[Math.floor(Math.random() * levels.length)]
+
+  const httpRequests = [
+    `GET    /api/v1/ping`,
+    `GET    /api/v1/user/list`,
+    `GET    /api/v1/user/info`,
+    `GET    /api/v1/user/captcha`,
+    `GET    /api/v1/assets`,
+    `GET    /api/v1/logs`,
+    `GET    /health`,
+  ]
+
+  const mockContents = [
+    `[GIN] ${timestamp.replace(/\//g, '-')} - ${timestamp.split(' ')[1]} | 200 | ${Math.floor(Math.random() * 30 + 5)}.${Math.floor(Math.random() * 999)}ms | 172.17.0.1 | ${httpRequests[Math.floor(Math.random() * httpRequests.length)]}`,
+  ]
+
+  const content = mockContents[Math.floor(Math.random() * mockContents.length)]
+  return { timestamp, level, content }
+}
+
+const addModalNewLog = () => {
+  if (!modalAutoRefresh.value) return
+
+  const newLog = generateModalMockLog()
+  modalLogLines.value.push(newLog)
+
+  // 限制日志行数，避免过多日志影响性能
+  if (modalLogLines.value.length > 200) {
+    modalLogLines.value.shift()
+  }
+
+  // 自动滚动到底部
+  nextTick(() => {
+    if (modalLogContainer.value) {
+      modalLogContainer.value.scrollTop = modalLogContainer.value.scrollHeight
+    }
+  })
+}
+
+const updateModalSystemStats = () => {
+  modalSystemStats.value = {
+    cpu: Math.floor(Math.random() * 40 + 20), // 20-60%
+    memory: Math.floor(Math.random() * 30 + 40), // 40-70%
+    disk: Math.floor(Math.random() * 20 + 30), // 30-50%
+  }
+}
+
+const getModalLogLevelClass = (level: string) => {
+  switch (level) {
+    case 'ERROR':
+      return 'modal-log-error'
+    case 'WARN':
+      return 'modal-log-warn'
+    case 'DEBUG':
+      return 'modal-log-debug'
+    default:
+      return 'modal-log-info'
+  }
+}
+
+const toggleModalAutoRefresh = () => {
+  modalAutoRefresh.value = !modalAutoRefresh.value
+  Message.info(modalAutoRefresh.value ? '已开启自动刷新' : '已暂停自动刷新')
+}
+
+const clearModalLogs = () => {
+  modalLogLines.value = []
+  modalLogInitialized.value = false
+
+  // 重新显示初始化日志
+  const initLogs = generateInitLogs()
+  modalLogLines.value.push(...initLogs)
+  modalLogInitialized.value = true
+
+  Message.success('日志已清空')
+}
+
+const startModalRefreshTimer = () => {
+  stopModalRefreshTimer()
+  modalRefreshTimer = window.setInterval(() => {
+    addModalNewLog()
+    updateModalSystemStats()
+  }, 2000)
+}
+
+const stopModalRefreshTimer = () => {
+  if (modalRefreshTimer) {
+    clearInterval(modalRefreshTimer)
+    modalRefreshTimer = null
+  }
+}
+
 // 组件销毁时清理定时器
 onUnmounted(() => {
   clearTimers()
+  stopModalRefreshTimer()
 })
 </script>
 
@@ -754,5 +1069,121 @@ onUnmounted(() => {
 
 :deep(.arco-tabs-content) {
   padding-top: 0;
+}
+
+/* 弹窗样式 */
+.server-detail-modal {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal-info-card,
+.modal-log-card,
+.modal-status-card {
+  margin-bottom: 16px;
+}
+
+.modal-info-item {
+  text-align: center;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 6px;
+}
+
+.modal-info-label {
+  font-size: 12px;
+  color: #86909c;
+  margin-bottom: 6px;
+}
+
+.modal-info-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d2129;
+}
+
+.modal-log-container {
+  height: 350px;
+  overflow-y: auto;
+  background: #1e1e1e;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.modal-log-line {
+  margin-bottom: 3px;
+  word-wrap: break-word;
+}
+
+.modal-log-timestamp {
+  color: #86909c;
+  margin-right: 6px;
+}
+
+.modal-log-level {
+  margin-right: 6px;
+  font-weight: bold;
+}
+
+.modal-log-content {
+  color: #f0f0f0;
+}
+
+.modal-log-info .modal-log-level {
+  color: #52c41a;
+}
+
+.modal-log-debug .modal-log-level {
+  color: #1890ff;
+}
+
+.modal-log-warn .modal-log-level {
+  color: #faad14;
+}
+
+.modal-log-error .modal-log-level {
+  color: #f5222d;
+}
+
+.modal-log-empty {
+  text-align: center;
+  color: #86909c;
+  padding: 40px 0;
+}
+
+.modal-empty-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+.modal-log-count {
+  color: #86909c;
+  font-size: 12px;
+}
+
+.modal-status-item {
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 6px;
+  position: relative;
+}
+
+.modal-status-item h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #1d2129;
+}
+
+.modal-status-value {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 500;
+  color: #1d2129;
+  font-size: 12px;
 }
 </style>

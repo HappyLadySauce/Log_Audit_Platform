@@ -81,7 +81,7 @@
         </div>
 
         <div v-if="logLines.length === 0" class="log-empty">
-          <icon-file-text class="empty-icon" />
+          <icon-file class="empty-icon" />
           <p>暂无日志数据</p>
         </div>
       </div>
@@ -133,7 +133,7 @@ import {
   IconRefresh,
   IconPause,
   IconDelete,
-  IconFileText,
+  IconFile,
 } from '@arco-design/web-vue/es/icon'
 
 const route = useRoute()
