@@ -160,6 +160,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Message } from '@arco-design/web-vue'
+import { simulationApi } from '@/services/simulation'
 import {
   IconDesktop,
   IconDashboard,
@@ -233,17 +234,11 @@ const handleMenuClick = (key: string) => {
 const triggerFault = async () => {
   try {
     faultLoading.value = true
-    const response = await fetch('/api/simulation/trigger-fault', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (response.ok) {
-      Message.success('故障已触发，请查看资产状态和告警记录')
+    const result = await simulationApi.triggerFault()
+    if (result.success) {
+      Message.success('💥 故障已触发！资产状态将变为异常，告警记录已生成')
     } else {
-      Message.error('触发故障失败')
+      Message.error('触发故障失败: ' + result.message)
     }
   } catch (error) {
     console.error('触发故障失败:', error)
@@ -256,17 +251,11 @@ const triggerFault = async () => {
 const fixFault = async () => {
   try {
     fixLoading.value = true
-    const response = await fetch('/api/simulation/fix-fault', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (response.ok) {
-      Message.success('故障已修复，资产状态已恢复正常')
+    const result = await simulationApi.fixFault()
+    if (result.success) {
+      Message.success('✅ 故障已修复！资产状态已恢复正常，告警已解决')
     } else {
-      Message.error('修复故障失败')
+      Message.error('修复故障失败: ' + result.message)
     }
   } catch (error) {
     console.error('修复故障失败:', error)

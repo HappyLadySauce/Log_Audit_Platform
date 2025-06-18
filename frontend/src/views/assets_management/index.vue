@@ -105,9 +105,11 @@
 
         <template #actions="{ record }">
           <a-space>
-            <a-button type="text" size="small">查看</a-button>
-            <a-button type="text" size="small">编辑</a-button>
-            <a-button type="text" size="small" status="danger">删除</a-button>
+            <a-button type="text" size="small" @click="viewAsset(record)">查看</a-button>
+            <a-button type="text" size="small" @click="editAsset(record)">编辑</a-button>
+            <a-button type="text" size="small" status="danger" @click="deleteAsset(record)"
+              >删除</a-button
+            >
           </a-space>
         </template>
       </a-table>
@@ -118,32 +120,125 @@
       v-model:visible="showAddModal"
       title="添加资产"
       @ok="handleAddAsset"
-      @cancel="showAddModal = false"
+      @cancel="resetAddForm"
+      width="800px"
     >
       <a-form :model="addForm" layout="vertical">
-        <a-form-item label="设备名称" required>
-          <a-input v-model="addForm.name" placeholder="请输入设备名称" />
+        <a-row :gutter="16">
+          <a-col :span="12">
+            <a-form-item label="设备名称" required>
+              <a-input v-model="addForm.name" placeholder="请输入设备名称" />
+            </a-form-item>
+          </a-col>
+          <a-col :span="12">
+            <a-form-item label="设备类型" required>
+              <a-select v-model="addForm.asset_type" placeholder="请选择设备类型">
+                <a-option value="linux_server">Linux服务器</a-option>
+                <a-option value="windows_server">Windows服务器</a-option>
+                <a-option value="network_device">网络设备</a-option>
+                <a-option value="k8s_cluster">K8S集群</a-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-row :gutter="16">
+          <a-col :span="12">
+            <a-form-item label="IP地址" required>
+              <a-input v-model="addForm.ip_address" placeholder="请输入IP地址" />
+            </a-form-item>
+          </a-col>
+          <a-col :span="12">
+            <a-form-item label="位置" required>
+              <a-input v-model="addForm.location" placeholder="请输入设备位置" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-row :gutter="16">
+          <a-col :span="12">
+            <a-form-item label="安全防护等级" required>
+              <a-select v-model="addForm.security_level" placeholder="请选择安全防护等级">
+                <a-option value="等级一">等级一</a-option>
+                <a-option value="等级二">等级二</a-option>
+                <a-option value="等级三">等级三</a-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+          <a-col :span="12">
+            <a-form-item label="管理员联系方式">
+              <a-input v-model="addForm.admin_contact" placeholder="请输入联系方式" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-form-item label="资产描述">
+          <a-textarea
+            v-model="addForm.asset_description"
+            placeholder="请描述资产详细信息"
+            :auto-size="{ minRows: 2, maxRows: 4 }"
+          />
         </a-form-item>
-        <a-form-item label="设备类型" required>
-          <a-select v-model="addForm.asset_type" placeholder="请选择设备类型">
-            <a-option value="linux_server">Linux服务器</a-option>
-            <a-option value="windows_server">Windows服务器</a-option>
-            <a-option value="network_device">网络设备</a-option>
-            <a-option value="k8s_cluster">K8S集群</a-option>
-          </a-select>
-        </a-form-item>
-        <a-form-item label="IP地址" required>
-          <a-input v-model="addForm.ip_address" placeholder="请输入IP地址" />
-        </a-form-item>
-        <a-form-item label="位置" required>
-          <a-input v-model="addForm.location" placeholder="请输入设备位置" />
-        </a-form-item>
-        <a-form-item label="安全防护等级" required>
-          <a-select v-model="addForm.security_level" placeholder="请选择安全防护等级">
-            <a-option value="等级一">等级一</a-option>
-            <a-option value="等级二">等级二</a-option>
-            <a-option value="等级三">等级三</a-option>
-          </a-select>
+      </a-form>
+    </a-modal>
+
+    <!-- 编辑资产弹窗 -->
+    <a-modal
+      v-model:visible="showEditModal"
+      title="编辑资产"
+      @ok="handleEditAsset"
+      @cancel="showEditModal = false"
+      width="800px"
+    >
+      <a-form :model="editForm" layout="vertical">
+        <a-row :gutter="16">
+          <a-col :span="12">
+            <a-form-item label="设备名称" required>
+              <a-input v-model="editForm.name" placeholder="请输入设备名称" />
+            </a-form-item>
+          </a-col>
+          <a-col :span="12">
+            <a-form-item label="设备类型" required>
+              <a-select v-model="editForm.asset_type" placeholder="请选择设备类型">
+                <a-option value="linux_server">Linux服务器</a-option>
+                <a-option value="windows_server">Windows服务器</a-option>
+                <a-option value="network_device">网络设备</a-option>
+                <a-option value="k8s_cluster">K8S集群</a-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-row :gutter="16">
+          <a-col :span="12">
+            <a-form-item label="IP地址" required>
+              <a-input v-model="editForm.ip_address" placeholder="请输入IP地址" />
+            </a-form-item>
+          </a-col>
+          <a-col :span="12">
+            <a-form-item label="位置" required>
+              <a-input v-model="editForm.location" placeholder="请输入设备位置" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-row :gutter="16">
+          <a-col :span="12">
+            <a-form-item label="安全防护等级" required>
+              <a-select v-model="editForm.security_level" placeholder="请选择安全防护等级">
+                <a-option value="等级一">等级一</a-option>
+                <a-option value="等级二">等级二</a-option>
+                <a-option value="等级三">等级三</a-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+          <a-col :span="12">
+            <a-form-item label="管理员联系方式">
+              <a-input v-model="editForm.admin_contact" placeholder="请输入联系方式" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-form-item label="资产描述">
+          <a-textarea
+            v-model="editForm.asset_description"
+            placeholder="请描述资产详细信息"
+            :auto-size="{ minRows: 2, maxRows: 4 }"
+          />
         </a-form-item>
       </a-form>
     </a-modal>
@@ -152,7 +247,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { Message } from '@arco-design/web-vue'
+import { Message, Modal } from '@arco-design/web-vue'
 import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
 import { assetsApi, type Asset } from '@/services/assets'
@@ -179,7 +274,25 @@ const addForm = ref({
   ip_address: '',
   location: '',
   security_level: '',
+  admin_contact: '',
+  asset_description: '',
+  last_security_scan: '',
 })
+
+// 编辑资产数据
+const editForm = ref({
+  id: '',
+  name: '',
+  asset_type: '',
+  ip_address: '',
+  location: '',
+  security_level: '',
+  admin_contact: '',
+  asset_description: '',
+  last_security_scan: '',
+})
+
+const showEditModal = ref(false)
 
 // 统计数据计算
 const stats = computed(() => {
@@ -228,13 +341,7 @@ const handleAddAsset = async () => {
     showAddModal.value = false
 
     // 重置表单
-    addForm.value = {
-      name: '',
-      asset_type: '',
-      ip_address: '',
-      location: '',
-      security_level: '',
-    }
+    resetAddForm()
 
     // 刷新列表
     fetchAssets()
@@ -242,6 +349,82 @@ const handleAddAsset = async () => {
     console.error('添加资产失败:', error)
     Message.error('添加资产失败')
   }
+}
+
+// 重置添加表单
+const resetAddForm = () => {
+  addForm.value = {
+    name: '',
+    asset_type: '',
+    ip_address: '',
+    location: '',
+    security_level: '',
+    admin_contact: '',
+    asset_description: '',
+    last_security_scan: '',
+  }
+  showAddModal.value = false
+}
+
+// 查看资产详情
+const viewAsset = (record: Asset) => {
+  // 可以导航到详情页或显示详情弹窗
+  console.log('查看资产:', record)
+}
+
+// 编辑资产
+const editAsset = (record: Asset) => {
+  editForm.value = {
+    id: record.id.toString(),
+    name: record.name,
+    asset_type: record.asset_type,
+    ip_address: record.ip_address,
+    location: record.location,
+    security_level: record.security_level,
+    admin_contact: record.admin_contact || '',
+    asset_description: record.asset_description || '',
+    last_security_scan: record.last_security_scan || '',
+  }
+  showEditModal.value = true
+}
+
+// 处理编辑资产
+const handleEditAsset = async () => {
+  try {
+    if (!editForm.value.name || !editForm.value.asset_type || !editForm.value.ip_address) {
+      Message.warning('请填写必填项')
+      return
+    }
+
+    await assetsApi.updateAsset(Number(editForm.value.id), editForm.value)
+    Message.success('资产更新成功')
+    showEditModal.value = false
+
+    // 刷新列表
+    fetchAssets()
+  } catch (error) {
+    console.error('更新资产失败:', error)
+    Message.error('更新资产失败')
+  }
+}
+
+// 删除资产
+const deleteAsset = (record: Asset) => {
+  Modal.confirm({
+    title: '确认删除',
+    content: `确定要删除资产 "${record.name}" 吗？此操作不可恢复。`,
+    onOk: async () => {
+      try {
+        await assetsApi.deleteAsset(record.id)
+        Message.success('资产删除成功')
+        // 刷新列表
+        fetchAssets()
+      } catch (error) {
+        console.error('删除资产失败:', error)
+        Message.error('删除资产失败')
+      }
+    },
+  })
 }
 
 // 页面加载时获取数据

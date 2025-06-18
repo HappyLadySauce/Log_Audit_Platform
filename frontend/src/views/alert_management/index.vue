@@ -1,18 +1,11 @@
 <template>
   <div class="alert-management-index">
-    <PageHeader
-      title="告警管理"
-      description="分部IT基础设施告警规则配置和记录查询"
-    />
+    <PageHeader title="告警管理" description="分部IT基础设施告警规则配置和记录查询" />
 
     <!-- 功能模块导航 -->
     <a-row :gutter="24">
       <a-col :span="12">
-        <a-card 
-          hoverable 
-          class="module-card"
-          @click="goToRuleManagement"
-        >
+        <a-card hoverable class="module-card" @click="goToRuleManagement">
           <template #cover>
             <div class="card-cover">
               <icon-settings class="card-icon" />
@@ -34,11 +27,7 @@
       </a-col>
 
       <a-col :span="12">
-        <a-card 
-          hoverable 
-          class="module-card"
-          @click="goToRecordQuery"
-        >
+        <a-card hoverable class="module-card" @click="goToRecordQuery">
           <template #cover>
             <div class="card-cover">
               <icon-info-circle class="card-icon" />
@@ -61,12 +50,12 @@
     </a-row>
 
     <!-- 快速统计 -->
-    <a-row :gutter="24" style="margin-top: 24px;">
+    <a-row :gutter="24" style="margin-top: 24px">
       <a-col :span="6">
         <StatCard
           :icon="IconSettings"
           icon-bg-color="#1890ff"
-          :value="45"
+          :value="ruleCount"
           label="配置规则"
           subtitle="已配置告警规则"
         />
@@ -75,8 +64,8 @@
         <StatCard
           :icon="IconExclamation"
           icon-bg-color="#faad14"
-          :value="104"
-          label="活跃告警"
+          :value="alertStats.pending"
+          label="待处理"
           subtitle="待处理告警"
         />
       </a-col>
@@ -84,38 +73,38 @@
         <StatCard
           :icon="IconCheck"
           icon-bg-color="#52c41a"
-          :value="1650"
-          label="已处理"
-          subtitle="历史处理总数"
+          :value="alertStats.resolved"
+          label="已解决"
+          subtitle="已解决告警"
         />
       </a-col>
       <a-col :span="6">
         <StatCard
           :icon="IconEye"
           icon-bg-color="#722ed1"
-          :value="10"
-          label="监控设备"
-          subtitle="分部监控设备"
+          :value="alertStats.archived"
+          label="已归档"
+          subtitle="已归档记录"
         />
       </a-col>
     </a-row>
 
     <!-- 最近告警快览 -->
-    <a-card title="最近告警" style="margin-top: 24px;" :bordered="false">
+    <a-card title="最近告警" style="margin-top: 24px" :bordered="false">
       <a-list :data="recentAlerts" :max-height="300">
         <template #item="{ item }">
           <a-list-item :key="item.id">
             <a-list-item-meta>
               <template #avatar>
-                <a-tag :color="getLevelColor(item.level)" size="small">
-                  {{ getLevelText(item.level) }}
+                <a-tag :color="getLevelColor(item.alert_level)" size="small">
+                  {{ getLevelText(item.alert_level) }}
                 </a-tag>
               </template>
-              <template #title>{{ item.source }}</template>
-              <template #description>{{ item.message }}</template>
+              <template #title>{{ item.title }}</template>
+              <template #description>{{ item.description || '暂无描述' }}</template>
             </a-list-item-meta>
             <template #actions>
-              <span class="time-text">{{ item.time }}</span>
+              <span class="time-text">{{ item.triggered_at }}</span>
             </template>
           </a-list-item>
         </template>
@@ -125,52 +114,56 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
+import { alertsApi, type Alert, type AlertStats } from '@/services/alerts'
 import {
   IconSettings,
   IconInfoCircle,
   IconArrowRight,
   IconExclamation,
   IconCheck,
-  IconEye
+  IconEye,
 } from '@arco-design/web-vue/es/icon'
 
 const router = useRouter()
 
+// 统计数据
+const alertStats = ref<AlertStats>({
+  pending: 0,
+  processing: 0,
+  resolved: 0,
+  archived: 0,
+})
+
+const ruleCount = ref(0)
+
 // 最近告警数据
-const recentAlerts = ref([
-  {
-    id: 1,
-    level: 'warning',
-    source: '分部K8S工作节点1',
-    message: '磁盘使用率达到85%，建议清理日志文件',
-    time: '2024-01-15 10:45:22'
-  },
-  {
-    id: 2,
-    level: 'warning',
-    source: '分部彩光交换机',
-    message: '端口 Gi0/1 利用率达到90%，可能出现网络拥塞',
-    time: '2024-01-15 10:38:45'
-  },
-  {
-    id: 3,
-    level: 'info',
-    source: '分部防火墙',
-    message: 'VPN隧道连接数增长至25个，接近预警阈值',
-    time: '2024-01-15 10:32:33'
-  },
-  {
-    id: 4,
-    level: 'warning',
-    source: '分部K8S控制节点1',
-    message: 'etcd集群延迟超过100ms，可能影响集群响应',
-    time: '2024-01-15 10:28:21'
+const recentAlerts = ref<Alert[]>([])
+
+// 获取数据
+const fetchData = async () => {
+  try {
+    const [stats, alerts, rules] = await Promise.all([
+      alertsApi.getAlertStats(),
+      alertsApi.getAlerts({ limit: 5 }), // 只获取最近5条
+      alertsApi.getAlertRules(),
+    ])
+
+    alertStats.value = stats
+    recentAlerts.value = alerts
+    ruleCount.value = rules.length
+  } catch (error) {
+    console.error('获取数据失败:', error)
   }
-])
+}
+
+// 页面加载时获取数据
+onMounted(() => {
+  fetchData()
+})
 
 // 导航函数
 const goToRuleManagement = () => {
@@ -184,20 +177,19 @@ const goToRecordQuery = () => {
 // 工具函数
 const getLevelColor = (level: string) => {
   switch (level) {
-    case 'error': return 'red'
-    case 'warning': return 'orange'
-    case 'info': return 'blue'
-    default: return 'gray'
+    case '严重':
+      return 'red'
+    case '警告':
+      return 'orange'
+    case '信息':
+      return 'blue'
+    default:
+      return 'gray'
   }
 }
 
 const getLevelText = (level: string) => {
-  switch (level) {
-    case 'error': return '错误'
-    case 'warning': return '警告'
-    case 'info': return '信息'
-    default: return '未知'
-  }
+  return level || '未知'
 }
 </script>
 
@@ -247,4 +239,4 @@ const getLevelText = (level: string) => {
   color: #666;
   line-height: 1.6;
 }
-</style> 
+</style>

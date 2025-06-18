@@ -5,14 +5,14 @@ from app.database import engine, Base
 from app.init_data import init_database
 import uvicorn
 
-# 初始化数据库和预设数据
-init_database()
-
 app = FastAPI(
     title="安全日志审计平台 API",
     description="LogSystem Backend API",
     version="1.0.0"
 )
+
+# 创建数据库表（不初始化数据）
+Base.metadata.create_all(bind=engine)
 
 # 配置CORS
 app.add_middleware(
@@ -36,6 +36,15 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+@app.post("/api/init-database")
+async def initialize_database():
+    """手动初始化数据库数据"""
+    try:
+        init_database()
+        return {"success": True, "message": "数据库初始化成功"}
+    except Exception as e:
+        return {"success": False, "message": f"数据库初始化失败: {str(e)}"}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True) 

@@ -11,6 +11,10 @@ export interface Asset {
   status: string
   created_at: string
   updated_at: string
+  // 扩展信息字段
+  admin_contact?: string
+  asset_description?: string
+  last_security_scan?: string
 }
 
 export interface AssetCreate {
@@ -19,6 +23,10 @@ export interface AssetCreate {
   ip_address: string
   location: string
   security_level: string
+  // 扩展信息字段
+  admin_contact?: string
+  asset_description?: string
+  last_security_scan?: string
 }
 
 export interface AssetUpdate {
@@ -28,6 +36,10 @@ export interface AssetUpdate {
   location?: string
   security_level?: string
   status?: string
+  // 扩展信息字段
+  admin_contact?: string
+  asset_description?: string
+  last_security_scan?: string
 }
 
 // 资产API服务

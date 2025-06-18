@@ -10,6 +10,10 @@ class AssetBase(BaseModel):
     ip_address: str = Field(..., pattern=r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$", description="IP地址")
     location: str = Field(..., min_length=1, max_length=200, description="位置")
     security_level: SecurityLevel = Field(..., description="安全防护等级")
+    # 扩展信息字段
+    admin_contact: Optional[str] = Field(None, max_length=200, description="管理员联系方式")
+    asset_description: Optional[str] = Field(None, description="资产描述")
+    last_security_scan: Optional[str] = Field(None, max_length=20, description="最后安全扫描时间")
 
 class AssetCreate(AssetBase):
     pass
@@ -21,6 +25,10 @@ class AssetUpdate(BaseModel):
     location: Optional[str] = None
     security_level: Optional[SecurityLevel] = None
     status: Optional[AssetStatus] = None
+    # 扩展信息字段
+    admin_contact: Optional[str] = None
+    asset_description: Optional[str] = None
+    last_security_scan: Optional[str] = None
 
 class Asset(AssetBase):
     id: int

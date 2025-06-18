@@ -52,6 +52,11 @@ class Asset(Base):
     status = Column(Enum(AssetStatus), default=AssetStatus.NORMAL)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # 扩展信息字段
+    admin_contact = Column(String(200))  # 管理员联系方式
+    asset_description = Column(Text)  # 资产描述
+    last_security_scan = Column(String(20))  # 最后安全扫描时间
 
     # 关联关系
     alerts = relationship("Alert", back_populates="asset")
