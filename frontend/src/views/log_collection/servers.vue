@@ -571,61 +571,61 @@ const startScan = async () => {
     let discoveredCount = 0
 
     // 首先添加预设的K8S集群服务器（模拟已存在的基础设施）
-    const presetServers = [
-      {
-        key: '1',
-        hostname: '分部K8S控制节点1',
-        ip: '10.10.20.2',
-        serverType: 'Ubuntu 22.04',
-        protocol: 'syslog',
-        status: '在线',
-        collectStatus: '采集中...',
-      },
-      {
-        key: '2',
-        hostname: '分部K8S控制节点2',
-        ip: '10.10.20.3',
-        serverType: 'Ubuntu 22.04',
-        protocol: 'syslog',
-        status: '在线',
-        collectStatus: '采集中...',
-      },
-      {
-        key: '3',
-        hostname: '分部K8S工作节点1',
-        ip: '10.10.20.4',
-        serverType: 'Ubuntu 22.04',
-        protocol: 'syslog',
-        status: '在线',
-        collectStatus: '采集中...',
-      },
-      {
-        key: '4',
-        hostname: '分部K8S工作节点2',
-        ip: '10.10.20.5',
-        serverType: 'Ubuntu 22.04',
-        protocol: 'syslog',
-        status: '在线',
-        collectStatus: '采集中...',
-      },
-    ]
+    // const presetServers = [
+    //   {
+    //     key: '1',
+    //     hostname: '分部K8S控制节点1',
+    //     ip: '10.10.20.2',
+    //     serverType: 'Ubuntu 22.04',
+    //     protocol: 'syslog',
+    //     status: '在线',
+    //     collectStatus: '采集中...',
+    //   },
+    //   {
+    //     key: '2',
+    //     hostname: '分部K8S控制节点2',
+    //     ip: '10.10.20.3',
+    //     serverType: 'Ubuntu 22.04',
+    //     protocol: 'syslog',
+    //     status: '在线',
+    //     collectStatus: '采集中...',
+    //   },
+    //   {
+    //     key: '3',
+    //     hostname: '分部K8S工作节点1',
+    //     ip: '10.10.20.4',
+    //     serverType: 'Ubuntu 22.04',
+    //     protocol: 'syslog',
+    //     status: '在线',
+    //     collectStatus: '采集中...',
+    //   },
+    //   {
+    //     key: '4',
+    //     hostname: '分部K8S工作节点2',
+    //     ip: '10.10.20.5',
+    //     serverType: 'Ubuntu 22.04',
+    //     protocol: 'syslog',
+    //     status: '在线',
+    //     collectStatus: '采集中...',
+    //   },
+    // ]
 
     // 添加预设服务器
-    serverData.value.push(...presetServers)
-    discoveredCount += presetServers.length
+    // serverData.value.push(...presetServers)
+    // discoveredCount += presetServers.length
 
     // 模拟预设服务器采集状态变化
-    presetServers.forEach((server, index) => {
-      setTimeout(
-        () => {
-          const foundServer = serverData.value.find((s) => s.key === server.key)
-          if (foundServer) {
-            foundServer.collectStatus = '已连接 - 实时采集中'
-          }
-        },
-        1000 + index * 500,
-      )
-    })
+    // presetServers.forEach((server, index) => {
+    //   setTimeout(
+    //     () => {
+    //       const foundServer = serverData.value.find((s) => s.key === server.key)
+    //       if (foundServer) {
+    //         foundServer.collectStatus = '已连接 - 实时采集中'
+    //       }
+    //     },
+    //     1000 + index * 500,
+    //   )
+    // })
 
     // 然后获取资产管理中的服务器资产
     try {
@@ -671,22 +671,22 @@ const startScan = async () => {
 
       // 生成日志内容
       setTimeout(() => {
-        logContent.value = `[2024-01-15 10:35:05] INFO: 分部K8S控制节点1(10.10.20.2) - 集群网络通信正常，CNI插件工作正常
-[2024-01-15 10:35:02] INFO: 分部K8S控制节点2(10.10.20.3) - 负载均衡器工作正常，Service状态: Active
-[2024-01-15 10:34:58] DEBUG: 分部K8S工作节点1(10.10.20.4) - 内存使用率: 45%，可用内存: 12GB
-[2024-01-15 10:34:55] INFO: 分部K8S工作节点2(10.10.20.5) - 磁盘I/O性能正常，IOPS: 2500
-[2024-01-15 10:34:48] DEBUG: 分部Kubernetes集群状态检查完成，所有节点健康
-[2024-01-15 10:34:45] INFO: 容器镜像拉取正常，镜像仓库连接稳定
-[2024-01-15 10:34:42] INFO: 服务发现功能正常，Ingress控制器工作正常
-[2024-01-15 10:34:38] DEBUG: 持久化存储检查完成，StorageClass配置正确
-[2024-01-15 10:34:35] INFO: 集群安全策略更新，RBAC权限配置生效
-[2024-01-15 10:34:32] INFO: 监控指标收集正常，Prometheus采集成功
-[2024-01-15 10:34:28] DEBUG: 日志聚合服务正常，ElasticSearch索引更新
-[2024-01-15 10:34:25] INFO: 备份任务执行完成，数据完整性检查通过
-[2024-01-15 10:34:22] INFO: 系统日志采集完成，共采集${discoveredCount}台分部服务器数据
-[2024-01-15 10:34:18] INFO: 分部网络连接稳定，集群间通信正常
-[2024-01-15 10:34:15] DEBUG: Pod调度策略优化，资源利用率提升f
-[2024-01-15 10:34:12] INFO: 分部K8S集群扩容完成，新节点加入成功`
+        logContent.value = `Jan 15 10:35:05 server-01 systemd[1]: Started Network Manager Script Dispatcher Service.
+Jan 15 10:35:02 server-02 sshd[2845]: Accepted publickey for ubuntu from 192.168.1.100 port 45231 ssh2
+Jan 15 10:34:58 server-03 kernel: [12345.678] EXT4-fs (sda1): mounted filesystem with ordered data mode
+Jan 15 10:34:55 server-04 chronyd[1254]: System clock synchronized
+Jan 15 10:34:48 server-01 NetworkManager[1123]: device (eth0): link connected
+Jan 15 10:34:45 server-02 systemd[1]: systemd-tmpfiles-clean.service: Succeeded.
+Jan 15 10:34:42 server-03 rsyslog[1089]: rsyslogd's groupid changed to 104
+Jan 15 10:34:38 server-04 cron[1567]: (root) CMD (run-parts /etc/cron.hourly)
+Jan 15 10:34:35 server-01 systemd-logind[1234]: New session 15 of user admin.
+Jan 15 10:34:32 server-02 smartd[1876]: Device /dev/sda: SMART Health Status: PASSED
+Jan 15 10:34:28 server-03 systemd[1]: Started Update UTMP about System Runlevel Changes.
+Jan 15 10:34:25 server-04 NetworkManager[1123]: device (eth0): Activation successful
+Jan 15 10:34:22 server-01 kernel: CPU usage within normal range: 25%
+Jan 15 10:34:18 server-02 systemd[1]: Reached target Multi-User System.
+Jan 15 10:34:15 server-03 auditd[1456]: Audit daemon started successfully
+Jan 15 10:34:12 server-04 logrotate[2341]: Log rotation completed successfully`
       }, 2000)
     }
 
@@ -830,18 +830,18 @@ const generateInitLogs = (): Array<{ timestamp: string; level: string; content: 
   const baseTime = now.getTime()
   const logs: Array<{ timestamp: string; level: string; content: string }> = []
 
-  // 模拟应用启动过程的时间间隔
+  // 模拟系统启动过程的时间间隔
   const intervals = [0, 500, 800, 1200, 1500, 2000, 2200, 2500]
 
   const initContents = [
-    `time="${new Date(baseTime).toLocaleString('zh-CN').replace(/\//g, '-')}+08:00" level=info msg="[Database] 尝试连接应用数据库"`,
-    `[3.566ms] [rows:-] SELECT DATABASE()`,
-    `[7.568ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA`,
-    `time="${new Date(baseTime + 1000).toLocaleString('zh-CN').replace(/\//g, '-')}+08:00" level=info msg="[Database] 应用数据库已连接"`,
-    `time="${new Date(baseTime + 1200).toLocaleString('zh-CN').replace(/\//g, '-')}+08:00" level=info msg="[Session Cache] 尝试连接redis服务器"`,
-    `time="${new Date(baseTime + 1500).toLocaleString('zh-CN').replace(/\//g, '-')}+08:00" level=info msg="[Session Cache] redis已连接"`,
-    `[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.`,
-    `[GIN-debug] Listening and serving HTTP on :20000`,
+    `kernel: Linux version 5.15.0-67-generic (buildd@ubuntu) (gcc version 11.3.0)`,
+    `systemd[1]: systemd 249.11-0ubuntu3.7 running in system mode`,
+    `systemd[1]: Detected architecture x86-64`,
+    `systemd[1]: Set hostname to <${selectedServer.value.hostname || 'ubuntu-server'}>`,
+    `systemd[1]: Reached target Local File Systems Pre-Target`,
+    `systemd[1]: Reached target Local File Systems`,
+    `systemd[1]: Starting Network Service...`,
+    `systemd[1]: Started Network Service`,
   ]
 
   initContents.forEach((content, index) => {
@@ -856,7 +856,7 @@ const generateInitLogs = (): Array<{ timestamp: string; level: string; content: 
         minute: '2-digit',
         second: '2-digit',
       }),
-      level: content.includes('level=info') ? 'INFO' : 'DEBUG',
+      level: content.includes('kernel:') ? 'INFO' : 'DEBUG',
       content,
     })
   })
@@ -864,7 +864,7 @@ const generateInitLogs = (): Array<{ timestamp: string; level: string; content: 
   return logs
 }
 
-// 生成运行时日志（业务日志）
+// 生成运行时日志（Linux系统日志）
 const generateModalMockLog = (): { timestamp: string; level: string; content: string } => {
   const now = new Date()
   const timestamp = now.toLocaleString('zh-CN', {
@@ -880,21 +880,66 @@ const generateModalMockLog = (): { timestamp: string; level: string; content: st
   const levels = ['INFO', 'DEBUG']
   const level = levels[Math.floor(Math.random() * levels.length)]
 
-  const httpRequests = [
-    `GET    /api/v1/ping`,
-    `GET    /api/v1/user/list`,
-    `GET    /api/v1/user/info`,
-    `GET    /api/v1/user/captcha`,
-    `GET    /api/v1/assets`,
-    `GET    /api/v1/logs`,
-    `GET    /health`,
+  const systemProcesses = [
+    'systemd',
+    'NetworkManager',
+    'sshd',
+    'chronyd',
+    'rsyslog',
+    'dbus',
+    'systemd-logind',
+    'cron',
+    'nginx',
+    'apache2',
+    'docker',
+    'kubelet',
   ]
 
-  const mockContents = [
-    `[GIN] ${timestamp.replace(/\//g, '-')} - ${timestamp.split(' ')[1]} | 200 | ${Math.floor(Math.random() * 30 + 5)}.${Math.floor(Math.random() * 999)}ms | 172.17.0.1 | ${httpRequests[Math.floor(Math.random() * httpRequests.length)]}`,
+  const users = ['root', 'admin', 'ubuntu', 'www-data', 'systemd+']
+  const pids = () => Math.floor(Math.random() * 9000 + 1000)
+
+  const logTemplates = [
+    // 系统服务状态
+    `${systemProcesses[Math.floor(Math.random() * systemProcesses.length)]}[${pids()}]: Service status check completed successfully`,
+    `${systemProcesses[Math.floor(Math.random() * systemProcesses.length)]}[${pids()}]: Process started successfully`,
+    `systemd[1]: Started ${systemProcesses[Math.floor(Math.random() * systemProcesses.length)]}.service`,
+    `systemd[1]: Reached target Multi-User System`,
+
+    // 网络相关
+    `NetworkManager[${pids()}]: device (eth0): link connected`,
+    `NetworkManager[${pids()}]: device (eth0): Activation successful`,
+    `sshd[${pids()}]: Connection from 192.168.1.${Math.floor(Math.random() * 254 + 1)} port ${Math.floor(Math.random() * 65535 + 1024)} on port 22`,
+    `sshd[${pids()}]: Accepted publickey for ${users[Math.floor(Math.random() * users.length)]} from 192.168.1.${Math.floor(Math.random() * 254 + 1)}`,
+
+    // 系统监控
+    `kernel: CPU usage within normal range: ${Math.floor(Math.random() * 30 + 10)}%`,
+    `kernel: Memory usage check: ${Math.floor(Math.random() * 40 + 30)}% used`,
+    `systemd[1]: systemd-tmpfiles-clean.service: Succeeded`,
+    `chronyd[${pids()}]: System clock synchronized`,
+
+    // 文件系统
+    `kernel: EXT4-fs (sda1): mounted filesystem with ordered data mode`,
+    `systemd[1]: tmp.mount: Succeeded`,
+    `logrotate[${pids()}]: Log rotation completed successfully`,
+
+    // 定时任务
+    `cron[${pids()}]: (root) CMD (run-parts /etc/cron.hourly)`,
+    `cron[${pids()}]: (${users[Math.floor(Math.random() * users.length)]}) CMD (/usr/bin/backup_script.sh)`,
+
+    // Docker/容器相关（如果有）
+    `dockerd[${pids()}]: Container health check passed`,
+    `containerd[${pids()}]: Successfully pulled image`,
+
+    // 安全相关
+    `auditd[${pids()}]: Audit daemon started successfully`,
+    `systemd-logind[${pids()}]: New session ${Math.floor(Math.random() * 999)} of user ${users[Math.floor(Math.random() * users.length)]}`,
+
+    // 硬件状态
+    `kernel: ACPI: Power button pressed`,
+    `smartd[${pids()}]: Device /dev/sda: SMART Health Status: PASSED`,
   ]
 
-  const content = mockContents[Math.floor(Math.random() * mockContents.length)]
+  const content = logTemplates[Math.floor(Math.random() * logTemplates.length)]
   return { timestamp, level, content }
 }
 

@@ -136,7 +136,6 @@
                 <a-option value="linux_server">Linux服务器</a-option>
                 <a-option value="windows_server">Windows服务器</a-option>
                 <a-option value="network_device">网络设备</a-option>
-                <a-option value="k8s_cluster">K8S集群</a-option>
               </a-select>
             </a-form-item>
           </a-col>

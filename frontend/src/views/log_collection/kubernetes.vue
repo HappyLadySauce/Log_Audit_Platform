@@ -496,47 +496,21 @@
         <a-form-item
           label="Kubeconfig 配置文件"
           field="kubeconfig"
-          :rules="[{ required: true, message: '请上传或粘贴kubeconfig配置文件' }]"
+          :rules="[{ required: true, message: '请粘贴kubeconfig配置文件' }]"
         >
-          <a-tabs default-active-key="upload" size="small">
-            <a-tab-pane key="upload" title="文件上传">
-              <a-upload
-                :custom-request="handleKubeconfigUpload"
-                :show-file-list="false"
-                accept=".yaml,.yml,.config"
-                :disabled="connecting"
-              >
-                <template #upload-button>
-                  <div class="upload-area">
-                    <div class="upload-icon">
-                      <icon-upload />
-                    </div>
-                    <div class="upload-text">
-                      <div>点击上传 kubeconfig 文件</div>
-                      <div class="upload-tip">支持 .yaml、.yml、.config 格式</div>
-                    </div>
-                  </div>
-                </template>
-              </a-upload>
-              <div v-if="uploadedFileName" class="uploaded-file">
-                <icon-check-circle style="color: #52c41a" />
-                <span>{{ uploadedFileName }}</span>
-              </div>
-            </a-tab-pane>
-
-            <a-tab-pane key="paste" title="直接粘贴">
-              <a-textarea
-                v-model="addClusterForm.kubeconfig"
-                placeholder="请粘贴完整的 kubeconfig 内容..."
-                :rows="8"
-                :disabled="connecting"
-              />
-              <div class="config-tip">
-                <icon-info />
-                <span>请确保 kubeconfig 内容完整且格式正确</span>
-              </div>
-            </a-tab-pane>
-          </a-tabs>
+          <a-textarea
+            v-model="addClusterForm.kubeconfig"
+            placeholder="请粘贴完整的 kubeconfig 内容..."
+            :rows="25"
+            :disabled="connecting"
+            @input="onKubeconfigInput"
+            :style="{
+              fontSize: '13px',
+              lineHeight: '1.5',
+              minHeight: '500px',
+              height: '500px',
+            }"
+          />
         </a-form-item>
 
         <div v-if="connecting" class="connecting-status">
@@ -576,7 +550,6 @@ import {
   IconStorage,
   IconSettings,
   IconDesktop,
-  IconUpload,
   IconCheckCircle,
   IconInfo,
 } from '@arco-design/web-vue/es/icon'
@@ -600,7 +573,6 @@ const addClusterForm = ref({
   kubeconfig: '',
 })
 const addClusterFormRef = ref()
-const uploadedFileName = ref('')
 const kubeconfigPreview = ref<any>(null)
 
 // 节点数据 - 初始为空
@@ -1279,23 +1251,16 @@ const showAddClusterModal = () => {
     name: '',
     kubeconfig: '',
   }
-  uploadedFileName.value = ''
   kubeconfigPreview.value = null
 }
 
-// 处理kubeconfig文件上传
-const handleKubeconfigUpload = (option: any) => {
-  const { file } = option
-  uploadedFileName.value = file.name
-
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    if (e.target?.result) {
-      addClusterForm.value.kubeconfig = e.target.result as string
-      parseKubeconfig(e.target.result as string)
-    }
+// kubeconfig输入处理
+const onKubeconfigInput = () => {
+  if (addClusterForm.value.kubeconfig.trim()) {
+    parseKubeconfig(addClusterForm.value.kubeconfig)
+  } else {
+    kubeconfigPreview.value = null
   }
-  reader.readAsText(file)
 }
 
 // 解析kubeconfig配置
@@ -1340,7 +1305,6 @@ const parseKubeconfig = (kubeconfigContent: string) => {
 const cancelAddCluster = () => {
   addClusterVisible.value = false
   connecting.value = false
-  uploadedFileName.value = ''
   kubeconfigPreview.value = null
   if (addClusterFormRef.value) {
     addClusterFormRef.value.resetFields()
@@ -2320,57 +2284,19 @@ const getLogLevelColor = (level: string) => {
   padding-top: 0;
 }
 
-/* 文件上传相关样式 */
-.upload-area {
-  border: 2px dashed #d9d9d9;
-  border-radius: 6px;
-  padding: 40px 20px;
-  text-align: center;
-  background: #fafafa;
-  cursor: pointer;
-  transition: all 0.3s;
+/* kubeconfig文本区域样式 */
+:deep(.arco-textarea) {
+  font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 500px !important;
+  height: 500px !important;
 }
 
-.upload-area:hover {
-  border-color: #1890ff;
-  background: #f0f8ff;
-}
-
-.upload-icon {
-  font-size: 48px;
-  color: #d9d9d9;
-  margin-bottom: 16px;
-}
-
-.upload-text {
-  color: #666;
-}
-
-.upload-tip {
-  font-size: 12px;
-  color: #999;
-  margin-top: 4px;
-}
-
-.uploaded-file {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 8px 12px;
-  background: #f6ffed;
-  border: 1px solid #b7eb8f;
-  border-radius: 4px;
-  color: #52c41a;
-}
-
-.config-tip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  font-size: 12px;
-  color: #666;
+:deep(.arco-textarea-wrapper) {
+  min-height: 500px !important;
+  height: auto !important;
 }
 
 .config-preview {
