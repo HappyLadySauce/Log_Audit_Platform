@@ -1,18 +1,15 @@
 <template>
   <div class="assets-page">
-    <PageHeader
-      title="资产管理"
-      description="管理和监控所有IT资产设备"
-    >
+    <PageHeader title="资产管理" description="管理和监控所有IT资产设备">
       <template #extra>
         <a-space>
-          <a-button>
+          <a-button @click="handleRefresh" :loading="loading">
             <template #icon>
               <icon-refresh />
             </template>
             刷新
           </a-button>
-          <a-button type="primary">
+          <a-button type="primary" @click="showAddAsset">
             <template #icon>
               <icon-plus />
             </template>
@@ -28,7 +25,7 @@
         <StatCard
           :icon="IconDesktop"
           icon-bg-color="#1890ff"
-          :value="10"
+          :value="stats.total"
           label="总资产数"
           subtitle="设备总量"
         />
@@ -37,7 +34,7 @@
         <StatCard
           :icon="IconCheck"
           icon-bg-color="#52c41a"
-          :value="10"
+          :value="stats.online"
           label="在线设备"
           subtitle="正常运行"
         />
@@ -46,7 +43,7 @@
         <StatCard
           :icon="IconExclamation"
           icon-bg-color="#faad14"
-          :value="0"
+          :value="stats.warning"
           label="异常设备"
           subtitle="需要关注"
         />
@@ -55,7 +52,7 @@
         <StatCard
           :icon="IconClose"
           icon-bg-color="#f5222d"
-          :value="0"
+          :value="stats.error"
           label="离线设备"
           subtitle="失去连接"
         />
@@ -66,16 +63,8 @@
     <a-card title="资产列表" :bordered="false">
       <template #extra>
         <a-space>
-          <a-input-search
-            placeholder="搜索资产..."
-            style="width: 200px"
-            allow-clear
-          />
-          <a-select
-            placeholder="设备类型"
-            style="width: 120px"
-            allow-clear
-          >
+          <a-input-search placeholder="搜索资产..." style="width: 200px" allow-clear />
+          <a-select placeholder="设备类型" style="width: 120px" allow-clear>
             <a-option value="server">服务器</a-option>
             <a-option value="network">网络设备</a-option>
             <a-option value="storage">存储设备</a-option>
@@ -89,30 +78,29 @@
         :data="assetData"
         :pagination="{ pageSize: 10 }"
         :scroll="{ x: '100%' }"
+        :loading="loading"
+        row-key="id"
       >
         <template #deviceInfo="{ record }">
           <div class="device-info">
             <a-avatar size="small" class="device-avatar">
-              <component :is="getDeviceIcon(record.type)" />
+              <component :is="getDeviceIcon(record.asset_type)" />
             </a-avatar>
             <div class="device-details">
               <div class="device-name">{{ record.name }}</div>
-              <div class="device-model">{{ record.model }}</div>
+              <div class="device-model">{{ record.security_level }}</div>
             </div>
           </div>
         </template>
 
         <template #type="{ record }">
-          <a-tag :color="getTypeColor(record.type)">
-            {{ getTypeName(record.type) }}
+          <a-tag :color="getTypeColor(record.asset_type)">
+            {{ getTypeName(record.asset_type) }}
           </a-tag>
         </template>
 
         <template #status="{ record }">
-          <a-badge
-            :status="getStatusType(record.status)"
-            :text="record.status"
-          />
+          <a-badge :status="getStatusType(record.status)" :text="getStatusText(record.status)" />
         </template>
 
         <template #actions="{ record }">
@@ -124,13 +112,50 @@
         </template>
       </a-table>
     </a-card>
+
+    <!-- 添加资产弹窗 -->
+    <a-modal
+      v-model:visible="showAddModal"
+      title="添加资产"
+      @ok="handleAddAsset"
+      @cancel="showAddModal = false"
+    >
+      <a-form :model="addForm" layout="vertical">
+        <a-form-item label="设备名称" required>
+          <a-input v-model="addForm.name" placeholder="请输入设备名称" />
+        </a-form-item>
+        <a-form-item label="设备类型" required>
+          <a-select v-model="addForm.asset_type" placeholder="请选择设备类型">
+            <a-option value="linux_server">Linux服务器</a-option>
+            <a-option value="windows_server">Windows服务器</a-option>
+            <a-option value="network_device">网络设备</a-option>
+            <a-option value="k8s_cluster">K8S集群</a-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item label="IP地址" required>
+          <a-input v-model="addForm.ip_address" placeholder="请输入IP地址" />
+        </a-form-item>
+        <a-form-item label="位置" required>
+          <a-input v-model="addForm.location" placeholder="请输入设备位置" />
+        </a-form-item>
+        <a-form-item label="安全防护等级" required>
+          <a-select v-model="addForm.security_level" placeholder="请选择安全防护等级">
+            <a-option value="等级一">等级一</a-option>
+            <a-option value="等级二">等级二</a-option>
+            <a-option value="等级三">等级三</a-option>
+          </a-select>
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { Message } from '@arco-design/web-vue'
 import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
+import { assetsApi, type Asset } from '@/services/assets'
 import {
   IconRefresh,
   IconPlus,
@@ -139,115 +164,90 @@ import {
   IconExclamation,
   IconClose,
   IconWifi,
-  IconLock
+  IconLock,
 } from '@arco-design/web-vue/es/icon'
 
 // 资产数据
-const assetData = ref([
-  // 网络设备 - 防火墙
-  {
-    key: '1',
-    name: '分部防火墙',
-    model: 'Fortinet FortiGate 400E',
-    type: 'security',
-    ip: '10.10.20.1',
-    location: '分部机房B-01',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:28:00'
-  },
-  // 网络设备 - 交换机
-  {
-    key: '2',
-    name: '分部集群接入交换机',
-    model: 'Cisco Catalyst 9300',
-    type: 'network',
-    ip: '10.10.10.150',
-    location: '分部机房B-02',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:25:00'
-  },
-  {
-    key: '3',
-    name: '分部彩光交换机',
-    model: 'H3C S6520-SI',
-    type: 'network',
-    ip: '192.168.100.1',
-    location: '分部机房B-03',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:22:00'
-  },
-  {
-    key: '4',
-    name: '分部无线控制器',
-    model: 'Cisco WLC 3504',
-    type: 'network',
-    ip: '192.168.100.2',
-    location: '分部机房B-04',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:20:00'
-  },
-  {
-    key: '5',
-    name: '分部用户接入交换机',
-    model: 'H3C S5560-EI',
-    type: 'network',
-    ip: '192.168.100.3',
-    location: '分部机房B-05',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:18:00'
-  },
-  {
-    key: '6',
-    name: '分部AP',
-    model: 'Cisco Aironet 2802I',
-    type: 'network',
-    ip: '192.168.30.2',
-    location: '分部办公区域',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:15:00'
-  },
-  // 服务器设备
-  {
-    key: '7',
-    name: '分部K8S控制节点1',
-    model: 'HPE ProLiant DL360',
-    type: 'server',
-    ip: '10.10.20.2',
-    location: '分部机房B-06',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:22:00'
-  },
-  {
-    key: '8',
-    name: '分部K8S控制节点2',
-    model: 'HPE ProLiant DL360',
-    type: 'server',
-    ip: '10.10.20.3',
-    location: '分部机房B-07',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:20:00'
-  },
-  {
-    key: '9',
-    name: '分部K8S工作节点1',
-    model: 'Dell PowerEdge R540',
-    type: 'server',
-    ip: '10.10.20.4',
-    location: '分部机房B-08',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:18:00'
-  },
-  {
-    key: '10',
-    name: '分部K8S工作节点2',
-    model: 'Dell PowerEdge R540',
-    type: 'server',
-    ip: '10.10.20.5',
-    location: '分部机房B-09',
-    status: '在线',
-    lastUpdate: '2024-01-15 10:16:00'
+const assetData = ref<Asset[]>([])
+const loading = ref(false)
+const showAddModal = ref(false)
+
+// 添加资产表单数据
+const addForm = ref({
+  name: '',
+  asset_type: '',
+  ip_address: '',
+  location: '',
+  security_level: '',
+})
+
+// 统计数据计算
+const stats = computed(() => {
+  const total = assetData.value.length
+  const online = assetData.value.filter((item) => item.status === 'normal').length
+  const warning = assetData.value.filter((item) => item.status === 'warning').length
+  const error = assetData.value.filter((item) => item.status === 'error').length
+
+  return { total, online, warning, error }
+})
+
+// 获取资产列表
+const fetchAssets = async () => {
+  try {
+    loading.value = true
+    const data = await assetsApi.getAssets()
+    assetData.value = data
+  } catch (error) {
+    console.error('获取资产列表失败:', error)
+    Message.error('获取资产列表失败')
+  } finally {
+    loading.value = false
   }
-])
+}
+
+// 刷新数据
+const handleRefresh = () => {
+  fetchAssets()
+}
+
+// 显示添加资产弹窗
+const showAddAsset = () => {
+  showAddModal.value = true
+}
+
+// 添加资产
+const handleAddAsset = async () => {
+  try {
+    if (!addForm.value.name || !addForm.value.asset_type || !addForm.value.ip_address) {
+      Message.warning('请填写必填项')
+      return
+    }
+
+    await assetsApi.createAsset(addForm.value)
+    Message.success('资产添加成功')
+    showAddModal.value = false
+
+    // 重置表单
+    addForm.value = {
+      name: '',
+      asset_type: '',
+      ip_address: '',
+      location: '',
+      security_level: '',
+    }
+
+    // 刷新列表
+    fetchAssets()
+  } catch (error) {
+    console.error('添加资产失败:', error)
+    Message.error('添加资产失败')
+  }
+}
+
+// 页面加载时获取数据
+onMounted(() => {
+  fetchAssets()
+})
 
 // 表格列配置
 const assetColumns = [
@@ -255,51 +255,52 @@ const assetColumns = [
     title: '设备信息',
     dataIndex: 'name',
     slotName: 'deviceInfo',
-    width: 250
+    width: 250,
   },
   {
     title: '设备类型',
-    dataIndex: 'type',
+    dataIndex: 'asset_type',
     slotName: 'type',
-    width: 100
+    width: 100,
   },
   {
     title: 'IP地址',
-    dataIndex: 'ip',
-    width: 120
+    dataIndex: 'ip_address',
+    width: 120,
   },
   {
     title: '位置',
     dataIndex: 'location',
-    width: 120
+    width: 120,
   },
   {
     title: '状态',
     dataIndex: 'status',
     slotName: 'status',
-    width: 100
+    width: 100,
   },
   {
     title: '最后更新',
-    dataIndex: 'lastUpdate',
-    width: 160
+    dataIndex: 'updated_at',
+    width: 160,
   },
   {
     title: '操作',
     slotName: 'actions',
     width: 150,
-    fixed: 'right'
-  }
+    fixed: 'right',
+  },
 ]
 
 // 工具函数
 const getDeviceIcon = (type: string) => {
   switch (type) {
-    case 'server':
+    case 'linux_server':
+    case 'windows_server':
       return IconDesktop
-    case 'network':
+    case 'network_device':
       return IconWifi
-    case 'security':
+    case 'k8s_cluster':
       return IconLock
     default:
       return IconDesktop
@@ -308,14 +309,13 @@ const getDeviceIcon = (type: string) => {
 
 const getTypeColor = (type: string) => {
   switch (type) {
-    case 'server':
+    case 'linux_server':
+    case 'windows_server':
       return 'blue'
-    case 'network':
+    case 'network_device':
       return 'green'
-    case 'security':
+    case 'k8s_cluster':
       return 'red'
-    case 'storage':
-      return 'orange'
     default:
       return 'gray'
   }
@@ -323,14 +323,14 @@ const getTypeColor = (type: string) => {
 
 const getTypeName = (type: string) => {
   switch (type) {
-    case 'server':
-      return '服务器'
-    case 'network':
+    case 'linux_server':
+      return 'Linux服务器'
+    case 'windows_server':
+      return 'Windows服务器'
+    case 'network_device':
       return '网络设备'
-    case 'security':
-      return '安全设备'
-    case 'storage':
-      return '存储设备'
+    case 'k8s_cluster':
+      return 'K8S集群'
     default:
       return '未知'
   }
@@ -338,14 +338,27 @@ const getTypeName = (type: string) => {
 
 const getStatusType = (status: string) => {
   switch (status) {
-    case '在线':
+    case 'normal':
       return 'success'
-    case '异常':
+    case 'warning':
       return 'warning'
-    case '离线':
+    case 'error':
       return 'error'
     default:
       return 'default'
+  }
+}
+
+const getStatusText = (status: string) => {
+  switch (status) {
+    case 'normal':
+      return '在线'
+    case 'warning':
+      return '异常'
+    case 'error':
+      return '离线'
+    default:
+      return '未知'
   }
 }
 </script>

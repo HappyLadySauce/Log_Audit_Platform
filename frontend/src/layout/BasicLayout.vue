@@ -26,7 +26,7 @@
           </template>
           <span>首页</span>
         </a-menu-item>
-        
+
         <a-menu-item key="assets">
           <template #icon>
             <icon-storage />
@@ -106,6 +106,28 @@
 
         <div class="header-right">
           <a-space>
+            <!-- 全局控制按钮 -->
+            <a-button
+              type="primary"
+              status="danger"
+              size="small"
+              @click="triggerFault"
+              :loading="faultLoading"
+            >
+              触发故障
+            </a-button>
+            <a-button
+              type="primary"
+              status="success"
+              size="small"
+              @click="fixFault"
+              :loading="fixLoading"
+            >
+              修复故障
+            </a-button>
+
+            <a-divider direction="vertical" />
+
             <a-button type="text" shape="circle">
               <icon-history />
             </a-button>
@@ -137,6 +159,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { Message } from '@arco-design/web-vue'
 import {
   IconDesktop,
   IconDashboard,
@@ -151,7 +174,7 @@ import {
   IconHistory,
   IconUser,
   IconSettings,
-  IconInfoCircle
+  IconInfoCircle,
 } from '@arco-design/web-vue/es/icon'
 
 const router = useRouter()
@@ -159,6 +182,8 @@ const route = useRoute()
 
 const collapsed = ref(false)
 const searchValue = ref('')
+const faultLoading = ref(false)
+const fixLoading = ref(false)
 
 // 根据当前路由设置选中的菜单项
 const selectedKeys = ref<string[]>([])
@@ -166,16 +191,16 @@ const openKeys = ref<string[]>([])
 
 // 菜单路由映射
 const menuRouteMap: Record<string, string> = {
-  'overview': '/',
-  'assets': '/assets',
+  overview: '/',
+  assets: '/assets',
   'network-device': '/log-collection/network-device',
-  'servers': '/log-collection/servers',
-  'kubernetes': '/log-collection/kubernetes',
+  servers: '/log-collection/servers',
+  kubernetes: '/log-collection/kubernetes',
   'internet-traffic': '/log-collection/internet-traffic',
   'log-management': '/log-management',
   'alert-rule-management': '/alert-management/rule-management',
   'alert-record-query': '/alert-management/record-query',
-  'ai-analysis': '/ai-analysis'
+  'ai-analysis': '/ai-analysis',
 }
 
 // 监听路由变化更新选中状态
@@ -185,7 +210,7 @@ watch(
     for (const [key, path] of Object.entries(menuRouteMap)) {
       if (newPath === path || newPath.startsWith(path + '/')) {
         selectedKeys.value = [key]
-        
+
         // 如果是告警管理的子菜单，展开父菜单
         if (key.startsWith('alert-')) {
           openKeys.value = ['alert-management']
@@ -194,13 +219,60 @@ watch(
       }
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 const handleMenuClick = (key: string) => {
   const path = menuRouteMap[key]
   if (path) {
     router.push(path)
+  }
+}
+
+// 全局控制函数
+const triggerFault = async () => {
+  try {
+    faultLoading.value = true
+    const response = await fetch('/api/simulation/trigger-fault', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (response.ok) {
+      Message.success('故障已触发，请查看资产状态和告警记录')
+    } else {
+      Message.error('触发故障失败')
+    }
+  } catch (error) {
+    console.error('触发故障失败:', error)
+    Message.error('触发故障失败')
+  } finally {
+    faultLoading.value = false
+  }
+}
+
+const fixFault = async () => {
+  try {
+    fixLoading.value = true
+    const response = await fetch('/api/simulation/fix-fault', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (response.ok) {
+      Message.success('故障已修复，资产状态已恢复正常')
+    } else {
+      Message.error('修复故障失败')
+    }
+  } catch (error) {
+    console.error('修复故障失败:', error)
+    Message.error('修复故障失败')
+  } finally {
+    fixLoading.value = false
   }
 }
 </script>
@@ -278,4 +350,4 @@ const handleMenuClick = (key: string) => {
 :deep(.arco-menu-dark .arco-menu-item.arco-menu-selected) {
   background-color: #1890ff;
 }
-</style> 
+</style>
