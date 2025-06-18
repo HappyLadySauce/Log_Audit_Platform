@@ -312,97 +312,70 @@
       </a-tabs>
     </a-modal>
 
-    <!-- Pod详情模态框 -->
+    <!-- Pod详情模态框 - 单页面布局 -->
     <a-modal
       v-model:visible="podDetailVisible"
       :title="`Pod详情 - ${selectedPod?.podName}`"
-      width="1200px"
+      width="1400px"
       :footer="false"
+      :body-style="{ padding: '24px' }"
+      @cancel="closePodDetail"
     >
-      <a-tabs default-active-key="basic-info">
-        <a-tab-pane key="basic-info" title="基本信息">
-          <a-descriptions :column="2" bordered>
+      <div class="pod-detail-container">
+        <!-- 基本信息区域 -->
+        <div class="detail-section">
+          <h3 class="section-title">基本信息</h3>
+          <a-descriptions :column="3" bordered size="small">
             <a-descriptions-item label="Pod名称">{{ selectedPod?.podName }}</a-descriptions-item>
             <a-descriptions-item label="命名空间">{{ selectedPod?.namespace }}</a-descriptions-item>
-            <a-descriptions-item label="节点">{{ selectedPod?.node }}</a-descriptions-item>
+            <a-descriptions-item label="节点IP">{{
+              selectedPod?.nodeIP || selectedPod?.node
+            }}</a-descriptions-item>
+            <a-descriptions-item label="Pod IP">{{
+              selectedPod?.podIP || 'N/A'
+            }}</a-descriptions-item>
             <a-descriptions-item label="状态">
               <a-badge
                 :status="selectedPod?.status === 'Running' ? 'success' : 'error'"
                 :text="selectedPod?.status"
               />
             </a-descriptions-item>
-            <a-descriptions-item label="UID">{{ selectedPod?.uid }}</a-descriptions-item>
-            <a-descriptions-item label="镜像">{{ selectedPod?.image }}</a-descriptions-item>
             <a-descriptions-item label="重启次数">{{ selectedPod?.restarts }}</a-descriptions-item>
+            <a-descriptions-item label="镜像">{{ selectedPod?.image }}</a-descriptions-item>
             <a-descriptions-item label="创建时间">{{
               selectedPod?.createdTime
             }}</a-descriptions-item>
+            <a-descriptions-item label="UID">{{ selectedPod?.uid }}</a-descriptions-item>
             <a-descriptions-item label="CPU使用率">
-              <div class="resource-usage">
-                <a-progress
-                  :percent="selectedPod?.cpu"
-                  :color="
-                    selectedPod?.cpu > 80
-                      ? '#f5222d'
-                      : selectedPod?.cpu > 60
-                        ? '#faad14'
-                        : '#52c41a'
-                  "
-                  size="small"
-                />
-                <span class="usage-text">{{ selectedPod?.cpu }}%</span>
-              </div>
+              <!-- 变大 -->
+              <span style="font-size: 40px; color: #52c41a" class="usage-text"
+                >{{ selectedPod?.cpu }}%</span
+              >
             </a-descriptions-item>
             <a-descriptions-item label="内存使用率">
-              <div class="resource-usage">
-                <a-progress
-                  :percent="selectedPod?.memory"
-                  :color="
-                    selectedPod?.memory > 80
-                      ? '#f5222d'
-                      : selectedPod?.memory > 60
-                        ? '#faad14'
-                        : '#52c41a'
-                  "
-                  size="small"
-                />
-                <span class="usage-text">{{ selectedPod?.memory }}%</span>
-              </div>
+              <span style="font-size: 40px; color: #52c41a" class="usage-text"
+                >{{ selectedPod?.memory }}%</span
+              >
             </a-descriptions-item>
-          </a-descriptions>
-
-          <!-- 标签和注解 -->
-          <a-divider>标签和注解</a-divider>
-          <a-row :gutter="24">
-            <a-col :span="12">
-              <h4>标签</h4>
+            <a-descriptions-item label="标签">
               <div class="labels-container">
                 <a-tag
                   v-for="(value, key) in selectedPod?.labels"
                   :key="key"
                   color="blue"
+                  size="small"
                   class="label-tag"
                 >
                   {{ key }}: {{ value }}
                 </a-tag>
               </div>
-            </a-col>
-            <a-col :span="12">
-              <h4>注解</h4>
-              <div class="annotations-container">
-                <a-tag
-                  v-for="(value, key) in selectedPod?.annotations"
-                  :key="key"
-                  color="green"
-                  class="annotation-tag"
-                >
-                  {{ key }}: {{ value }}
-                </a-tag>
-              </div>
-            </a-col>
-          </a-row>
-        </a-tab-pane>
-        <a-tab-pane key="containers" title="容器详情">
+            </a-descriptions-item>
+          </a-descriptions>
+        </div>
+
+        <!-- 容器详情区域 -->
+        <div class="detail-section">
+          <h3 class="section-title">容器详情</h3>
           <a-table
             :columns="containerColumns"
             :data="selectedPod?.containers || []"
@@ -465,88 +438,37 @@
               </div>
             </template>
           </a-table>
-        </a-tab-pane>
+        </div>
 
-        <a-tab-pane key="resource-monitor" title="资源监控">
-          <a-row :gutter="24">
-            <a-col :span="12">
-              <a-card size="small">
-                <DashboardChart
-                  type="area"
-                  :data="cpuChartData"
-                  title="CPU使用率趋势"
-                  height="200px"
-                  :smooth="true"
-                />
-              </a-card>
-            </a-col>
-            <a-col :span="12">
-              <a-card size="small">
-                <DashboardChart
-                  type="area"
-                  :data="memoryChartData"
-                  title="内存使用率趋势"
-                  height="200px"
-                  :smooth="true"
-                />
-              </a-card>
-            </a-col>
-          </a-row>
-
-          <a-row :gutter="24" style="margin-top: 16px">
-            <a-col :span="12">
-              <a-card size="small">
-                <DashboardChart
-                  type="line"
-                  :data="networkChartData"
-                  title="网络I/O"
-                  height="200px"
-                  :smooth="true"
-                />
-              </a-card>
-            </a-col>
-            <a-col :span="12">
-              <a-card size="small">
-                <DashboardChart
-                  type="line"
-                  :data="diskChartData"
-                  title="磁盘I/O"
-                  height="200px"
-                  :smooth="true"
-                />
-              </a-card>
-            </a-col>
-          </a-row>
-        </a-tab-pane>
-        <a-tab-pane key="event-logs" title="事件日志">
-          <a-table :columns="eventColumns" :data="eventData" :pagination="false" size="small">
-            <template #eventType="{ record }">
-              <a-tag :color="record.type === 'Normal' ? 'green' : 'red'" size="small">
-                {{ record.type }}
-              </a-tag>
-            </template>
-          </a-table>
-        </a-tab-pane>
-        <a-tab-pane key="real-time-logs" title="实时日志">
+        <!-- 实时日志区域 -->
+        <div class="detail-section">
+          <h3 class="section-title">实时日志</h3>
           <div class="log-container">
             <div class="log-header">
               <a-space>
-                <a-button size="small" @click="togglePodLogStream">
-                  {{ podLogStreamActive ? '停止' : '开始' }}实时日志
-                </a-button>
-                <a-button size="small" @click="clearPodLogs">清空日志</a-button>
+                <a-tag color="green">
+                  <template #icon>
+                    <icon-check-circle />
+                  </template>
+                  实时采集中
+                </a-tag>
+                <span class="log-count">日志条数: {{ podLogs.length }}</span>
               </a-space>
             </div>
             <div class="log-content" ref="podLogRef">
               <div v-for="(log, index) in podLogs" :key="index" class="log-line">
-                <span class="log-time">{{ log.time }}</span>
+                <span class="log-time">{{ log.timestamp }}</span>
                 <span :class="`log-level ${log.level.toLowerCase()}`">{{ log.level }}</span>
-                <span class="log-message">{{ log.message }}</span>
+                <span class="log-message">{{ log.content }}</span>
+              </div>
+              <div v-if="podLogs.length === 0" class="log-empty">
+                <icon-file style="font-size: 48px; color: #c9cdd4" />
+                <p>正在初始化日志采集...</p>
               </div>
             </div>
           </div>
-        </a-tab-pane>
-      </a-tabs>
+        </div>
+      </div>
     </a-modal>
 
     <!-- 接入新集群模态框 -->
@@ -947,12 +869,19 @@ const selectedPod = ref<any>(null)
 // 实时日志相关
 const clusterLogs = ref<any[]>([])
 const nodeLogs = ref<any[]>([])
-const podLogs = ref<any[]>([])
+const podLogs = ref<
+  Array<{
+    timestamp: string
+    level: string
+    content: string
+  }>
+>([])
 
 // 日志流状态
 const logStreamActive = ref(false)
 const nodeLogStreamActive = ref(false)
 const podLogStreamActive = ref(false)
+const podLogInitialized = ref(false)
 
 // 日志容器引用
 const clusterLogRef = ref<HTMLElement>()
@@ -1012,6 +941,17 @@ const showPodDetail = (pod: any) => {
   selectedPod.value = pod
   podDetailVisible.value = true
   initPodLogs()
+
+  // 自动开始实时日志流
+  podLogStreamActive.value = true
+  startPodLogStream()
+}
+
+// 关闭Pod详情
+const closePodDetail = () => {
+  podDetailVisible.value = false
+  podLogStreamActive.value = false
+  stopPodLogStream()
 }
 
 // 初始化集群日志
@@ -1056,25 +996,55 @@ const initNodeLogs = () => {
   ]
 }
 
+// 生成Pod初始化日志（仿servers.vue）
+const generatePodInitLogs = (): Array<{ timestamp: string; level: string; content: string }> => {
+  const now = new Date()
+  const baseTime = now.getTime()
+  const logs: Array<{ timestamp: string; level: string; content: string }> = []
+
+  // 模拟应用启动过程的时间间隔
+  const intervals = [0, 500, 800, 1200, 1500, 2000, 2200, 2500]
+
+  const initContents = [
+    `time="${new Date(baseTime).toLocaleString('zh-CN').replace(/\//g, '-')}+08:00" level=info msg="[Database] 尝试连接应用数据库"`,
+    `[3.566ms] [rows:-] SELECT DATABASE()`,
+    `[7.568ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA`,
+    `time="${new Date(baseTime + 1000).toLocaleString('zh-CN').replace(/\//g, '-')}+08:00" level=info msg="[Database] 应用数据库已连接"`,
+    `time="${new Date(baseTime + 1200).toLocaleString('zh-CN').replace(/\//g, '-')}+08:00" level=info msg="[Session Cache] 尝试连接redis服务器"`,
+    `time="${new Date(baseTime + 1500).toLocaleString('zh-CN').replace(/\//g, '-')}+08:00" level=info msg="[Session Cache] redis已连接"`,
+    `[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.`,
+    `[GIN-debug] Listening and serving HTTP on :20000`,
+  ]
+
+  initContents.forEach((content, index) => {
+    const logTime = new Date(baseTime + intervals[index])
+    logs.push({
+      timestamp: logTime.toLocaleString('zh-CN', {
+        hour12: false,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      }),
+      level: content.includes('level=info') ? 'INFO' : 'DEBUG',
+      content,
+    })
+  })
+
+  return logs
+}
+
 // 初始化Pod日志
 const initPodLogs = () => {
-  podLogs.value = [
-    {
-      time: '2024-01-15 10:35:18',
-      level: 'INFO',
-      message: `${selectedPod.value?.podName} - 容器启动成功，服务正常运行`,
-    },
-    {
-      time: '2024-01-15 10:35:15',
-      level: 'DEBUG',
-      message: `${selectedPod.value?.podName} - 健康检查通过，CPU: ${selectedPod.value?.cpu}%, 内存: ${selectedPod.value?.memory}%`,
-    },
-    {
-      time: '2024-01-15 10:35:12',
-      level: 'INFO',
-      message: `${selectedPod.value?.podName} - 网络连接正常，存储卷挂载成功`,
-    },
-  ]
+  podLogs.value = []
+  podLogInitialized.value = false
+
+  // 先显示初始化日志
+  const initLogs = generatePodInitLogs()
+  podLogs.value.push(...initLogs)
+  podLogInitialized.value = true
 }
 
 // 切换集群日志流
@@ -1199,49 +1169,65 @@ const startNodeLogStream = () => {
   }, 3000)
 }
 
+// 生成Pod运行时日志（仿servers.vue）
+const generatePodMockLog = (): { timestamp: string; level: string; content: string } => {
+  const now = new Date()
+  const timestamp = now.toLocaleString('zh-CN', {
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+
+  const levels = ['INFO', 'DEBUG']
+  const level = levels[Math.floor(Math.random() * levels.length)]
+
+  const httpRequests = [
+    `GET    /api/v1/ping`,
+    `GET    /api/v1/user/list`,
+    `GET    /api/v1/user/info`,
+    `GET    /api/v1/user/captcha`,
+    `GET    /api/v1/assets`,
+    `GET    /api/v1/logs`,
+    `GET    /health`,
+  ]
+
+  const mockContents = [
+    `[GIN] ${timestamp.replace(/\//g, '-')} - ${timestamp.split(' ')[1]} | 200 | ${Math.floor(Math.random() * 30 + 5)}.${Math.floor(Math.random() * 999)}ms | 172.17.0.1 | ${httpRequests[Math.floor(Math.random() * httpRequests.length)]}`,
+  ]
+
+  const content = mockContents[Math.floor(Math.random() * mockContents.length)]
+  return { timestamp, level, content }
+}
+
+// 添加新的Pod日志
+const addPodNewLog = () => {
+  if (!podLogStreamActive.value) return
+
+  const newLog = generatePodMockLog()
+  podLogs.value.push(newLog)
+
+  // 限制日志行数，避免过多日志影响性能
+  if (podLogs.value.length > 200) {
+    podLogs.value.shift()
+  }
+
+  // 自动滚动到底部
+  nextTick(() => {
+    if (podLogRef.value) {
+      podLogRef.value.scrollTop = podLogRef.value.scrollHeight
+    }
+  })
+}
+
 // 开始Pod日志流
 const startPodLogStream = () => {
   podLogTimer = setInterval(() => {
-    const now = new Date()
-    const time = now
-      .toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      })
-      .replace(/\//g, '-')
-
-    const messages = [
-      '接收到新的请求',
-      '处理业务逻辑',
-      '数据库连接正常',
-      '缓存命中率: 95%',
-      '响应时间: 120ms',
-    ]
-
-    const levels = ['INFO', 'DEBUG']
-    const randomMessage = messages[Math.floor(Math.random() * messages.length)]
-    const randomLevel = levels[Math.floor(Math.random() * levels.length)]
-
-    podLogs.value.push({
-      time,
-      level: randomLevel,
-      message: `${selectedPod.value?.podName} - ${randomMessage}`,
-    })
-
-    if (podLogs.value.length > 100) {
-      podLogs.value.shift()
-    }
-
-    nextTick(() => {
-      if (podLogRef.value) {
-        podLogRef.value.scrollTop = podLogRef.value.scrollHeight
-      }
-    })
-  }, 1500)
+    addPodNewLog()
+  }, 2000)
 }
 
 // 停止日志流
@@ -1277,6 +1263,12 @@ const clearNodeLogs = () => {
 
 const clearPodLogs = () => {
   podLogs.value = []
+  podLogInitialized.value = false
+
+  // 重新显示初始化日志
+  const initLogs = generatePodInitLogs()
+  podLogs.value.push(...initLogs)
+  podLogInitialized.value = true
 }
 
 // 接入新集群相关方法
@@ -1530,7 +1522,7 @@ const addCluster = async () => {
         status: 'Running',
         restarts: 0,
         cpu: 25,
-        memory: 180,
+        memory: 80,
         createdTime: '2025-06-18 17:19:01',
         image: 'kubesphere/ks-controller-manager:v3.4.1',
         uid: 'c3d4e5f6-g7h8-9012-cdef-gh3456789012',
@@ -1643,7 +1635,7 @@ const addCluster = async () => {
         status: 'Running',
         restarts: 0,
         cpu: 35,
-        memory: 140,
+        memory: 40,
         createdTime: '2025-06-18 10:08:40',
         image: 'registry.k8s.io/ingress-nginx/controller:v1.8.1',
         uid: 'f6g7h8i9-j0k1-2345-fghi-jk6789012345',
@@ -1867,7 +1859,7 @@ const addCluster = async () => {
         status: 'Running',
         restarts: 0,
         cpu: 22,
-        memory: 125,
+        memory: 25,
         createdTime: '2025-06-16 16:01:09',
         image: 'kubesphere/ks-apiserver:v3.4.1',
         uid: 'l2m3n4o5-p6q7-8901-lmno-pq2345678901',
@@ -2269,53 +2261,46 @@ const getLogLevelColor = (level: string) => {
   color: #ffffff;
   font-family: 'Courier New', monospace;
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.4;
   padding: 12px;
-  border-radius: 4px;
+  border-radius: 6px;
   overflow-y: auto;
   max-height: 350px;
 }
 
 .log-line {
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   word-wrap: break-word;
 }
 
 .log-time {
   color: #86909c;
-  margin-right: 8px;
+  margin-right: 6px;
 }
 
 .log-level {
+  margin-right: 6px;
   font-weight: bold;
-  margin-right: 8px;
-  padding: 2px 6px;
-  border-radius: 2px;
-  font-size: 11px;
 }
 
 .log-level.info {
-  background: #52c41a;
-  color: white;
+  color: #52c41a;
 }
 
 .log-level.debug {
-  background: #1890ff;
-  color: white;
+  color: #1890ff;
 }
 
 .log-level.warn {
-  background: #faad14;
-  color: white;
+  color: #faad14;
 }
 
 .log-level.error {
-  background: #ff4d4f;
-  color: white;
+  color: #f5222d;
 }
 
 .log-message {
-  color: #ffffff;
+  color: #f0f0f0;
 }
 
 :deep(.arco-modal-body) {
@@ -2399,5 +2384,145 @@ const getLogLevelColor = (level: string) => {
   margin: 0 0 12px 0;
   font-size: 14px;
   color: #333;
+}
+
+/* Pod详情页样式 */
+.pod-detail-container {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.detail-section {
+  margin-bottom: 32px;
+}
+
+.detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d2129;
+  border-left: 4px solid #1890ff;
+  padding-left: 12px;
+  background: #f7f8fa;
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+.labels-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 200px;
+}
+
+.label-tag {
+  font-size: 11px;
+  margin: 0;
+}
+
+.log-count {
+  font-size: 12px;
+  color: #86909c;
+}
+
+.log-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #86909c;
+  background: #f7f8fa;
+  border-radius: 4px;
+}
+
+.log-empty p {
+  margin: 12px 0 0 0;
+  font-size: 14px;
+}
+
+:deep(.arco-descriptions-item-value) {
+  word-break: break-all;
+}
+
+:deep(.arco-modal-body) {
+  padding: 24px !important;
+}
+
+/* 资源使用率样式 */
+.resource-usage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+}
+
+.usage-text {
+  font-weight: 500;
+  color: #1d2129;
+  min-width: 35px;
+  text-align: right;
+}
+
+/* 容器表格样式 */
+.container-table {
+  margin-top: 8px;
+}
+
+.container-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.container-avatar {
+  background: #1890ff;
+}
+
+.container-details {
+  flex: 1;
+}
+
+.container-name {
+  font-weight: 500;
+  color: #1d2129;
+  margin-bottom: 2px;
+}
+
+.container-image {
+  font-size: 12px;
+  color: #86909c;
+}
+
+.ports-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.port-tag {
+  margin: 0;
+  font-size: 11px;
+}
+
+.no-ports {
+  color: #86909c;
+  font-size: 12px;
+}
+
+.resource-details {
+  font-size: 12px;
+}
+
+.resource-section {
+  margin-bottom: 4px;
+}
+
+.resource-section:last-child {
+  margin-bottom: 0;
 }
 </style>
