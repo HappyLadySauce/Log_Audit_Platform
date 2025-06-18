@@ -3,12 +3,12 @@
     <PageHeader title="告警记录查询" description="查看和分析历史告警记录，跟踪告警处理状态和趋势">
       <template #extra>
         <a-space>
-          <a-button @click="refreshData" :loading="loading">
+          <a-tag color="green">
             <template #icon>
-              <icon-refresh />
+              <icon-sync />
             </template>
-            刷新
-          </a-button>
+            自动刷新中
+          </a-tag>
           <a-button type="primary" @click="exportData">
             <template #icon>
               <icon-download />
@@ -287,14 +287,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
 import alertsApi from '@/services/alerts'
 import type { Alert } from '@/services/alerts'
 import {
-  IconRefresh,
+  IconSync,
   IconDownload,
   IconExclamationCircle,
   IconCheckCircle,
@@ -309,6 +309,10 @@ const loading = ref(false)
 const activeTab = ref('pending')
 const searchKeyword = ref('')
 const filterLevel = ref('')
+
+// 自动刷新相关
+const autoRefreshInterval = ref<number | null>(null)
+const REFRESH_INTERVAL = 5000 // 5秒刷新一次
 
 const stats = reactive({
   pending: 0,
@@ -705,9 +709,46 @@ const formatDateTime = (dateTime: string | Date) => {
   })
 }
 
+// 自动刷新功能
+const startAutoRefresh = () => {
+  // 先清除可能存在的定时器
+  if (autoRefreshInterval.value) {
+    clearInterval(autoRefreshInterval.value)
+  }
+
+  // 设置新的定时器
+  autoRefreshInterval.value = setInterval(() => {
+    refreshData()
+  }, REFRESH_INTERVAL)
+}
+
+const stopAutoRefresh = () => {
+  if (autoRefreshInterval.value) {
+    clearInterval(autoRefreshInterval.value)
+    autoRefreshInterval.value = null
+  }
+}
+
+// 监听全局事件（触发故障/修复故障）
+const handleGlobalRefresh = () => {
+  // 立即刷新数据
+  refreshData()
+  // 重启自动刷新
+  startAutoRefresh()
+}
+
 // 生命周期
 onMounted(() => {
   refreshData()
+  startAutoRefresh()
+
+  // 监听全局刷新事件
+  window.addEventListener('alertDataChanged', handleGlobalRefresh)
+})
+
+onUnmounted(() => {
+  stopAutoRefresh()
+  window.removeEventListener('alertDataChanged', handleGlobalRefresh)
 })
 </script>
 

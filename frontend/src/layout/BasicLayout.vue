@@ -112,27 +112,34 @@
 
         <div class="header-right">
           <a-space>
-            <!-- 全局控制按钮 -->
-            <a-button
-              type="primary"
-              status="danger"
-              size="small"
-              @click="triggerFault"
-              :loading="faultLoading"
-            >
-              触发故障
-            </a-button>
-            <a-button
-              type="primary"
-              status="success"
-              size="small"
-              @click="fixFault"
-              :loading="fixLoading"
-            >
-              修复故障
-            </a-button>
+            <!-- 隐藏的全局控制按钮 -->
+            <a-tooltip content="故障模拟" position="bottom">
+              <a-button
+                type="text"
+                shape="circle"
+                size="mini"
+                @click="triggerFault"
+                :loading="faultLoading"
+                class="hidden-control-btn"
+              >
+                <IconExclamationCircleFill style="color: #f53f3f" />
+              </a-button>
+            </a-tooltip>
 
-            <a-divider direction="vertical" />
+            <a-tooltip content="故障修复" position="bottom">
+              <a-button
+                type="text"
+                shape="circle"
+                size="mini"
+                @click="fixFault"
+                :loading="fixLoading"
+                style="opacity: 0.3; transition: opacity 0.3s"
+                @mouseenter="(e) => (e.target.style.opacity = '1')"
+                @mouseleave="(e) => (e.target.style.opacity = '0.3')"
+              >
+                <IconCheckCircleFill style="color: #00b42a" />
+              </a-button>
+            </a-tooltip>
 
             <a-button type="text" shape="circle">
               <icon-history />
@@ -183,6 +190,8 @@ import {
   IconSettings,
   IconInfoCircle,
   IconCloud,
+  IconExclamationCircleFill,
+  IconCheckCircleFill,
 } from '@arco-design/web-vue/es/icon'
 
 const router = useRouter()
@@ -244,6 +253,8 @@ const triggerFault = async () => {
     const result = await simulationApi.triggerFault()
     if (result.success) {
       Message.success('💥 故障已触发！资产状态将变为异常，告警记录已生成')
+      // 触发全局事件，通知相关页面刷新数据
+      window.dispatchEvent(new CustomEvent('alertDataChanged'))
     } else {
       Message.error('触发故障失败: ' + result.message)
     }
@@ -261,6 +272,8 @@ const fixFault = async () => {
     const result = await simulationApi.fixFault()
     if (result.success) {
       Message.success('✅ 故障已修复！资产状态已恢复正常，告警已解决')
+      // 触发全局事件，通知相关页面刷新数据
+      window.dispatchEvent(new CustomEvent('alertDataChanged'))
     } else {
       Message.error('修复故障失败: ' + result.message)
     }

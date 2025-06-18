@@ -1,6 +1,5 @@
 <template>
   <div class="overview-container">
-
     <!-- 核心指标统计 -->
     <div class="stats-section">
       <h3>核心指标</h3>
@@ -15,7 +14,7 @@
             :trend="{ type: 'stable', value: '全部在线' }"
           />
         </a-col>
-        
+
         <a-col :span="6">
           <EnhancedStatCard
             :icon="IconFile"
@@ -54,7 +53,7 @@
     <!-- AI数据趋势预测 -->
     <div class="charts-section">
       <h3 class="large-section-title">
-        <icon-robot style="margin-right: 8px; color: #722ed1;" />
+        <icon-robot style="margin-right: 8px; color: #722ed1" />
         AI数据趋势预测
       </h3>
       <a-row :gutter="16">
@@ -62,9 +61,9 @@
           <a-card :bordered="false">
             <template #title>
               <div class="ai-card-title-large">
-                <icon-file style="margin-right: 8px; color: #1890ff;" />
+                <icon-file style="margin-right: 8px; color: #1890ff" />
                 日志采集概览
-                <a-tag color="blue" size="medium" style="margin-left: 8px;">实时监控</a-tag>
+                <a-tag color="blue" size="medium" style="margin-left: 8px">实时监控</a-tag>
               </div>
             </template>
             <template #extra>
@@ -82,10 +81,10 @@
                 </a-space>
               </div>
             </template>
-            
+
             <div class="log-overview-container">
-              <a-table 
-                :data="filteredLogData" 
+              <a-table
+                :data="filteredLogData"
                 :pagination="{ pageSize: 8, simple: true }"
                 :scroll="{ y: 300 }"
                 row-key="id"
@@ -98,18 +97,21 @@
                       <span class="log-time-large">{{ record.timestamp }}</span>
                     </template>
                   </a-table-column>
-                  
+
                   <a-table-column title="设备" data-index="device" :width="180">
                     <template #cell="{ record }">
                       <div class="device-info-large">
-                        <a-avatar :size="28" :style="{ backgroundColor: record.deviceColor, fontSize: '14px' }">
+                        <a-avatar
+                          :size="28"
+                          :style="{ backgroundColor: record.deviceColor, fontSize: '14px' }"
+                        >
                           {{ record.device.charAt(0) }}
                         </a-avatar>
                         <span class="device-name-large">{{ record.device }}</span>
                       </div>
                     </template>
                   </a-table-column>
-                  
+
                   <a-table-column title="类型" data-index="type" :width="70">
                     <template #cell="{ record }">
                       <a-tag :color="getLogTypeColor(record.type)" size="medium">
@@ -117,12 +119,18 @@
                       </a-tag>
                     </template>
                   </a-table-column>
-                  
+
                   <a-table-column title="日志信息" data-index="message" :width="320">
                     <template #cell="{ record }">
                       <div class="log-message-large" :class="'log-' + record.type">
-                        <icon-info v-if="record.type === 'warning'" style="color: #faad14; margin-right: 4px;" />
-                        <icon-check v-if="record.type === 'info'" style="color: #52c41a; margin-right: 4px;" />
+                        <icon-info
+                          v-if="record.type === 'warning'"
+                          style="color: #faad14; margin-right: 4px"
+                        />
+                        <icon-check
+                          v-if="record.type === 'info'"
+                          style="color: #52c41a; margin-right: 4px"
+                        />
                         {{ record.message }}
                       </div>
                     </template>
@@ -137,22 +145,40 @@
           <a-card :bordered="false">
             <template #title>
               <div class="ai-card-title-large">
-                <icon-robot style="margin-right: 8px; color: #722ed1;" />
+                <icon-robot style="margin-right: 8px; color: #722ed1" />
                 AI预测分析
-                <a-tag color="purple" size="medium" style="margin-left: 8px;">智能分析</a-tag>
-                <a-tag color="blue" size="medium" style="margin-left: 8px;">每 1 小时分析一次</a-tag>
+                <a-tag color="purple" size="medium" style="margin-left: 8px">智能分析</a-tag>
+                <a-tag color="blue" size="medium" style="margin-left: 8px">每 1 小时分析一次</a-tag>
               </div>
             </template>
-            
+
             <div class="ai-analysis-container">
               <!-- AI预测指标 -->
               <div class="ai-predictions">
-                
-                <div class="prediction-item-large" v-for="prediction in aiPredictions" :key="prediction.id">
+                <div
+                  class="prediction-item-large"
+                  v-for="prediction in aiPredictions"
+                  :key="prediction.id"
+                >
                   <div class="prediction-header">
                     <span class="prediction-title-large">{{ prediction.title }}</span>
-                    <a-tag :color="prediction.level === 'high' ? 'red' : prediction.level === 'medium' ? 'orange' : 'green'" size="medium">
-                      {{ prediction.level === 'high' ? '高风险' : prediction.level === 'medium' ? '中风险' : '低风险' }}
+                    <a-tag
+                      :color="
+                        prediction.level === 'high'
+                          ? 'red'
+                          : prediction.level === 'medium'
+                            ? 'orange'
+                            : 'green'
+                      "
+                      size="medium"
+                    >
+                      {{
+                        prediction.level === 'high'
+                          ? '高风险'
+                          : prediction.level === 'medium'
+                            ? '中风险'
+                            : '低风险'
+                      }}
                     </a-tag>
                   </div>
                   <div class="prediction-content-large">{{ prediction.content }}</div>
@@ -167,10 +193,10 @@
 
     <div class="devices-section">
       <h3 class="large-section-title">
-        <icon-storage style="margin-right: 8px; color: #722ed1;" />
+        <icon-storage style="margin-right: 8px; color: #722ed1" />
         设备状态监控
       </h3>
-      
+
       <!-- 设备状态概览 -->
       <!-- <a-row :gutter="16" class="device-overview">
         <a-col :span="8">
@@ -212,7 +238,7 @@
           </a-card>
         </a-col>
       </a-row> -->
-      
+
       <a-card :bordered="false" class="device-table-card">
         <template #extra>
           <a-space>
@@ -220,9 +246,9 @@
             <a-button size="small" @click="refreshDevices">刷新状态</a-button>
           </a-space>
         </template>
-        
-        <a-table 
-          :data="deviceList" 
+
+        <a-table
+          :data="deviceList"
           :pagination="false"
           :scroll="{ y: 300 }"
           row-key="id"
@@ -240,13 +266,13 @@
                 </div>
               </template>
             </a-table-column>
-            
+
             <a-table-column title="IP地址" data-index="ip">
               <template #cell="{ record }">
                 <span class="device-ip">{{ record.ip }}</span>
               </template>
             </a-table-column>
-            
+
             <a-table-column title="状态" data-index="status">
               <template #cell="{ record }">
                 <a-tag :color="getStatusColor(record.status)" size="medium">
@@ -254,13 +280,13 @@
                 </a-tag>
               </template>
             </a-table-column>
-            
+
             <a-table-column title="最后响应" data-index="lastResponse">
               <template #cell="{ record }">
                 <span class="device-response-time">{{ record.lastResponse }}</span>
               </template>
             </a-table-column>
-            
+
             <a-table-column title="操作">
               <template #cell="{ record }">
                 <a-space>
@@ -306,7 +332,7 @@ import {
   IconDelete,
   IconRobot,
   IconBarChart,
-  IconFire
+  IconFire,
 } from '@arco-design/web-vue/es/icon'
 
 // 系统监控状态
@@ -327,11 +353,11 @@ const threatAlerts = ref({
   error: 5,
   warning: 10,
   info: 1650,
-  total: 1765
+  total: 1765,
 })
 const totalTraffic = ref('2.5G')
 
-// 图表时间范围  
+// 图表时间范围
 const chartTimeRange = ref('today')
 
 // 日志过滤器
@@ -348,25 +374,25 @@ const initResourceData = () => {
   const now = new Date()
   const cpuData = []
   const memoryData = []
-  
+
   for (let i = 29; i >= 0; i--) {
     const time = new Date(now.getTime() - i * 60000) // 每分钟一个数据点
     const timeStr = time.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-    
+
     cpuData.push({
       name: timeStr,
-      value: Math.floor(Math.random() * 10) + 30 // 30-40之间的随机数
+      value: Math.floor(Math.random() * 10) + 30, // 30-40之间的随机数
     })
-    
+
     memoryData.push({
       name: timeStr,
-      value: Math.floor(Math.random() * 10) + 30 // 30-40之间的随机数
+      value: Math.floor(Math.random() * 10) + 30, // 30-40之间的随机数
     })
   }
-  
+
   cpuTrendData.value = cpuData
   memoryTrendData.value = memoryData
-  
+
   // 设置当前值为最新的数据点
   currentCpuUsage.value = cpuData[cpuData.length - 1].value
   currentMemoryUsage.value = memoryData[memoryData.length - 1].value
@@ -376,17 +402,17 @@ const initResourceData = () => {
 const updateResourceData = () => {
   const now = new Date()
   const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-  
+
   // 移除最旧的数据点，添加新的数据点
   cpuTrendData.value.shift()
   memoryTrendData.value.shift()
-  
+
   const newCpuValue = Math.floor(Math.random() * 10) + 30
   const newMemoryValue = Math.floor(Math.random() * 10) + 30
-  
+
   cpuTrendData.value.push({ name: timeStr, value: newCpuValue })
   memoryTrendData.value.push({ name: timeStr, value: newMemoryValue })
-  
+
   currentCpuUsage.value = newCpuValue
   currentMemoryUsage.value = newMemoryValue
 }
@@ -398,9 +424,9 @@ const generateNewLogEntry = () => {
     { name: '分部K8S控制节点1', color: '#1890ff' },
     { name: '分部K8S工作节点1', color: '#1890ff' },
     { name: '分部接入交换机', color: '#52c41a' },
-    { name: '分部无线控制器', color: '#52c41a' }
+    { name: '分部无线控制器', color: '#52c41a' },
   ]
-  
+
   // 85%信息日志，15%警告日志，系统运行正常
   const logTypes = ['info', 'info', 'info', 'info', 'info', 'info', 'warning']
   const logMessages = {
@@ -416,7 +442,7 @@ const generateNewLogEntry = () => {
       '分部数据同步任务完成',
       '分部系统性能监控正常',
       '分部网络流量状态稳定',
-      '分部服务健康检查通过'
+      '分部服务健康检查通过',
     ],
     warning: [
       '分部CPU使用率达到60%，建议关注',
@@ -426,29 +452,29 @@ const generateNewLogEntry = () => {
       '分部检测到轻微的负载波动',
       '分部备份任务耗时较长，建议优化',
       '分部发现少量异常访问尝试，已拦截',
-      '分部系统负载略有上升，继续监控'
-    ]
+      '分部系统负载略有上升，继续监控',
+    ],
   }
-  
+
   const device = devices[Math.floor(Math.random() * devices.length)]
   const type = logTypes[Math.floor(Math.random() * logTypes.length)]
   const messages = logMessages[type as keyof typeof logMessages]
   const message = messages[Math.floor(Math.random() * messages.length)]
-  
+
   const now = new Date()
-  
+
   return {
     id: Date.now() + Math.random(),
-    timestamp: now.toLocaleTimeString('zh-CN', { 
-      hour: '2-digit', 
+    timestamp: now.toLocaleTimeString('zh-CN', {
+      hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit'
+      second: '2-digit',
     }),
     device: device.name,
     deviceColor: device.color,
     type,
     message,
-    rawTimestamp: now
+    rawTimestamp: now,
   }
 }
 
@@ -459,7 +485,7 @@ const logData = ref<any[]>([])
 const logStatsData = ref([
   { name: '正常', value: 85 },
   { name: '警告', value: 15 },
-  { name: '错误', value: 0 }
+  { name: '错误', value: 0 },
 ])
 
 // AI预测分析数据 - 基于系统运行正常的前提
@@ -469,22 +495,22 @@ const aiPredictions = ref([
     title: '系统运行状态',
     level: 'low',
     content: '系统运行稳定，CPU和内存使用率均在正常范围内，各项服务运行良好',
-    suggestion: '继续保持当前监控策略，定期检查系统性能'
+    suggestion: '继续保持当前监控策略，定期检查系统性能',
   },
   {
     id: 2,
     title: '网络状态评估',
     level: 'low',
     content: '网络设备运行正常，流量稳定，延迟保持在低水平',
-    suggestion: '保持当前网络配置，继续监控流量变化'
+    suggestion: '保持当前网络配置，继续监控流量变化',
   },
   {
     id: 3,
     title: '资源使用趋势',
     level: 'medium',
     content: '磁盘使用率逐步增长，建议关注存储空间变化趋势',
-    suggestion: '定期清理临时文件，制定存储管理策略'
-  }
+    suggestion: '定期清理临时文件，制定存储管理策略',
+  },
 ])
 
 // 初始化日志数据
@@ -494,9 +520,9 @@ const initLogData = () => {
     { name: '分部K8S控制节点1', color: '#1890ff' },
     { name: '分部K8S工作节点1', color: '#1890ff' },
     { name: '分部接入交换机', color: '#52c41a' },
-    { name: '分部无线控制器', color: '#52c41a' }
+    { name: '分部无线控制器', color: '#52c41a' },
   ]
-  
+
   // 80%信息日志，20%警告日志，系统运行正常
   const logTypes = ['info', 'info', 'info', 'info', 'warning']
   const logMessages = {
@@ -512,7 +538,7 @@ const initLogData = () => {
       '分部数据同步任务完成',
       '分部系统性能监控正常',
       '分部网络流量状态稳定',
-      '分部服务健康检查通过'
+      '分部服务健康检查通过',
     ],
     warning: [
       '分部CPU使用率达到60%，建议关注',
@@ -522,53 +548,55 @@ const initLogData = () => {
       '分部检测到轻微的负载波动',
       '分部备份任务耗时较长，建议优化',
       '分部发现少量异常访问尝试，已拦截',
-      '分部系统负载略有上升，继续监控'
-    ]
+      '分部系统负载略有上升，继续监控',
+    ],
   }
-  
+
   const logs = []
   let id = 1
-  
+
   // 生成最近50条日志
   for (let i = 0; i < 50; i++) {
     const device = devices[Math.floor(Math.random() * devices.length)]
     const type = logTypes[Math.floor(Math.random() * logTypes.length)]
     const messages = logMessages[type as keyof typeof logMessages]
     const message = messages[Math.floor(Math.random() * messages.length)]
-    
+
     const now = new Date()
     const timestamp = new Date(now.getTime() - Math.random() * 3600000) // 最近1小时内
-    
+
     logs.push({
       id: id++,
-      timestamp: timestamp.toLocaleTimeString('zh-CN', { 
-        hour: '2-digit', 
+      timestamp: timestamp.toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
         minute: '2-digit',
-        second: '2-digit'
+        second: '2-digit',
       }),
       device: device.name,
       deviceColor: device.color,
       type,
       message,
-      rawTimestamp: timestamp
+      rawTimestamp: timestamp,
     })
   }
-  
+
   // 按时间倒序排列
-  logData.value = logs.sort((a, b) => new Date(b.rawTimestamp).getTime() - new Date(a.rawTimestamp).getTime())
+  logData.value = logs.sort(
+    (a, b) => new Date(b.rawTimestamp).getTime() - new Date(a.rawTimestamp).getTime(),
+  )
 }
 
 // 设备状态统计数据
 const deviceStatusData = ref([
   { name: '在线', value: 10 },
   { name: '离线', value: 0 },
-  { name: '告警', value: 0 }
+  { name: '告警', value: 0 },
 ])
 
 // 设备类型统计数据
 const deviceTypeData = ref([
   { name: '网络设备', value: 6 },
-  { name: '服务器', value: 4 }
+  { name: '服务器', value: 4 },
 ])
 
 // 网络流量趋势数据 (Mbps) - 初始化30个数据点，保留历史数据
@@ -578,21 +606,21 @@ const networkTrafficData = ref<any[]>([])
 const initNetworkTrafficData = () => {
   const now = new Date()
   const data = []
-  
+
   for (let i = 29; i >= 0; i--) {
     const time = new Date(now.getTime() - i * 5000) // 每5秒一个数据点
-    const timeStr = time.toLocaleTimeString('zh-CN', { 
-      hour: '2-digit', 
+    const timeStr = time.toLocaleTimeString('zh-CN', {
+      hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit'
+      second: '2-digit',
     })
-    
+
     data.push({
       name: timeStr,
-      value: Math.floor(Math.random() * 100) + 200 // 200-300 Mbps 范围
+      value: Math.floor(Math.random() * 100) + 200, // 200-300 Mbps 范围
     })
   }
-  
+
   networkTrafficData.value = data
 }
 
@@ -605,7 +633,7 @@ const deviceList = ref([
     ip: '10.10.20.1',
     status: 'online',
     lastResponse: formatTime(new Date()),
-    color: '#52c41a'
+    color: '#52c41a',
   },
   {
     id: 2,
@@ -613,7 +641,7 @@ const deviceList = ref([
     ip: '10.10.10.150',
     status: 'online',
     lastResponse: formatTime(new Date()),
-    color: '#52c41a'
+    color: '#52c41a',
   },
   {
     id: 3,
@@ -621,7 +649,7 @@ const deviceList = ref([
     ip: '192.168.100.1',
     status: 'online',
     lastResponse: formatTime(new Date()),
-    color: '#52c41a'
+    color: '#52c41a',
   },
   {
     id: 4,
@@ -629,7 +657,7 @@ const deviceList = ref([
     ip: '192.168.100.2',
     status: 'online',
     lastResponse: formatTime(new Date()),
-    color: '#52c41a'
+    color: '#52c41a',
   },
   {
     id: 5,
@@ -637,7 +665,7 @@ const deviceList = ref([
     ip: '192.168.100.3',
     status: 'online',
     lastResponse: formatTime(new Date()),
-    color: '#52c41a'
+    color: '#52c41a',
   },
   {
     id: 6,
@@ -645,7 +673,7 @@ const deviceList = ref([
     ip: '192.168.30.2',
     status: 'online',
     lastResponse: formatTime(new Date()),
-    color: '#52c41a'
+    color: '#52c41a',
   },
   // 服务器设备
   {
@@ -654,7 +682,7 @@ const deviceList = ref([
     ip: '10.10.20.2',
     status: 'online',
     lastResponse: formatTime(new Date()),
-    color: '#1890ff'
+    color: '#1890ff',
   },
   {
     id: 8,
@@ -662,7 +690,7 @@ const deviceList = ref([
     ip: '10.10.20.3',
     status: 'online',
     lastResponse: formatTime(new Date()),
-    color: '#1890ff'
+    color: '#1890ff',
   },
   {
     id: 9,
@@ -670,7 +698,7 @@ const deviceList = ref([
     ip: '10.10.20.4',
     status: 'online',
     lastResponse: formatTime(new Date()),
-    color: '#1890ff'
+    color: '#1890ff',
   },
   {
     id: 10,
@@ -678,8 +706,8 @@ const deviceList = ref([
     ip: '10.10.20.5',
     status: 'online',
     lastResponse: formatTime(new Date()),
-    color: '#1890ff'
-  }
+    color: '#1890ff',
+  },
 ])
 
 // 格式化时间
@@ -690,27 +718,35 @@ function formatTime(date: Date): string {
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit'
+    second: '2-digit',
   })
 }
 
 // 获取状态颜色
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'online': return 'green'
-    case 'offline': return 'red'  
-    case 'warning': return 'orange'
-    default: return 'gray'
+    case 'online':
+      return 'green'
+    case 'offline':
+      return 'red'
+    case 'warning':
+      return 'orange'
+    default:
+      return 'gray'
   }
 }
 
 // 获取状态文本
 const getStatusText = (status: string) => {
   switch (status) {
-    case 'online': return '在线'
-    case 'offline': return '离线'
-    case 'warning': return '告警'
-    default: return '未知'
+    case 'online':
+      return '在线'
+    case 'offline':
+      return '离线'
+    case 'warning':
+      return '告警'
+    default:
+      return '未知'
   }
 }
 
@@ -718,25 +754,25 @@ const getStatusText = (status: string) => {
 const updateNetworkTrafficData = () => {
   // 移除最旧的数据点
   networkTrafficData.value.shift()
-  
+
   // 生成新数据点，基于上一个数据点进行小幅波动，保持连续性
   const lastValue = networkTrafficData.value[networkTrafficData.value.length - 1]?.value || 250
   const change = (Math.random() - 0.5) * 20 // -10 到 +10 的变化
   let newValue = lastValue + change
-  
+
   // 确保数值在200-300范围内
   newValue = Math.max(200, Math.min(300, newValue))
-  
+
   const now = new Date()
-  const timeStr = now.toLocaleTimeString('zh-CN', { 
-    hour: '2-digit', 
+  const timeStr = now.toLocaleTimeString('zh-CN', {
+    hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit'
+    second: '2-digit',
   })
-  
+
   networkTrafficData.value.push({
     name: timeStr,
-    value: Math.round(newValue)
+    value: Math.round(newValue),
   })
 }
 
@@ -745,24 +781,30 @@ const filteredLogData = computed(() => {
   if (logFilter.value === 'all') {
     return logData.value
   }
-  return logData.value.filter(log => log.type === logFilter.value)
+  return logData.value.filter((log) => log.type === logFilter.value)
 })
 
 // 获取日志类型颜色 - 系统运行正常，只有警告和信息
 const getLogTypeColor = (type: string) => {
   switch (type) {
-    case 'warning': return 'orange'
-    case 'info': return 'green'
-    default: return 'green'
+    case 'warning':
+      return 'orange'
+    case 'info':
+      return 'green'
+    default:
+      return 'green'
   }
 }
 
 // 获取日志类型文本 - 系统运行正常，只有警告和信息
 const getLogTypeText = (type: string) => {
   switch (type) {
-    case 'warning': return '警告'
-    case 'info': return '信息'
-    default: return '信息'
+    case 'warning':
+      return '警告'
+    case 'info':
+      return '信息'
+    default:
+      return '信息'
   }
 }
 
@@ -776,10 +818,10 @@ const refreshLogs = () => {
 // 更新AI预测分析 - 保持系统正常运行状态
 const updateAiPredictions = () => {
   const total = logData.value.length
-  const infoCount = logData.value.filter(log => log.type === 'info').length
-  const warningCount = logData.value.filter(log => log.type === 'warning').length
+  const infoCount = logData.value.filter((log) => log.type === 'info').length
+  const warningCount = logData.value.filter((log) => log.type === 'warning').length
   const errorCount = 0 // 系统运行正常，无错误日志
-  
+
   // 根据日志情况动态更新预测 - 保持正面评估
   if (warningCount > total * 0.25) {
     aiPredictions.value[0].level = 'medium'
@@ -790,14 +832,14 @@ const updateAiPredictions = () => {
     aiPredictions.value[0].content = '系统运行稳定，各项指标正常，服务响应良好'
     aiPredictions.value[0].suggestion = '保持当前配置，继续常规监控'
   }
-  
+
   // 更新网络状态评估
   aiPredictions.value[1].content = '网络设备运行正常，流量稳定，平均延迟保持在5ms以下'
-  
+
   // 更新资源使用趋势
   const cpuUsage = currentCpuUsage.value
   const memoryUsage = currentMemoryUsage.value
-  
+
   if (cpuUsage > 50 || memoryUsage > 60) {
     aiPredictions.value[2].level = 'medium'
     aiPredictions.value[2].content = `CPU使用率${cpuUsage}%，内存使用率${memoryUsage}%，资源使用较为活跃`
@@ -805,12 +847,12 @@ const updateAiPredictions = () => {
     aiPredictions.value[2].level = 'low'
     aiPredictions.value[2].content = `CPU使用率${cpuUsage}%，内存使用率${memoryUsage}%，资源使用正常`
   }
-  
+
   // 更新统计数据 - 保持85%正常，15%警告，0%错误
   logStatsData.value = [
     { name: '正常', value: total > 0 ? Math.round((infoCount / total) * 100) : 85 },
     { name: '警告', value: total > 0 ? Math.round((warningCount / total) * 100) : 15 },
-    { name: '错误', value: 0 }
+    { name: '错误', value: 0 },
   ]
 }
 
@@ -818,12 +860,12 @@ const updateAiPredictions = () => {
 const addNewLogEntry = () => {
   const newLog = generateNewLogEntry()
   logData.value.unshift(newLog)
-  
+
   // 保持最多100条日志
   if (logData.value.length > 100) {
     logData.value = logData.value.slice(0, 100)
   }
-  
+
   updateAiPredictions()
 }
 
@@ -834,9 +876,9 @@ const refreshData = () => {
   updateNetworkTrafficData()
   updateCoreMetrics()
   refreshLogs()
-  
+
   // 更新设备最后响应时间
-  deviceList.value.forEach(device => {
+  deviceList.value.forEach((device) => {
     device.lastResponse = formatTime(new Date())
   })
 }
@@ -849,7 +891,7 @@ const exportReport = () => {
 // 刷新设备状态
 const refreshDevices = () => {
   Message.success('设备状态已刷新')
-  deviceList.value.forEach(device => {
+  deviceList.value.forEach((device) => {
     device.lastResponse = formatTime(new Date())
   })
 }
@@ -875,21 +917,27 @@ const updateCoreMetrics = () => {
   const currentLogs = parseFloat(todayLogs.value.replace('K', '')) * 1000
   const newLogs = currentLogs + Math.floor(Math.random() * 25) + 3
   todayLogs.value = (newLogs / 1000).toFixed(1) + 'K'
-  
+
   // 威胁告警数据轻微波动 - 分部规模较小
   if (Math.random() > 0.8) {
     threatAlerts.value.warning += Math.floor(Math.random() * 2) - 1
     threatAlerts.value.info += Math.floor(Math.random() * 6) + 2
-    threatAlerts.value.total = threatAlerts.value.error + threatAlerts.value.warning + threatAlerts.value.info
+    threatAlerts.value.total =
+      threatAlerts.value.error + threatAlerts.value.warning + threatAlerts.value.info
   }
-  
+
   // 流量审计数据增长
   const currentTraffic = parseFloat(totalTraffic.value.replace('G', ''))
-  const newTraffic = currentTraffic + (Math.random() * 0.06)
+  const newTraffic = currentTraffic + Math.random() * 0.06
   totalTraffic.value = newTraffic.toFixed(1) + 'G'
-  
+
   // 设备在线数量保持稳定
   onlineDevices.value = 10
+}
+
+// 监听全局事件（触发故障/修复故障）
+const handleGlobalRefresh = () => {
+  refreshData()
 }
 
 // 组件挂载时初始化数据和定时器
@@ -901,14 +949,14 @@ onMounted(() => {
   // 初始化日志数据
   initLogData()
   updateAiPredictions()
-  
-  // CPU和内存数据每3秒更新一次，增加数据流动感  
+
+  // CPU和内存数据每3秒更新一次，增加数据流动感
   cpuMemoryTimer = setInterval(() => {
     if (isMonitoringEnabled.value) {
       updateResourceData()
     }
   }, 3000)
-  
+
   // 日志数据每3秒更新一次
   aiTrendTimer = setInterval(() => {
     if (isMonitoringEnabled.value) {
@@ -920,20 +968,23 @@ onMounted(() => {
       updateCoreMetrics()
     }
   }, 3000)
-  
+
   // 网络流量数据每5秒更新一次，保持连续性
   networkTrafficTimer = setInterval(() => {
     if (isMonitoringEnabled.value) {
       updateNetworkTrafficData()
     }
   }, 5000)
-  
+
   // AI预测分析每1小时更新一次
   aiPredictionTimer = setInterval(() => {
     if (isMonitoringEnabled.value) {
       updateAiPredictions()
     }
   }, 3600000) // 1小时 = 3600000毫秒
+
+  // 监听全局刷新事件
+  window.addEventListener('alertDataChanged', handleGlobalRefresh)
 })
 
 // 组件卸载时清理定时器
@@ -950,6 +1001,8 @@ onUnmounted(() => {
   if (aiPredictionTimer) {
     clearInterval(aiPredictionTimer)
   }
+  // 移除全局事件监听
+  window.removeEventListener('alertDataChanged', handleGlobalRefresh)
 })
 </script>
 
@@ -1242,11 +1295,11 @@ onUnmounted(() => {
   .monitoring-grid .arco-col {
     margin-bottom: 16px;
   }
-  
+
   .resource-value {
     font-size: 20px;
   }
-  
+
   .chart-controls {
     position: static;
     margin-bottom: 16px;

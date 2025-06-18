@@ -114,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
@@ -160,9 +160,20 @@ const fetchData = async () => {
   }
 }
 
+// 监听全局事件（触发故障/修复故障）
+const handleGlobalRefresh = () => {
+  fetchData()
+}
+
 // 页面加载时获取数据
 onMounted(() => {
   fetchData()
+  // 监听全局刷新事件
+  window.addEventListener('alertDataChanged', handleGlobalRefresh)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('alertDataChanged', handleGlobalRefresh)
 })
 
 // 导航函数
