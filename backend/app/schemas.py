@@ -71,15 +71,15 @@ class AlertProcess(BaseModel):
     processor: str = Field(..., min_length=1, max_length=100, description="处理人")
 
 class AlertArchive(BaseModel):
-    processor: str = Field(..., min_length=1, max_length=100, description="处理人")
-    root_cause: str = Field(..., min_length=1, description="根本原因分析")
-    solution: str = Field(..., min_length=1, description="解决方案")
-    remaining_issues: Optional[str] = Field(None, description="遗留问题")
+    processor: str = Field(..., min_length=2, max_length=100, description="处理人")
+    root_cause: str = Field(..., min_length=10, max_length=1000, description="根本原因分析")
+    solution: str = Field(..., min_length=10, max_length=1000, description="解决方案")
+    remaining_issues: Optional[str] = Field(None, max_length=1000, description="遗留问题")
 
 class Alert(AlertBase):
     id: int
-    rule_id: int
-    asset_id: int
+    rule_id: Optional[int] = None
+    asset_id: Optional[int] = None
     status: AlertStatus
     triggered_at: datetime
     processed_at: Optional[datetime]
@@ -99,7 +99,6 @@ class Alert(AlertBase):
 # 告警统计
 class AlertStats(BaseModel):
     pending: int = 0
-    processing: int = 0
     resolved: int = 0
     archived: int = 0
 

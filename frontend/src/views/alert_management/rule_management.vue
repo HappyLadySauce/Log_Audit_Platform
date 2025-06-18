@@ -126,11 +126,50 @@
         <a-form-item label="规则名称" required>
           <a-input v-model="ruleForm.name" placeholder="请输入规则名称" />
         </a-form-item>
-        <a-form-item label="目标资产ID" required>
-          <a-input-number v-model="ruleForm.target_asset_id" placeholder="请输入目标资产ID" />
+        <a-form-item label="目标资产" required>
+          <a-select
+            v-model="ruleForm.target_asset_id"
+            placeholder="请选择目标资产"
+            :loading="assetsLoading"
+          >
+            <a-option v-for="asset in assetsList" :key="asset.id" :value="asset.id">
+              {{ asset.name }} ({{ asset.ip_address }}) - ID: {{ asset.id }}
+            </a-option>
+          </a-select>
         </a-form-item>
         <a-form-item label="触发条件" required>
-          <a-textarea v-model="ruleForm.trigger_condition" placeholder="请输入触发条件" />
+          <a-select v-model="ruleForm.trigger_condition" placeholder="请选择触发条件">
+            <a-optgroup label="CPU相关">
+              <a-option value="CPU使用率超过80%">CPU使用率超过80%</a-option>
+              <a-option value="CPU使用率超过90%">CPU使用率超过90%</a-option>
+              <a-option value="CPU负载超过系统核心数">CPU负载超过系统核心数</a-option>
+            </a-optgroup>
+            <a-optgroup label="内存相关">
+              <a-option value="内存使用率超过85%">内存使用率超过85%</a-option>
+              <a-option value="内存使用率超过95%">内存使用率超过95%</a-option>
+              <a-option value="可用内存少于500MB">可用内存少于500MB</a-option>
+            </a-optgroup>
+            <a-optgroup label="磁盘相关">
+              <a-option value="磁盘使用率超过90%">磁盘使用率超过90%</a-option>
+              <a-option value="磁盘使用率超过95%">磁盘使用率超过95%</a-option>
+              <a-option value="磁盘剩余空间少于1GB">磁盘剩余空间少于1GB</a-option>
+            </a-optgroup>
+            <a-optgroup label="网络相关">
+              <a-option value="网络延迟超过100ms">网络延迟超过100ms</a-option>
+              <a-option value="网络丢包率超过5%">网络丢包率超过5%</a-option>
+              <a-option value="网络连接数超过1000">网络连接数超过1000</a-option>
+            </a-optgroup>
+            <a-optgroup label="服务相关">
+              <a-option value="服务停止运行">服务停止运行</a-option>
+              <a-option value="服务响应时间超过5秒">服务响应时间超过5秒</a-option>
+              <a-option value="进程崩溃或异常退出">进程崩溃或异常退出</a-option>
+            </a-optgroup>
+            <a-optgroup label="安全相关">
+              <a-option value="连续5次登录失败">连续5次登录失败</a-option>
+              <a-option value="检测到恶意IP访问">检测到恶意IP访问</a-option>
+              <a-option value="防火墙阻止异常流量">防火墙阻止异常流量</a-option>
+            </a-optgroup>
+          </a-select>
         </a-form-item>
         <a-form-item label="告警级别" required>
           <a-select v-model="ruleForm.alert_level" placeholder="请选择告警级别">
@@ -152,10 +191,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { Message } from '@arco-design/web-vue'
+import { Message, Modal } from '@arco-design/web-vue'
 import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
 import { alertsApi, type AlertRule } from '@/services/alerts'
+import { assetsApi, type Asset } from '@/services/assets'
 import {
   IconRefresh,
   IconPlus,
@@ -179,6 +219,10 @@ const currentRule = ref<AlertRule | null>(null)
 // 规则数据
 const ruleData = ref<AlertRule[]>([])
 
+// 资产数据
+const assetsList = ref<Asset[]>([])
+const assetsLoading = ref(false)
+
 // 规则统计数据
 const ruleStats = computed(() => {
   const total = ruleData.value.length
@@ -200,8 +244,37 @@ const fetchAlertRules = async () => {
     const data = await alertsApi.getAlertRules()
     ruleData.value = data
   } catch (error) {
-    console.error('获取告警规则失败:', error)
-    Message.error('获取告警规则失败')
+    Message.error('获取告警规则失败，显示模拟数据')
+    // 在API失败时显示模拟数据
+    ruleData.value = [
+      {
+        id: 1,
+        name: '连续5分钟未收到心跳',
+        target_asset_id: 1,
+        trigger_condition: '连续5分钟未收到心跳',
+        alert_level: '严重',
+        is_active: 'active',
+        created_at: '2025-06-18T04:35:54',
+      },
+      {
+        id: 2,
+        name: 'Kube-apiserver 连接超时',
+        target_asset_id: 2,
+        trigger_condition: 'Kube-apiserver 连接超时',
+        alert_level: '严重',
+        is_active: 'active',
+        created_at: '2025-06-18T04:35:54',
+      },
+      {
+        id: 3,
+        name: 'fawfwa',
+        target_asset_id: 3,
+        trigger_condition: 'CPU使用率超过90%',
+        alert_level: '严重',
+        is_active: 'active',
+        created_at: '2025-06-18T12:13:43',
+      },
+    ]
   } finally {
     tableLoading.value = false
   }
@@ -223,15 +296,65 @@ const refreshRules = async () => {
 // 规则表单数据
 const ruleForm = ref({
   name: '',
-  target_asset_id: '',
+  target_asset_id: null as number | null,
   trigger_condition: '',
   alert_level: '',
   is_active: 'active',
 })
 
+// 获取资产列表
+const fetchAssets = async () => {
+  try {
+    assetsLoading.value = true
+    const data = await assetsApi.getAssets()
+    assetsList.value = data
+  } catch (error) {
+    Message.error('获取资产列表失败，显示模拟数据')
+    // 在API失败时显示模拟资产数据
+    assetsList.value = [
+      {
+        id: 1,
+        name: 'Access-Switch-Branch',
+        asset_type: 'network_device',
+        ip_address: '192.168.10.1',
+        location: '分部机房',
+        security_level: '等级二',
+        status: 'normal',
+        created_at: '2025-06-18T04:35:54Z',
+        updated_at: '2025-06-18T04:35:54Z',
+      },
+      {
+        id: 2,
+        name: '分部K8S集群',
+        asset_type: 'k8s_cluster',
+        ip_address: '192.168.20.1',
+        location: '数据中心B栋',
+        security_level: '等级三',
+        status: 'normal',
+        created_at: '2025-06-18T04:35:54Z',
+        updated_at: '2025-06-18T04:35:54Z',
+      },
+      {
+        id: 3,
+        name: '分部服务器1',
+        asset_type: 'linux_server',
+        ip_address: '192.168.30.1',
+        location: '分部机房',
+        security_level: '等级二',
+        status: 'normal',
+        created_at: '2025-06-18T04:35:54Z',
+        updated_at: '2025-06-18T04:35:54Z',
+      },
+    ] as Asset[]
+  } finally {
+    assetsLoading.value = false
+  }
+}
+
 // 页面挂载时获取数据
 onMounted(() => {
   fetchAlertRules()
+  fetchAssets()
 })
 
 // 表格列配置
@@ -249,9 +372,13 @@ const ruleColumns = [
     tooltip: true,
   },
   {
-    title: '目标资产ID',
+    title: '目标资产',
     dataIndex: 'target_asset_id',
-    width: 120,
+    width: 200,
+    render: ({ record }: { record: AlertRule }) => {
+      const asset = assetsList.value.find((a) => a.id === record.target_asset_id)
+      return asset ? `${asset.name} (ID: ${asset.id})` : `ID: ${record.target_asset_id}`
+    },
   },
   {
     title: '触发条件',
@@ -309,7 +436,7 @@ const showAddRule = () => {
   currentRule.value = null
   ruleForm.value = {
     name: '',
-    target_asset_id: '',
+    target_asset_id: null,
     trigger_condition: '',
     alert_level: '',
     is_active: 'active',
@@ -318,8 +445,19 @@ const showAddRule = () => {
 }
 
 const viewRule = (rule: AlertRule) => {
-  console.log('查看规则:', rule)
-  Message.info('查看规则功能待实现')
+  // 可以在这里实现查看规则详情的功能
+  Modal.info({
+    title: `规则详情 - ${rule.name}`,
+    content: `
+      规则ID: ${rule.id}
+      目标资产: ${rule.target_asset_id}
+      触发条件: ${rule.trigger_condition}
+      告警级别: ${rule.alert_level}
+      状态: ${rule.is_active === 'active' ? '启用' : '禁用'}
+      创建时间: ${rule.created_at}
+    `,
+    width: 500,
+  })
 }
 
 const editRule = (rule: AlertRule) => {
@@ -327,7 +465,7 @@ const editRule = (rule: AlertRule) => {
   currentRule.value = rule
   ruleForm.value = {
     name: rule.name,
-    target_asset_id: rule.target_asset_id.toString(),
+    target_asset_id: rule.target_asset_id,
     trigger_condition: rule.trigger_condition,
     alert_level: rule.alert_level,
     is_active: rule.is_active,
@@ -336,8 +474,23 @@ const editRule = (rule: AlertRule) => {
 }
 
 const deleteRule = (rule: AlertRule) => {
-  console.log('删除规则:', rule)
-  Message.info('删除规则功能待实现')
+  // 显示确认对话框
+  const modal = Modal.confirm({
+    title: '确认删除',
+    content: `确定要删除告警规则 "${rule.name}" 吗？删除后无法恢复。`,
+    okText: '确定删除',
+    cancelText: '取消',
+    okButtonProps: { status: 'danger' },
+    onOk: async () => {
+      try {
+        await alertsApi.deleteAlertRule(rule.id)
+        Message.success('规则删除成功')
+        await fetchAlertRules()
+      } catch (error) {
+        Message.error('删除规则失败')
+      }
+    },
+  })
 }
 
 const handleRuleSubmit = async () => {
@@ -345,20 +498,30 @@ const handleRuleSubmit = async () => {
     if (
       !ruleForm.value.name ||
       !ruleForm.value.target_asset_id ||
-      !ruleForm.value.trigger_condition
+      !ruleForm.value.trigger_condition ||
+      !ruleForm.value.alert_level
     ) {
-      Message.warning('请填写必填项')
+      Message.warning('请填写所有必填项')
       return
     }
 
-    if (editingRule.value) {
-      // TODO: 实现编辑规则API
-      Message.info('编辑规则功能待实现')
+    if (editingRule.value && currentRule.value) {
+      // 编辑规则
+      await alertsApi.updateAlertRule(currentRule.value.id, {
+        name: ruleForm.value.name,
+        target_asset_id: ruleForm.value.target_asset_id!,
+        trigger_condition: ruleForm.value.trigger_condition,
+        alert_level: ruleForm.value.alert_level,
+        is_active: ruleForm.value.is_active,
+      })
+      Message.success('规则更新成功')
+      ruleModalVisible.value = false
+      await fetchAlertRules()
     } else {
-      // TODO: 实现添加规则API
+      // 添加新规则
       await alertsApi.createAlertRule({
         name: ruleForm.value.name,
-        target_asset_id: parseInt(ruleForm.value.target_asset_id),
+        target_asset_id: ruleForm.value.target_asset_id!,
         trigger_condition: ruleForm.value.trigger_condition,
         alert_level: ruleForm.value.alert_level,
         is_active: ruleForm.value.is_active,
@@ -368,7 +531,6 @@ const handleRuleSubmit = async () => {
       await fetchAlertRules()
     }
   } catch (error) {
-    console.error('操作失败:', error)
     Message.error('操作失败')
   }
 }

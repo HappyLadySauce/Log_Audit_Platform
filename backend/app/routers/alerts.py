@@ -28,6 +28,37 @@ async def create_alert_rule(rule: AlertRuleCreate, db: Session = Depends(get_db)
     db.refresh(db_rule)
     return db_rule
 
+@router.put("/alert-rules/{rule_id}", response_model=AlertRule, summary="更新告警规则")
+async def update_alert_rule(rule_id: int, rule: AlertRuleCreate, db: Session = Depends(get_db)):
+    """更新指定ID的告警规则"""
+    db_rule = db.query(AlertRuleModel).filter(AlertRuleModel.id == rule_id).first()
+    if not db_rule:
+        raise HTTPException(status_code=404, detail="告警规则不存在")
+    
+    # 更新字段
+    for field, value in rule.dict(exclude_unset=True).items():
+        setattr(db_rule, field, value)
+    
+    db.commit()
+    db.refresh(db_rule)
+    return db_rule
+
+@router.delete("/alert-rules/{rule_id}", summary="删除告警规则")
+async def delete_alert_rule(rule_id: int, db: Session = Depends(get_db)):
+    """删除指定ID的告警规则"""
+    db_rule = db.query(AlertRuleModel).filter(AlertRuleModel.id == rule_id).first()
+    if not db_rule:
+        raise HTTPException(status_code=404, detail="告警规则不存在")
+    
+    # 检查是否有关联的告警记录
+    alert_count = db.query(AlertModel).filter(AlertModel.rule_id == rule_id).count()
+    if alert_count > 0:
+        raise HTTPException(status_code=400, detail=f"无法删除规则，存在 {alert_count} 条关联的告警记录")
+    
+    db.delete(db_rule)
+    db.commit()
+    return {"success": True, "message": "告警规则删除成功"}
+
 # 告警记录相关
 @router.get("/alerts", response_model=List[Alert], summary="获取告警记录列表")
 async def get_alerts(
@@ -58,9 +89,9 @@ async def get_alert_stats(db: Session = Depends(get_db)):
     
     # 统计各状态的告警数量
     stats.pending = db.query(AlertModel).filter(AlertModel.status == AlertStatus.PENDING).count()
-    stats.processing = db.query(AlertModel).filter(AlertModel.status == AlertStatus.PROCESSING).count()
     stats.resolved = db.query(AlertModel).filter(AlertModel.status == AlertStatus.RESOLVED).count()
     stats.archived = db.query(AlertModel).filter(AlertModel.status == AlertStatus.ARCHIVED).count()
+    # Note: ignored status is currently handled separately in frontend
     
     return stats
 
@@ -85,9 +116,9 @@ async def create_alert(alert: AlertCreate, db: Session = Depends(get_db)):
     db.refresh(db_alert)
     return db_alert
 
-@router.post("/alerts/{alert_id}/process", response_model=Alert, summary="开始处理告警")
+@router.post("/alerts/{alert_id}/process", response_model=Alert, summary="处理告警")
 async def process_alert(alert_id: int, process_data: AlertProcess, db: Session = Depends(get_db)):
-    """将告警状态更新为处理中"""
+    """将告警状态更新为已处理"""
     db_alert = db.query(AlertModel).filter(AlertModel.id == alert_id).first()
     if not db_alert:
         raise HTTPException(status_code=404, detail="告警记录不存在")
@@ -95,8 +126,9 @@ async def process_alert(alert_id: int, process_data: AlertProcess, db: Session =
     if db_alert.status != AlertStatus.PENDING:
         raise HTTPException(status_code=400, detail="只能处理待处理状态的告警")
     
-    db_alert.status = AlertStatus.PROCESSING
+    db_alert.status = AlertStatus.RESOLVED
     db_alert.processed_at = datetime.utcnow()
+    db_alert.resolved_at = datetime.utcnow()
     db_alert.processor = process_data.processor
     
     db.commit()
@@ -136,4 +168,18 @@ async def archive_alert(alert_id: int, archive_data: AlertArchive, db: Session =
     
     db.commit()
     db.refresh(db_alert)
-    return db_alert 
+    return db_alert
+
+@router.post("/alerts/{alert_id}/ignore", response_model=Alert, summary="忽略告警")
+async def ignore_alert(alert_id: int, db: Session = Depends(get_db)):
+    """将告警状态更新为已忽略"""
+    db_alert = db.query(AlertModel).filter(AlertModel.id == alert_id).first()
+    if not db_alert:
+        raise HTTPException(status_code=404, detail="告警记录不存在")
+    
+    db_alert.status = AlertStatus.IGNORED
+    db_alert.processed_at = datetime.utcnow()
+    
+    db.commit()
+    db.refresh(db_alert)
+    return db_alert

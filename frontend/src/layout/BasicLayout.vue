@@ -42,7 +42,6 @@
           <a-menu-item key="network-device">网络设备日志</a-menu-item>
           <a-menu-item key="servers">服务器日志</a-menu-item>
           <a-menu-item key="kubernetes">K8s集群日志</a-menu-item>
-          <a-menu-item key="internet-traffic">上网流量统计</a-menu-item>
         </a-sub-menu>
 
         <a-menu-item key="log-management">
@@ -72,6 +71,13 @@
             <span>告警记录查询</span>
           </a-menu-item>
         </a-sub-menu>
+
+        <a-menu-item key="internet-traffic">
+          <template #icon>
+            <icon-cloud />
+          </template>
+          <span>上网流量统计</span>
+        </a-menu-item>
 
         <a-menu-item key="ai-analysis">
           <template #icon>
@@ -176,6 +182,7 @@ import {
   IconUser,
   IconSettings,
   IconInfoCircle,
+  IconCloud,
 } from '@arco-design/web-vue/es/icon'
 
 const router = useRouter()

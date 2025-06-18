@@ -31,7 +31,7 @@
     <!-- 日志搜索栏 -->
     <a-card :bordered="false" class="search-card">
       <a-row :gutter="16">
-        <a-col :span="6">
+        <a-col :span="5">
           <a-input
             v-model:value="searchKeyword"
             placeholder="关键词搜索..."
@@ -44,15 +44,37 @@
           </a-input>
         </a-col>
         <a-col :span="3">
-          <a-select v-model:value="selectedLevel" placeholder="日志级别" allow-clear @change="handleSearch">
+          <a-select
+            v-model:value="selectedType"
+            placeholder="日志类型"
+            allow-clear
+            @change="handleSearch"
+          >
+            <a-option value="服务器">服务器</a-option>
+            <a-option value="网络设备">网络设备</a-option>
+            <a-option value="安全设备">安全设备</a-option>
+          </a-select>
+        </a-col>
+        <a-col :span="3">
+          <a-select
+            v-model:value="selectedLevel"
+            placeholder="日志级别"
+            allow-clear
+            @change="handleSearch"
+          >
             <a-option value="INFO">INFO</a-option>
             <a-option value="WARN">WARN</a-option>
             <a-option value="ERROR">ERROR</a-option>
             <a-option value="DEBUG">DEBUG</a-option>
           </a-select>
         </a-col>
-        <a-col :span="4">
-          <a-select v-model:value="selectedSource" placeholder="日志来源" allow-clear @change="handleSearch">
+        <a-col :span="3">
+          <a-select
+            v-model:value="selectedSource"
+            placeholder="日志来源"
+            allow-clear
+            @change="handleSearch"
+          >
             <a-option value="network">网络设备</a-option>
             <a-option value="server">服务器</a-option>
             <a-option value="k8s">K8s集群</a-option>
@@ -60,8 +82,13 @@
             <a-option value="system">系统日志</a-option>
           </a-select>
         </a-col>
-        <a-col :span="5">
-          <a-select v-model:value="selectedHost" placeholder="设备/主机" allow-clear @change="handleSearch">
+        <a-col :span="3">
+          <a-select
+            v-model:value="selectedHost"
+            placeholder="设备/主机"
+            allow-clear
+            @change="handleSearch"
+          >
             <a-option value="分部防火墙">分部防火墙</a-option>
             <a-option value="分部集群接入交换机">分部集群接入交换机</a-option>
             <a-option value="分部彩光交换机">分部彩光交换机</a-option>
@@ -77,7 +104,7 @@
         <a-col :span="4">
           <a-range-picker v-model:value="dateRange" style="width: 100%" @change="handleSearch" />
         </a-col>
-        <a-col :span="2">
+        <a-col :span="3">
           <a-button type="primary" style="width: 100%" @click="handleSearch">搜索</a-button>
         </a-col>
       </a-row>
@@ -137,26 +164,26 @@
               </a-badge>
             </a-space>
           </template>
-          
+
           <template #extra>
             <a-space>
               <a-checkbox v-model:checked="autoRefresh" @change="toggleAutoRefresh">
                 自动刷新({{ autoRefreshInterval }}s)
               </a-checkbox>
-                             <a-button size="small" @click="clearSearch">
-                 <template #icon>
-                   <icon-delete />
-                 </template>
-                 清空筛选
-               </a-button>
+              <a-button size="small" @click="clearSearch">
+                <template #icon>
+                  <icon-delete />
+                </template>
+                清空筛选
+              </a-button>
             </a-space>
           </template>
 
           <a-table
             :columns="logColumns"
             :data="filteredLogData"
-            :pagination="{ 
-              pageSize: pageSize, 
+            :pagination="{
+              pageSize: pageSize,
               current: currentPage,
               total: TOTAL_LOGS,
               showTotal: true,
@@ -164,12 +191,21 @@
               pageSizeOptions: ['30', '50', '100'],
               onChange: handlePageChange,
               onPageSizeChange: handlePageSizeChange,
-              showQuickJumper: true
+              showQuickJumper: true,
             }"
             :scroll="{ x: '100%' }"
             :loading="tableLoading"
             row-key="key"
           >
+            <template #type="{ record }">
+              <a-tag :color="getTypeColor(record.type)" size="small">
+                <template #icon>
+                  <component :is="getTypeIcon(record.type)" />
+                </template>
+                {{ record.type }}
+              </a-tag>
+            </template>
+
             <template #level="{ record }">
               <a-tag :color="getLevelColor(record.level)" size="small">
                 <template #icon>
@@ -288,7 +324,9 @@
         <a-descriptions-item label="级别">
           <a-tag :color="getLevelColor(selectedLog.level)">{{ selectedLog.level }}</a-tag>
         </a-descriptions-item>
-        <a-descriptions-item label="来源">{{ getSourceName(selectedLog.source) }}</a-descriptions-item>
+        <a-descriptions-item label="来源">{{
+          getSourceName(selectedLog.source)
+        }}</a-descriptions-item>
         <a-descriptions-item label="主机">{{ selectedLog.host }}</a-descriptions-item>
         <a-descriptions-item label="IP地址">{{ selectedLog.ip }}</a-descriptions-item>
         <a-descriptions-item label="进程ID">{{ selectedLog.pid }}</a-descriptions-item>
@@ -323,7 +361,7 @@ import {
   IconExclamationCircle,
   IconCloseCircle,
   IconBug,
-  IconDelete
+  IconDelete,
 } from '@arco-design/web-vue/es/icon'
 
 // 日志总数常量
@@ -333,6 +371,7 @@ const TOTAL_LOGS = 2067
 const refreshing = ref(false)
 const tableLoading = ref(false)
 const searchKeyword = ref('')
+const selectedType = ref('')
 const selectedLevel = ref('')
 const selectedSource = ref('')
 const selectedHost = ref('')
@@ -347,7 +386,7 @@ const todayStats = ref({
   total: TOTAL_LOGS,
   info: 1958,
   warn: 104,
-  error: 5
+  error: 5,
 })
 
 const onlineDevices = ref(10)
@@ -360,6 +399,7 @@ const baseLogData = ref([
   {
     key: '1',
     timestamp: '2024-01-15 10:35:18',
+    type: '网络设备',
     level: 'INFO',
     source: 'network',
     host: '分部防火墙',
@@ -367,11 +407,12 @@ const baseLogData = ref([
     pid: '1234',
     message: '分部防火墙(10.10.20.1) - 流量监控正常，当前带宽: 850Mbps',
     rawLog: '[2024-01-15 10:35:18] INFO: Firewall traffic monitoring normal, bandwidth: 850Mbps',
-    online: true
+    online: true,
   },
   {
     key: '2',
     timestamp: '2024-01-15 10:35:15',
+    type: '服务器',
     level: 'DEBUG',
     source: 'network',
     host: '分部集群接入交换机',
@@ -379,11 +420,12 @@ const baseLogData = ref([
     pid: '5678',
     message: '分部集群接入交换机(10.10.10.150) - 端口状态检查完成，24端口全部在线',
     rawLog: '[2024-01-15 10:35:15] DEBUG: Switch port status check completed, all 24 ports online',
-    online: true
+    online: true,
   },
   {
     key: '3',
     timestamp: '2024-01-15 10:35:12',
+    type: '服务器',
     level: 'INFO',
     source: 'server',
     host: '分部K8S控制节点1',
@@ -391,11 +433,12 @@ const baseLogData = ref([
     pid: '9012',
     message: '分部K8S控制节点1(10.10.20.2) - 节点状态正常，CPU使用率: 45%，内存使用率: 62%',
     rawLog: '[2024-01-15 10:35:12] INFO: K8s control node status normal, CPU: 45%, Memory: 62%',
-    online: true
+    online: true,
   },
   {
     key: '4',
     timestamp: '2024-01-15 10:35:08',
+    type: '服务器',
     level: 'WARN',
     source: 'k8s',
     host: '分部K8S工作节点1',
@@ -403,11 +446,12 @@ const baseLogData = ref([
     pid: '3456',
     message: '分部K8S工作节点1(10.10.20.4) - Pod重启检测到，nginx-deployment重启1次',
     rawLog: '[2024-01-15 10:35:08] WARN: Pod restart detected, nginx-deployment restarted 1 time',
-    online: true
+    online: true,
   },
   {
     key: '5',
     timestamp: '2024-01-15 10:35:05',
+    type: '服务器',
     level: 'ERROR',
     source: 'network',
     host: '分部无线控制器',
@@ -415,11 +459,12 @@ const baseLogData = ref([
     pid: '7890',
     message: '分部无线控制器(192.168.100.2) - 连接超时，部分AP离线',
     rawLog: '[2024-01-15 10:35:05] ERROR: Connection timeout, some APs offline',
-    online: false
+    online: false,
   },
   {
     key: '6',
     timestamp: '2024-01-15 10:35:02',
+    type: '安全设备',
     level: 'INFO',
     source: 'security',
     host: '分部防火墙',
@@ -427,11 +472,12 @@ const baseLogData = ref([
     pid: '1234',
     message: '分部防火墙安全策略更新完成，新增安全规则5条',
     rawLog: '[2024-01-15 10:35:02] INFO: Firewall security policy updated, added 5 new rules',
-    online: true
+    online: true,
   },
   {
     key: '7',
     timestamp: '2024-01-15 10:35:00',
+    type: '服务器',
     level: 'INFO',
     source: 'system',
     host: '分部K8S控制节点2',
@@ -439,11 +485,12 @@ const baseLogData = ref([
     pid: '2468',
     message: '分部K8S控制节点2系统备份任务完成，备份大小: 2.5GB',
     rawLog: '[2024-01-15 10:35:00] INFO: System backup task completed, backup size: 2.5GB',
-    online: true
+    online: true,
   },
   {
     key: '8',
     timestamp: '2024-01-15 10:34:58',
+    type: '网络设备',
     level: 'INFO',
     source: 'network',
     host: '分部彩光交换机',
@@ -451,11 +498,12 @@ const baseLogData = ref([
     pid: '3421',
     message: '分部彩光交换机(192.168.100.1) - 光纤链路状态正常，信号强度: -5.2dBm',
     rawLog: '[2024-01-15 10:34:58] INFO: Fiber link status normal, signal strength: -5.2dBm',
-    online: true
+    online: true,
   },
   {
     key: '9',
     timestamp: '2024-01-15 10:34:55',
+    type: '服务器',
     level: 'INFO',
     source: 'server',
     host: '分部K8S工作节点2',
@@ -463,11 +511,12 @@ const baseLogData = ref([
     pid: '7654',
     message: '分部K8S工作节点2(10.10.20.5) - 容器健康检查通过，运行Pod数量: 12',
     rawLog: '[2024-01-15 10:34:55] INFO: Container health check passed, running pods: 12',
-    online: true
+    online: true,
   },
   {
     key: '10',
     timestamp: '2024-01-15 10:34:52',
+    type: '服务器',
     level: 'DEBUG',
     source: 'network',
     host: '分部用户接入交换机',
@@ -475,11 +524,12 @@ const baseLogData = ref([
     pid: '8765',
     message: '分部用户接入交换机(192.168.100.3) - VLAN配置更新，用户VLAN100激活',
     rawLog: '[2024-01-15 10:34:52] DEBUG: VLAN configuration updated, user VLAN100 activated',
-    online: true
+    online: true,
   },
   {
     key: '11',
     timestamp: '2024-01-15 10:34:50',
+    type: '网络设备',
     level: 'INFO',
     source: 'network',
     host: '分部AP',
@@ -487,11 +537,12 @@ const baseLogData = ref([
     pid: '4321',
     message: '分部AP(192.168.30.2) - 无线客户端连接数: 28，信号覆盖正常',
     rawLog: '[2024-01-15 10:34:50] INFO: Wireless clients: 28, signal coverage normal',
-    online: true
+    online: true,
   },
   {
     key: '12',
     timestamp: '2024-01-15 10:34:48',
+    type: '服务器',
     level: 'INFO',
     source: 'system',
     host: '分部K8S控制节点1',
@@ -499,11 +550,12 @@ const baseLogData = ref([
     pid: '9012',
     message: '分部K8S控制节点1 - etcd数据库状态健康，延迟: 2.1ms',
     rawLog: '[2024-01-15 10:34:48] INFO: etcd database healthy, latency: 2.1ms',
-    online: true
+    online: true,
   },
   {
     key: '13',
     timestamp: '2024-01-15 10:34:45',
+    type: '服务器',
     level: 'WARN',
     source: 'server',
     host: '分部K8S工作节点1',
@@ -511,11 +563,12 @@ const baseLogData = ref([
     pid: '3456',
     message: '分部K8S工作节点1 - 磁盘使用率达到78%，建议清理临时文件',
     rawLog: '[2024-01-15 10:34:45] WARN: Disk usage reached 78%, recommend cleanup',
-    online: true
+    online: true,
   },
   {
     key: '14',
     timestamp: '2024-01-15 10:34:42',
+    type: '安全设备',
     level: 'INFO',
     source: 'security',
     host: '分部防火墙',
@@ -523,11 +576,12 @@ const baseLogData = ref([
     pid: '1234',
     message: '分部防火墙 - IPS检测到0个威胁，阻止恶意IP: 0个',
     rawLog: '[2024-01-15 10:34:42] INFO: IPS detected 0 threats, blocked malicious IPs: 0',
-    online: true
+    online: true,
   },
   {
     key: '15',
     timestamp: '2024-01-15 10:34:40',
+    type: '服务器',
     level: 'INFO',
     source: 'network',
     host: '分部集群接入交换机',
@@ -535,23 +589,26 @@ const baseLogData = ref([
     pid: '5678',
     message: '分部集群接入交换机 - 端口镜像配置更新，监控端口激活',
     rawLog: '[2024-01-15 10:34:40] INFO: Port mirroring config updated, monitor port activated',
-    online: true
+    online: true,
   },
   {
     key: '16',
     timestamp: '2024-01-15 10:34:38',
+    type: '服务器',
     level: 'DEBUG',
     source: 'k8s',
     host: '分部K8S控制节点2',
     ip: '10.10.20.3',
     pid: '2468',
     message: '分部K8S控制节点2 - API服务器响应时间: 15ms，请求处理正常',
-    rawLog: '[2024-01-15 10:34:38] DEBUG: API server response time: 15ms, request processing normal',
-    online: true
+    rawLog:
+      '[2024-01-15 10:34:38] DEBUG: API server response time: 15ms, request processing normal',
+    online: true,
   },
   {
     key: '17',
     timestamp: '2024-01-15 10:34:35',
+    type: '服务器',
     level: 'INFO',
     source: 'system',
     host: '分部K8S工作节点2',
@@ -559,23 +616,26 @@ const baseLogData = ref([
     pid: '7654',
     message: '分部K8S工作节点2 - 系统负载均衡，当前负载: 1.2',
     rawLog: '[2024-01-15 10:34:35] INFO: System load balanced, current load: 1.2',
-    online: true
+    online: true,
   },
   {
     key: '18',
     timestamp: '2024-01-15 10:34:32',
+    type: '服务器',
     level: 'WARN',
     source: 'network',
     host: '分部彩光交换机',
     ip: '192.168.100.1',
     pid: '3421',
     message: '分部彩光交换机 - 端口利用率达到85%，建议关注流量分布',
-    rawLog: '[2024-01-15 10:34:32] WARN: Port utilization reached 85%, monitor traffic distribution',
-    online: true
+    rawLog:
+      '[2024-01-15 10:34:32] WARN: Port utilization reached 85%, monitor traffic distribution',
+    online: true,
   },
   {
     key: '19',
     timestamp: '2024-01-15 10:34:30',
+    type: '服务器',
     level: 'INFO',
     source: 'network',
     host: '分部无线控制器',
@@ -583,11 +643,12 @@ const baseLogData = ref([
     pid: '7890',
     message: '分部无线控制器 - 漫游策略更新，支持快速切换',
     rawLog: '[2024-01-15 10:34:30] INFO: Roaming policy updated, fast handoff supported',
-    online: true
+    online: true,
   },
   {
     key: '20',
     timestamp: '2024-01-15 10:34:28',
+    type: '服务器',
     level: 'INFO',
     source: 'system',
     host: '分部K8S控制节点1',
@@ -595,11 +656,12 @@ const baseLogData = ref([
     pid: '9012',
     message: '分部K8S控制节点1 - 调度器工作正常，Pod分配策略生效',
     rawLog: '[2024-01-15 10:34:28] INFO: Scheduler working normally, pod allocation policy active',
-    online: true
+    online: true,
   },
   {
     key: '21',
     timestamp: '2024-01-15 10:34:25',
+    type: '网络设备',
     level: 'DEBUG',
     source: 'network',
     host: '分部用户接入交换机',
@@ -607,11 +669,12 @@ const baseLogData = ref([
     pid: '8765',
     message: '分部用户接入交换机 - STP收敛完成，网络拓扑稳定',
     rawLog: '[2024-01-15 10:34:25] DEBUG: STP convergence completed, network topology stable',
-    online: true
+    online: true,
   },
   {
     key: '22',
     timestamp: '2024-01-15 10:34:22',
+    type: '安全设备',
     level: 'INFO',
     source: 'security',
     host: '分部防火墙',
@@ -619,11 +682,12 @@ const baseLogData = ref([
     pid: '1234',
     message: '分部防火墙 - SSL VPN连接数: 15，用户认证通过率: 100%',
     rawLog: '[2024-01-15 10:34:22] INFO: SSL VPN connections: 15, user auth success rate: 100%',
-    online: true
+    online: true,
   },
   {
     key: '23',
     timestamp: '2024-01-15 10:34:20',
+    type: '服务器',
     level: 'WARN',
     source: 'k8s',
     host: '分部K8S工作节点1',
@@ -631,11 +695,12 @@ const baseLogData = ref([
     pid: '3456',
     message: '分部K8S工作节点1 - 内存使用率达到75%，建议监控应用内存泄漏',
     rawLog: '[2024-01-15 10:34:20] WARN: Memory usage reached 75%, monitor app memory leaks',
-    online: true
+    online: true,
   },
   {
     key: '24',
     timestamp: '2024-01-15 10:34:18',
+    type: '网络设备',
     level: 'INFO',
     source: 'network',
     host: '分部AP',
@@ -643,11 +708,12 @@ const baseLogData = ref([
     pid: '4321',
     message: '分部AP - 频谱分析完成，干扰水平: 低',
     rawLog: '[2024-01-15 10:34:18] INFO: Spectrum analysis completed, interference level: low',
-    online: true
+    online: true,
   },
   {
     key: '25',
     timestamp: '2024-01-15 10:34:15',
+    type: '服务器',
     level: 'INFO',
     source: 'system',
     host: '分部K8S控制节点2',
@@ -655,11 +721,12 @@ const baseLogData = ref([
     pid: '2468',
     message: '分部K8S控制节点2 - 证书自动更新完成，有效期延长至2025年',
     rawLog: '[2024-01-15 10:34:15] INFO: Certificate auto-renewal completed, valid until 2025',
-    online: true
+    online: true,
   },
   {
     key: '26',
     timestamp: '2024-01-15 10:34:12',
+    type: '网络设备',
     level: 'INFO',
     source: 'network',
     host: '分部彩光交换机',
@@ -667,11 +734,12 @@ const baseLogData = ref([
     pid: '3421',
     message: '分部彩光交换机 - 交换机温度正常，CPU温度: 45°C',
     rawLog: '[2024-01-15 10:34:12] INFO: Switch temperature normal, CPU temp: 45°C',
-    online: true
+    online: true,
   },
   {
     key: '27',
     timestamp: '2024-01-15 10:34:10',
+    type: '服务器',
     level: 'DEBUG',
     source: 'server',
     host: '分部K8S工作节点2',
@@ -679,11 +747,12 @@ const baseLogData = ref([
     pid: '7654',
     message: '分部K8S工作节点2 - 网络接口状态检查，eth0: UP, eth1: UP',
     rawLog: '[2024-01-15 10:34:10] DEBUG: Network interface check, eth0: UP, eth1: UP',
-    online: true
+    online: true,
   },
   {
     key: '28',
     timestamp: '2024-01-15 10:34:08',
+    type: '安全设备',
     level: 'INFO',
     source: 'security',
     host: '分部防火墙',
@@ -691,11 +760,12 @@ const baseLogData = ref([
     pid: '1234',
     message: '分部防火墙 - 防病毒引擎更新完成，病毒库版本: 2024.01.15',
     rawLog: '[2024-01-15 10:34:08] INFO: Antivirus engine updated, virus DB version: 2024.01.15',
-    online: true
+    online: true,
   },
   {
     key: '29',
     timestamp: '2024-01-15 10:34:05',
+    type: '网络设备',
     level: 'WARN',
     source: 'network',
     host: '分部用户接入交换机',
@@ -703,11 +773,12 @@ const baseLogData = ref([
     pid: '8765',
     message: '分部用户接入交换机 - 端口16流量异常，建议检查连接设备',
     rawLog: '[2024-01-15 10:34:05] WARN: Port 16 traffic anomaly, check connected device',
-    online: true
+    online: true,
   },
   {
     key: '30',
     timestamp: '2024-01-15 10:34:02',
+    type: '服务器',
     level: 'INFO',
     source: 'k8s',
     host: '分部K8S控制节点1',
@@ -715,8 +786,8 @@ const baseLogData = ref([
     pid: '9012',
     message: '分部K8S控制节点1 - 集群节点心跳检测正常，所有节点Ready',
     rawLog: '[2024-01-15 10:34:02] INFO: Cluster node heartbeat normal, all nodes Ready',
-    online: true
-  }
+    online: true,
+  },
 ])
 
 // 生成分页日志数据（按需加载）
@@ -724,47 +795,49 @@ const generatePageLogData = (page: number, pageSize: number) => {
   const baseLogs = baseLogData.value
   const logs = []
   const totalLogs = TOTAL_LOGS
-  
+
   // 计算当前页应该生成多少条数据
   const startIndex = page * pageSize
   const actualPageSize = Math.min(pageSize, totalLogs - startIndex)
-  
+
   // 如果超出总数据范围，返回空数组
   if (startIndex >= totalLogs) {
     return []
   }
-  
+
   for (let i = 0; i < actualPageSize; i++) {
     // 使用基础数据循环
     const baseIndex = i % baseLogs.length
     const baseLog = baseLogs[baseIndex]
-    
+
     // 为每条日志生成唯一的key
     const uniqueKey = (startIndex + i + 1).toString()
-    
+
     // 调整时间戳，使其看起来更真实
     const baseTime = new Date('2024-01-15 10:35:18')
     const offsetMinutes = Math.floor((startIndex + i) / 10) // 每10条日志时间往前推1分钟
     const adjustedTime = new Date(baseTime.getTime() - offsetMinutes * 60000)
-    
+
     const logEntry = {
       ...baseLog,
       key: uniqueKey,
-      timestamp: adjustedTime.toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      }).replace(/\//g, '-')
+      timestamp: adjustedTime
+        .toLocaleString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        })
+        .replace(/\//g, '-'),
     }
-    
+
     logs.push(logEntry)
   }
-  
+
   return logs
-  }
+}
 
 // 当前页日志数据（只加载当前页）
 const currentPage = ref(1)
@@ -777,7 +850,7 @@ const getPageData = (page: number, size: number) => {
   if (logDataCache.has(cacheKey)) {
     return logDataCache.get(cacheKey)
   }
-  
+
   const data = generatePageLogData(page, size)
   logDataCache.set(cacheKey, data)
   return data
@@ -788,26 +861,31 @@ const logData = ref(getPageData(0, pageSize.value))
 // 过滤后的日志数据
 const filteredLogData = computed(() => {
   let filtered = logData.value
-  
+
   if (searchKeyword.value) {
-    filtered = filtered.filter((log: any) => 
-      log.message.toLowerCase().includes(searchKeyword.value.toLowerCase()) ||
-      log.host.toLowerCase().includes(searchKeyword.value.toLowerCase())
+    filtered = filtered.filter(
+      (log: any) =>
+        log.message.toLowerCase().includes(searchKeyword.value.toLowerCase()) ||
+        log.host.toLowerCase().includes(searchKeyword.value.toLowerCase()),
     )
   }
-  
+
+  if (selectedType.value) {
+    filtered = filtered.filter((log: any) => log.type === selectedType.value)
+  }
+
   if (selectedLevel.value) {
     filtered = filtered.filter((log: any) => log.level === selectedLevel.value)
   }
-  
+
   if (selectedSource.value) {
     filtered = filtered.filter((log: any) => log.source === selectedSource.value)
   }
-  
+
   if (selectedHost.value) {
     filtered = filtered.filter((log: any) => log.host === selectedHost.value)
   }
-  
+
   return filtered
 })
 
@@ -821,45 +899,51 @@ const logColumns = [
     dataIndex: 'timestamp',
     width: 160,
     sortable: {
-      sortDirections: ['ascend', 'descend']
-    }
+      sortDirections: ['ascend', 'descend'],
+    },
+  },
+  {
+    title: '类型',
+    dataIndex: 'type',
+    slotName: 'type',
+    width: 100,
   },
   {
     title: '级别',
     dataIndex: 'level',
     slotName: 'level',
-    width: 90
+    width: 90,
   },
   {
     title: '来源',
     dataIndex: 'source',
     slotName: 'source',
-    width: 120
+    width: 120,
   },
   {
     title: '主机/设备',
     dataIndex: 'host',
     slotName: 'host',
-    width: 180
+    width: 160,
   },
   {
     title: 'IP地址',
     dataIndex: 'ip',
-    width: 120
+    width: 120,
   },
   {
     title: '消息',
     dataIndex: 'message',
     slotName: 'message',
     ellipsis: true,
-    tooltip: true
+    tooltip: true,
   },
   {
     title: '操作',
     slotName: 'actions',
-    width: 180,
-    fixed: 'right'
-  }
+    width: 160,
+    fixed: 'right',
+  },
 ]
 
 // 定时器
@@ -930,17 +1014,43 @@ const getSourceName = (source: string) => {
   }
 }
 
+const getTypeColor = (type: string) => {
+  switch (type) {
+    case '服务器':
+      return 'blue'
+    case '网络设备':
+      return 'green'
+    case '安全设备':
+      return 'red'
+    default:
+      return 'default'
+  }
+}
+
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case '服务器':
+      return IconDesktop
+    case '网络设备':
+      return IconWifi
+    case '安全设备':
+      return IconLock
+    default:
+      return IconFile
+  }
+}
+
 // 事件处理函数
 const refreshLogs = async () => {
   refreshing.value = true
   tableLoading.value = true
-  
-  await new Promise(resolve => setTimeout(resolve, 800))
-  
+
+  await new Promise((resolve) => setTimeout(resolve, 800))
+
   // 重新生成当前页数据
   logDataCache.clear()
   logData.value = getPageData(currentPage.value - 1, pageSize.value)
-  
+
   refreshing.value = false
   tableLoading.value = false
 }
@@ -949,7 +1059,7 @@ const handleSearch = () => {
   // 重置到第一页
   currentPage.value = 1
   tableLoading.value = true
-  
+
   // 模拟搜索延迟
   setTimeout(() => {
     // 清空缓存以获取最新数据
@@ -969,15 +1079,16 @@ const exportLogs = () => {
 
 const clearSearch = () => {
   searchKeyword.value = ''
+  selectedType.value = ''
   selectedLevel.value = ''
   selectedSource.value = ''
   selectedHost.value = ''
   dateRange.value = []
-  
+
   // 重置到第一页并刷新数据
   currentPage.value = 1
   tableLoading.value = true
-  
+
   setTimeout(() => {
     logDataCache.clear()
     logData.value = getPageData(0, pageSize.value)
@@ -1024,7 +1135,7 @@ const stopAutoRefresh = () => {
 const handlePageChange = (page: number) => {
   currentPage.value = page
   tableLoading.value = true
-  
+
   // 模拟异步加载
   setTimeout(() => {
     logData.value = getPageData(page - 1, pageSize.value)
@@ -1036,10 +1147,10 @@ const handlePageSizeChange = (newPageSize: number) => {
   pageSize.value = newPageSize
   currentPage.value = 1
   tableLoading.value = true
-  
+
   // 清空缓存（因为页面大小改变了）
   logDataCache.clear()
-  
+
   // 模拟异步加载
   setTimeout(() => {
     logData.value = getPageData(0, newPageSize)

@@ -21,16 +21,17 @@ class SecurityLevel(str, enum.Enum):
     LEVEL_THREE = "等级三"
 
 class AlertStatus(str, enum.Enum):
-    PENDING = "pending"
-    PROCESSING = "processing"
-    RESOLVED = "resolved"
-    ARCHIVED = "archived"
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    RESOLVED = "RESOLVED"
+    ARCHIVED = "ARCHIVED"
+    IGNORED = "IGNORED"
 
 class AlertLevel(str, enum.Enum):
-    LOW = "低"
-    MEDIUM = "中"
-    HIGH = "高"
-    CRITICAL = "严重"
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
 
 class LogType(str, enum.Enum):
     SECURITY_AUDIT = "安全审计"

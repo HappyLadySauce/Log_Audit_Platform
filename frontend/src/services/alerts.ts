@@ -32,7 +32,6 @@ export interface Alert {
 
 export interface AlertStats {
   pending: number
-  processing: number
   resolved: number
   archived: number
 }
@@ -51,16 +50,23 @@ export interface AlertArchive {
 // 告警API服务
 export const alertsApi = {
   // 获取告警规则列表
-  getAlertRules(params?: {
-    skip?: number
-    limit?: number
-  }): Promise<AlertRule[]> {
+  getAlertRules(params?: { skip?: number; limit?: number }): Promise<AlertRule[]> {
     return get('/alert-rules', params)
   },
 
   // 创建告警规则
   createAlertRule(data: any): Promise<AlertRule> {
     return post('/alert-rules', data)
+  },
+
+  // 更新告警规则
+  updateAlertRule(id: number, data: any): Promise<AlertRule> {
+    return put(`/alert-rules/${id}`, data)
+  },
+
+  // 删除告警规则
+  deleteAlertRule(id: number): Promise<void> {
+    return del(`/alert-rules/${id}`)
   },
 
   // 获取告警记录列表
@@ -101,6 +107,11 @@ export const alertsApi = {
   // 归档告警
   archiveAlert(id: number, data: AlertArchive): Promise<Alert> {
     return post(`/alerts/${id}/archive`, data)
+  },
+
+  // 忽略告警
+  ignoreAlert(id: number): Promise<Alert> {
+    return post(`/alerts/${id}/ignore`)
   },
 }
 

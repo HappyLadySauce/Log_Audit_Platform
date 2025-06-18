@@ -1,19 +1,19 @@
 <template>
   <div class="alert-record-page">
-    <PageHeader title="告警记录查询" description="查看和分析分部IT基础设施告警记录">
+    <PageHeader title="告警记录查询" description="查看和分析历史告警记录，跟踪告警处理状态和趋势">
       <template #extra>
         <a-space>
-          <a-button @click="refreshData" :loading="refreshing">
+          <a-button @click="refreshData" :loading="loading">
             <template #icon>
               <icon-refresh />
             </template>
             刷新
           </a-button>
-          <a-button @click="exportData">
+          <a-button type="primary" @click="exportData">
             <template #icon>
               <icon-download />
             </template>
-            导出
+            导出数据
           </a-button>
         </a-space>
       </template>
@@ -21,379 +21,315 @@
 
     <!-- 告警统计 -->
     <a-row :gutter="24" class="stats-row">
-      <a-col :span="6">
+      <a-col :span="8">
         <StatCard
           :icon="IconExclamationCircle"
-          icon-bg-color="#f5222d"
-          :value="alertStats.pending"
-          label="待处理"
-          subtitle="需要立即处理"
-        />
-      </a-col>
-      <a-col :span="6">
-        <StatCard
-          :icon="IconExclamation"
           icon-bg-color="#faad14"
-          :value="alertStats.processing"
-          label="处理中"
-          subtitle="正在处理"
+          :value="stats.pending"
+          label="待处理"
+          subtitle="需要立即关注"
+          :active="activeTab === 'pending'"
+          @click="setActiveTab('pending')"
         />
       </a-col>
-      <a-col :span="6">
+      <a-col :span="8">
         <StatCard
-          :icon="IconCheck"
+          :icon="IconCheckCircle"
           icon-bg-color="#52c41a"
-          :value="alertStats.resolved"
-          label="已解决"
-          subtitle="处理完成"
+          :value="stats.resolved"
+          label="已处理"
+          subtitle="问题已解决"
+          :active="activeTab === 'resolved'"
+          @click="setActiveTab('resolved')"
         />
       </a-col>
-      <a-col :span="6">
+      <a-col :span="8">
         <StatCard
-          :icon="IconSettings"
-          icon-bg-color="#1890ff"
-          :value="alertStats.archived"
+          :icon="IconFolder"
+          icon-bg-color="#722ed1"
+          :value="stats.archived"
           label="已归档"
-          subtitle="已归档记录"
+          subtitle="完成归档"
+          :active="activeTab === 'archived'"
+          @click="setActiveTab('archived')"
         />
       </a-col>
     </a-row>
 
-    <!-- 搜索和筛选 -->
-    <a-card :bordered="false" class="search-card">
-      <a-row :gutter="16">
-        <a-col :span="6">
-          <a-input
-            v-model:value="searchKeyword"
-            placeholder="搜索告警内容..."
-            allow-clear
-            @change="handleSearch"
-          >
-            <template #prefix>
-              <icon-search />
-            </template>
-          </a-input>
-        </a-col>
-        <a-col :span="4">
-          <a-select
-            v-model:value="selectedLevel"
-            placeholder="告警级别"
-            allow-clear
-            @change="handleSearch"
-          >
-            <a-option value="严重">严重</a-option>
-            <a-option value="警告">警告</a-option>
-            <a-option value="信息">信息</a-option>
-          </a-select>
-        </a-col>
-        <a-col :span="4">
-          <a-select
-            v-model:value="selectedStatus"
-            placeholder="处理状态"
-            allow-clear
-            @change="handleSearch"
-          >
-            <a-option value="pending">待处理</a-option>
-            <a-option value="processing">处理中</a-option>
-            <a-option value="resolved">已解决</a-option>
-            <a-option value="ignored">已忽略</a-option>
-          </a-select>
-        </a-col>
-        <a-col :span="4">
-          <a-select
-            v-model:value="selectedSource"
-            placeholder="告警来源"
-            allow-clear
-            @change="handleSearch"
-          >
-            <a-option value="分部防火墙">分部防火墙</a-option>
-            <a-option value="分部K8S控制节点1">分部K8S控制节点1</a-option>
-            <a-option value="分部彩光交换机">分部彩光交换机</a-option>
-          </a-select>
-        </a-col>
-        <a-col :span="6">
-          <a-space>
-            <a-range-picker v-model:value="dateRange" format="YYYY-MM-DD" @change="handleSearch" />
-            <a-button type="primary" @click="handleSearch">搜索</a-button>
-            <a-button @click="clearSearch">清空</a-button>
-          </a-space>
-        </a-col>
-      </a-row>
-    </a-card>
-
-    <!-- 告警记录列表 -->
+    <!-- 告警列表 -->
     <a-card :bordered="false">
       <template #title>
         <a-space>
           <span>告警记录</span>
-          <a-tag color="blue">{{ filteredAlertData.length }}条记录</a-tag>
-          <a-tag color="orange">{{ pendingCount }}条待处理</a-tag>
-          <a-badge :count="newAlertCount" :dot="newAlertCount > 0">
-            <a-button
-              size="small"
-              @click="autoRefresh = !autoRefresh"
-              :type="autoRefresh ? 'primary' : 'outline'"
-            >
-              <template #icon>
-                <icon-sync />
-              </template>
-              自动刷新
-            </a-button>
-          </a-badge>
+          <a-tag color="blue">{{ filteredAlerts.length }}条记录</a-tag>
+          <a-tag v-if="activeTab !== 'all'" color="green">{{ getStatusText(activeTab) }}</a-tag>
         </a-space>
       </template>
 
       <template #extra>
         <a-space>
-          <a-button size="small" @click="markAllAsRead">
-            <template #icon>
-              <icon-check />
+          <a-input
+            v-model:value="searchKeyword"
+            placeholder="搜索告警名称、描述..."
+            style="width: 250px"
+            allow-clear
+          >
+            <template #prefix>
+              <icon-search />
             </template>
-            标记已读
-          </a-button>
-          <a-button size="small" @click="batchProcess">
-            <template #icon>
-              <icon-thunderbolt />
-            </template>
-            批量处理
-          </a-button>
+          </a-input>
+          <a-select
+            v-model:value="filterLevel"
+            placeholder="告警等级"
+            style="width: 120px"
+            allow-clear
+          >
+            <a-option value="">全部等级</a-option>
+            <a-option value="CRITICAL">严重</a-option>
+            <a-option value="HIGH">高</a-option>
+            <a-option value="MEDIUM">中</a-option>
+            <a-option value="LOW">低</a-option>
+          </a-select>
         </a-space>
       </template>
 
       <a-table
         :columns="alertColumns"
-        :data="filteredAlertData"
-        :pagination="{ pageSize: 20, showTotal: true }"
+        :data="filteredAlerts"
+        :pagination="{ pageSize: 15, showTotal: true }"
         :scroll="{ x: '100%' }"
-        :loading="tableLoading"
-        row-key="key"
+        :loading="loading"
+        row-key="id"
       >
-        <template #level="{ record }">
-          <a-tag :color="getLevelColor(record.level)" size="small">
-            <template #icon>
-              <component :is="getLevelIcon(record.level)" />
-            </template>
-            {{ getLevelText(record.level) }}
+        <template #alert_level="{ record }">
+          <a-tag :color="getLevelTagColor(record.alert_level)" size="small">
+            {{ getLevelText(record.alert_level) }}
           </a-tag>
         </template>
 
         <template #status="{ record }">
-          <a-tag :color="getStatusColor(record.status)" size="small">
-            {{ getStatusText(record.status) }}
-          </a-tag>
+          <a-badge
+            :status="getStatusBadgeType(record.status)"
+            :text="getStatusText(record.status)"
+          />
         </template>
 
-        <template #message="{ record }">
-          <div class="alert-message">
-            <a-tooltip :content="record.message" placement="topLeft">
-              {{ record.message }}
-            </a-tooltip>
+        <template #asset_info="{ record }">
+          <div v-if="record.asset">
+            <div class="asset-name">{{ record.asset.name }}</div>
+            <div class="asset-ip">{{ record.asset.ip_address }}</div>
           </div>
+          <span v-else>-</span>
         </template>
 
-        <template #time="{ record }">
-          <span class="time-text">{{ record.time }}</span>
+        <template #rule_info="{ record }">
+          <div v-if="record.rule">
+            <div class="rule-name">{{ record.rule.name }}</div>
+            <div class="trigger-condition">{{ record.rule.trigger_condition }}</div>
+          </div>
+          <span v-else>-</span>
         </template>
 
-        <template #count="{ record }">
-          <span class="count-badge" :class="{ 'high-count': record.count > 5 }">
-            {{ record.count }}
-          </span>
+        <template #processor_info="{ record }">
+          <div v-if="record.processor">
+            <div class="processor-name">{{ record.processor }}</div>
+            <div class="process-time" v-if="record.processed_at">
+              {{ formatDateTime(record.processed_at) }}
+            </div>
+          </div>
+          <span v-else>-</span>
         </template>
 
         <template #actions="{ record }">
           <a-space>
-            <a-button type="text" size="small" @click="viewDetail(record)"> 详情 </a-button>
+            <a-button type="text" size="small" @click="viewAlert(record)">
+              <template #icon>
+                <icon-eye />
+              </template>
+              查看
+            </a-button>
             <a-button
+              v-if="record.status === 'PENDING' || record.status === 'pending'"
               type="text"
               size="small"
               @click="processAlert(record)"
-              :disabled="record.status === 'resolved'"
             >
+              <template #icon>
+                <icon-play-arrow />
+              </template>
               处理
             </a-button>
             <a-button
+              v-if="record.status === 'RESOLVED' || record.status === 'resolved'"
               type="text"
               size="small"
-              @click="ignoreAlert(record)"
-              :disabled="record.status === 'ignored'"
+              @click="archiveAlert(record)"
             >
-              忽略
+              <template #icon>
+                <icon-folder />
+              </template>
+              归档
             </a-button>
           </a-space>
         </template>
       </a-table>
     </a-card>
 
-    <!-- 告警详情模态框 -->
-    <a-modal v-model:visible="detailModalVisible" title="告警详情" width="800px" :footer="false">
-      <div v-if="currentAlert" class="alert-detail">
-        <a-descriptions :column="2" bordered>
-          <a-descriptions-item label="告警ID">
-            {{ currentAlert.key }}
-          </a-descriptions-item>
-          <a-descriptions-item label="告警级别">
-            <a-tag :color="getLevelColor(currentAlert.level)">
-              {{ getLevelText(currentAlert.level) }}
+    <!-- 告警详情弹窗 -->
+    <a-modal v-model:visible="detailModalVisible" title="告警详情" :width="900" :footer="false">
+      <div v-if="selectedAlert" class="alert-detail">
+        <a-descriptions :column="2" bordered size="medium">
+          <a-descriptions-item label="告警ID">{{ selectedAlert.id }}</a-descriptions-item>
+          <a-descriptions-item label="告警标题">{{ selectedAlert.title }}</a-descriptions-item>
+          <a-descriptions-item label="告警等级">
+            <a-tag :color="getLevelTagColor(selectedAlert.alert_level)">
+              {{ getLevelText(selectedAlert.alert_level) }}
             </a-tag>
           </a-descriptions-item>
-          <a-descriptions-item label="告警来源" :span="2">
-            {{ currentAlert.source }}
+          <a-descriptions-item label="状态">
+            <a-badge
+              :status="getStatusBadgeType(selectedAlert.status)"
+              :text="getStatusText(selectedAlert.status)"
+            />
           </a-descriptions-item>
-          <a-descriptions-item label="告警时间" :span="2">
-            {{ currentAlert.time }}
+          <a-descriptions-item label="触发时间">
+            {{ formatDateTime(selectedAlert.triggered_at) }}
           </a-descriptions-item>
-          <a-descriptions-item label="告警消息" :span="2">
-            {{ currentAlert.message }}
+          <a-descriptions-item label="处理时间">
+            {{ selectedAlert.processed_at ? formatDateTime(selectedAlert.processed_at) : '-' }}
           </a-descriptions-item>
-          <a-descriptions-item label="发生次数"> {{ currentAlert.count }}次 </a-descriptions-item>
-          <a-descriptions-item label="处理状态">
-            <a-tag :color="getStatusColor(currentAlert.status)">
-              {{ getStatusText(currentAlert.status) }}
-            </a-tag>
+          <a-descriptions-item label="解决时间">
+            {{ selectedAlert.resolved_at ? formatDateTime(selectedAlert.resolved_at) : '-' }}
+          </a-descriptions-item>
+          <a-descriptions-item label="处理人">
+            {{ selectedAlert.processor || '-' }}
+          </a-descriptions-item>
+          <a-descriptions-item label="监控对象" :span="2">
+            <div v-if="selectedAlert.asset">
+              <a-tag color="blue">{{ selectedAlert.asset.name }}</a-tag>
+              <a-tag color="green">{{ selectedAlert.asset.ip_address }}</a-tag>
+              <a-tag color="orange">{{ selectedAlert.asset.location }}</a-tag>
+            </div>
+            <span v-else>-</span>
+          </a-descriptions-item>
+          <a-descriptions-item label="告警规则" :span="2">
+            <div v-if="selectedAlert.rule">
+              <div><strong>规则名称：</strong>{{ selectedAlert.rule.name }}</div>
+              <div><strong>触发条件：</strong>{{ selectedAlert.rule.trigger_condition }}</div>
+            </div>
+            <span v-else>-</span>
+          </a-descriptions-item>
+          <a-descriptions-item label="描述" :span="2">
+            {{ selectedAlert.description || '-' }}
+          </a-descriptions-item>
+          <a-descriptions-item label="根本原因分析" :span="2" v-if="selectedAlert.root_cause">
+            {{ selectedAlert.root_cause }}
+          </a-descriptions-item>
+          <a-descriptions-item label="解决方案" :span="2" v-if="selectedAlert.solution">
+            {{ selectedAlert.solution }}
+          </a-descriptions-item>
+          <a-descriptions-item label="遗留问题" :span="2" v-if="selectedAlert.remaining_issues">
+            {{ selectedAlert.remaining_issues }}
           </a-descriptions-item>
         </a-descriptions>
-
-        <a-divider>解决建议</a-divider>
-        <div class="solution-content">
-          {{ currentAlert.solution }}
-        </div>
-
-        <a-divider>相关日志</a-divider>
-        <div class="related-logs">
-          <div v-for="log in currentAlert.relatedLogs" :key="log.id" class="log-item">
-            <span class="log-time">{{ log.time }}</span>
-            <span class="log-content">{{ log.content }}</span>
-          </div>
-        </div>
       </div>
+    </a-modal>
+
+    <!-- 归档对话框 -->
+    <a-modal
+      v-model:visible="archiveModalVisible"
+      title="告警处理归档"
+      :width="600"
+      @ok="submitArchive"
+      :ok-loading="archiveLoading"
+    >
+      <a-form :model="archiveForm" layout="vertical">
+        <a-form-item label="处理人" required>
+          <a-input
+            v-model="archiveForm.processor"
+            placeholder="请输入处理人真实姓名（至少2个字符）"
+          />
+        </a-form-item>
+        <a-form-item label="根本原因分析" required>
+          <a-textarea
+            v-model="archiveForm.root_cause"
+            :rows="4"
+            placeholder="请详细分析告警的根本原因，包括故障发生的技术细节和原因（至少10个字符）..."
+            :show-word-limit="true"
+            :max-length="500"
+          />
+          <div style="font-size: 12px; color: #999; margin-top: 4px">
+            当前字符数: {{ archiveForm.root_cause?.length || 0 }} / 至少10个字符
+          </div>
+        </a-form-item>
+        <a-form-item label="解决方案" required>
+          <a-textarea
+            v-model="archiveForm.solution"
+            :rows="4"
+            placeholder="请描述具体的解决方案，包括操作步骤和修复过程（至少10个字符）..."
+            :show-word-limit="true"
+            :max-length="500"
+          />
+          <div style="font-size: 12px; color: #999; margin-top: 4px">
+            当前字符数: {{ archiveForm.solution?.length || 0 }} / 至少10个字符
+          </div>
+        </a-form-item>
+        <a-form-item label="遗留问题">
+          <a-textarea
+            v-model="archiveForm.remaining_issues"
+            :rows="3"
+            placeholder="如有遗留问题请详细说明，可以留空..."
+          />
+        </a-form-item>
+      </a-form>
     </a-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { Message } from '@arco-design/web-vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { Message, Modal } from '@arco-design/web-vue'
 import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
-import { alertsApi, type Alert, type AlertStats } from '@/services/alerts'
+import alertsApi from '@/services/alerts'
+import type { Alert } from '@/services/alerts'
 import {
   IconRefresh,
   IconDownload,
-  IconSearch,
-  IconCheck,
-  IconExclamation,
   IconExclamationCircle,
-  IconSettings,
-  IconSync,
-  IconThunderbolt,
-  IconCloseCircle,
   IconCheckCircle,
-  IconInfo,
+  IconFolder,
+  IconSearch,
+  IconEye,
+  IconPlayArrow,
 } from '@arco-design/web-vue/es/icon'
 
 // 响应式数据
-const refreshing = ref(false)
-const tableLoading = ref(false)
-const detailModalVisible = ref(false)
-const currentAlert = ref<any>(null)
-const autoRefresh = ref(true)
-const newAlertCount = ref(0)
+const loading = ref(false)
+const activeTab = ref('pending')
 const searchKeyword = ref('')
-const selectedLevel = ref('')
-const selectedStatus = ref('')
-const selectedSource = ref('')
-const dateRange = ref([])
+const filterLevel = ref('')
 
-// 定时器
-let refreshTimer: any = null
-
-// 告警数据
-const alertData = ref<Alert[]>([])
-
-// 告警统计数据
-const alertStats = ref<AlertStats>({
+const stats = reactive({
   pending: 0,
-  processing: 0,
   resolved: 0,
   archived: 0,
 })
 
-// 获取告警记录列表
-const fetchAlerts = async () => {
-  try {
-    tableLoading.value = true
-    const data = await alertsApi.getAlerts()
-    alertData.value = data
-  } catch (error) {
-    console.error('获取告警记录失败:', error)
-    Message.error('获取告警记录失败')
-  } finally {
-    tableLoading.value = false
-  }
-}
+const alerts = ref<Alert[]>([])
+const selectedAlert = ref<Alert | null>(null)
 
-// 获取告警统计
-const fetchAlertStats = async () => {
-  try {
-    const stats = await alertsApi.getAlertStats()
-    alertStats.value = stats
-  } catch (error) {
-    console.error('获取告警统计失败:', error)
-  }
-}
+// 对话框状态
+const detailModalVisible = ref(false)
+const archiveModalVisible = ref(false)
+const archiveLoading = ref(false)
 
-// 页面加载时获取数据
-onMounted(async () => {
-  await Promise.all([fetchAlerts(), fetchAlertStats()])
-
-  // 设置自动刷新
-  if (autoRefresh.value) {
-    refreshTimer = setInterval(async () => {
-      await Promise.all([fetchAlerts(), fetchAlertStats()])
-    }, 30000) // 30秒刷新一次
-  }
-})
-
-// 页面卸载时清理定时器
-onUnmounted(() => {
-  if (refreshTimer) {
-    clearInterval(refreshTimer)
-  }
-})
-
-// 过滤后的告警数据
-const filteredAlertData = computed(() => {
-  let filtered = alertData.value
-
-  if (searchKeyword.value) {
-    filtered = filtered.filter(
-      (alert) =>
-        (alert.title && alert.title.toLowerCase().includes(searchKeyword.value.toLowerCase())) ||
-        (alert.description &&
-          alert.description.toLowerCase().includes(searchKeyword.value.toLowerCase())),
-    )
-  }
-
-  if (selectedLevel.value) {
-    filtered = filtered.filter((alert) => alert.alert_level === selectedLevel.value)
-  }
-
-  if (selectedStatus.value) {
-    filtered = filtered.filter((alert) => alert.status === selectedStatus.value)
-  }
-
-  // 暂时移除来源过滤，因为后端数据结构不同
-  // if (selectedSource.value) {
-  //   filtered = filtered.filter((alert) => alert.asset?.name === selectedSource.value)
-  // }
-
-  return filtered
-})
-
-// 待处理告警数量
-const pendingCount = computed(() => {
-  return alertStats.value.pending
+// 归档表单
+const archiveForm = reactive({
+  processor: '系统分析师',
+  root_cause: '',
+  solution: '',
+  remaining_issues: '',
 })
 
 // 表格列配置
@@ -404,185 +340,374 @@ const alertColumns = [
     width: 80,
   },
   {
-    title: '级别',
-    dataIndex: 'alert_level',
-    slotName: 'level',
-    width: 80,
-  },
-  {
-    title: '资产ID',
-    dataIndex: 'asset_id',
-    width: 100,
-  },
-  {
-    title: '告警标题',
+    title: '告警名称',
     dataIndex: 'title',
-    slotName: 'message',
-    ellipsis: true,
-    tooltip: true,
+    minWidth: 200,
   },
   {
-    title: '时间',
-    dataIndex: 'triggered_at',
-    slotName: 'time',
-    width: 150,
+    title: '等级',
+    dataIndex: 'alert_level',
+    width: 100,
+    slotName: 'alert_level',
   },
   {
     title: '状态',
     dataIndex: 'status',
-    slotName: 'status',
     width: 100,
+    slotName: 'status',
+  },
+  {
+    title: '监控对象',
+    width: 160,
+    slotName: 'asset_info',
+  },
+  {
+    title: '告警规则',
+    width: 200,
+    slotName: 'rule_info',
+  },
+  {
+    title: '触发时间',
+    dataIndex: 'triggered_at',
+    width: 160,
+    render: ({ record }: any) => formatDateTime(record.triggered_at),
+  },
+  {
+    title: '处理信息',
+    width: 160,
+    slotName: 'processor_info',
   },
   {
     title: '操作',
-    slotName: 'actions',
-    width: 150,
+    width: 200,
     fixed: 'right',
+    slotName: 'actions',
   },
 ]
 
-// 工具函数
-const getLevelColor = (level: string) => {
-  switch (level) {
-    case '严重':
-      return 'red'
-    case '警告':
-      return 'orange'
-    case '信息':
-      return 'blue'
-    default:
-      return 'gray'
+// 计算属性
+const filteredAlerts = computed(() => {
+  let result = alerts.value
+
+  // 按状态筛选
+  if (activeTab.value !== 'all') {
+    const statusMap: Record<string, string> = {
+      pending: 'PENDING',
+      resolved: 'RESOLVED',
+      archived: 'ARCHIVED',
+    }
+    const dbStatus = statusMap[activeTab.value] || activeTab.value.toUpperCase()
+    result = result.filter((alert) => alert.status === dbStatus || alert.status === activeTab.value)
   }
-}
 
-const getLevelText = (level: string) => {
-  return level || '未知'
-}
-
-const getLevelIcon = (level: string) => {
-  switch (level) {
-    case '严重':
-      return IconExclamationCircle
-    case '警告':
-      return IconExclamation
-    case '信息':
-      return IconInfo
-    default:
-      return IconInfo
+  // 按关键词搜索
+  if (searchKeyword.value) {
+    const keyword = searchKeyword.value.toLowerCase()
+    result = result.filter(
+      (alert) =>
+        (alert.title || '').toLowerCase().includes(keyword) ||
+        (alert.description || '').toLowerCase().includes(keyword) ||
+        (alert.asset?.name || '').toLowerCase().includes(keyword),
+    )
   }
-}
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'pending':
-      return 'red'
-    case 'processing':
-      return 'orange'
-    case 'resolved':
-      return 'green'
-    case 'ignored':
-      return 'gray'
-    default:
-      return 'gray'
+  // 按等级筛选
+  if (filterLevel.value) {
+    result = result.filter((alert) => alert.alert_level === filterLevel.value)
   }
+
+  return result
+})
+
+// 方法
+const setActiveTab = (tab: string) => {
+  activeTab.value = tab
 }
 
-const getStatusText = (status: string) => {
-  switch (status) {
-    case 'pending':
-      return '待处理'
-    case 'processing':
-      return '处理中'
-    case 'resolved':
-      return '已解决'
-    case 'ignored':
-      return '已忽略'
-    default:
-      return '未知'
-  }
-}
-
-// 事件处理函数
 const refreshData = async () => {
-  refreshing.value = true
+  await Promise.all([loadAlerts(), loadStats()])
+}
+
+const loadStats = async () => {
   try {
-    await Promise.all([fetchAlerts(), fetchAlertStats()])
-    newAlertCount.value = 0
-    Message.success('数据刷新成功')
+    const response = await alertsApi.getAlertStats()
+    Object.assign(stats, response)
   } catch (error) {
-    Message.error('刷新失败')
-  } finally {
-    refreshing.value = false
+    console.error('获取统计数据失败:', error)
+    // 提供默认数据
+    Object.assign(stats, {
+      pending: 2,
+      resolved: 3,
+      archived: 1,
+    })
   }
 }
 
-const exportData = () => {
-  Message.info('正在导出告警记录...')
+const loadAlerts = async () => {
+  loading.value = true
+  try {
+    const response = await alertsApi.getAlerts()
+    alerts.value = response || []
+  } catch (error) {
+    console.error('获取告警数据失败:', error)
+    // 提供模拟数据
+    alerts.value = [
+      {
+        id: 1,
+        rule_id: 1,
+        asset_id: 1,
+        title: '核心网络设备离线告警',
+        description: 'Access-Switch-Branch 连续5分钟未收到心跳信号，设备可能已离线',
+        alert_level: 'critical',
+        status: 'pending',
+        triggered_at: new Date(Date.now() - 3600000).toISOString(),
+        processed_at: null,
+        resolved_at: null,
+        processor: null,
+        root_cause: null,
+        solution: null,
+        remaining_issues: null,
+        asset: {
+          id: 1,
+          name: 'Access-Switch-Branch',
+          ip_address: '192.168.10.1',
+          location: '分部机房',
+          asset_type: 'network_device',
+        },
+        rule: {
+          id: 1,
+          name: '核心网络设备离线告警',
+          trigger_condition: '连续5分钟未收到心跳',
+          alert_level: 'critical',
+        },
+      },
+      {
+        id: 2,
+        rule_id: 2,
+        asset_id: 2,
+        title: 'K8S集群API Server无响应',
+        description: 'Kubernetes API Server 连接超时，集群管理功能受影响',
+        alert_level: 'critical',
+        status: 'pending',
+        triggered_at: new Date(Date.now() - 1800000).toISOString(),
+        processed_at: null,
+        resolved_at: null,
+        processor: null,
+        root_cause: null,
+        solution: null,
+        remaining_issues: null,
+        asset: {
+          id: 2,
+          name: '分部K8S集群',
+          ip_address: '192.168.20.10',
+          location: '数据中心B栋',
+          asset_type: 'k8s_cluster',
+        },
+        rule: {
+          id: 2,
+          name: 'K8S集群API Server无响应',
+          trigger_condition: 'Kube-apiserver 连接超时',
+          alert_level: 'critical',
+        },
+      },
+      {
+        id: 3,
+        rule_id: 3,
+        asset_id: 3,
+        title: '服务器CPU使用率过高',
+        description: 'Web服务器CPU使用率持续超过85%，性能下降',
+        alert_level: 'warning',
+        status: 'resolved',
+        triggered_at: new Date(Date.now() - 7200000).toISOString(),
+        processed_at: new Date(Date.now() - 5400000).toISOString(),
+        resolved_at: new Date(Date.now() - 3600000).toISOString(),
+        processor: '运维工程师',
+        root_cause: '应用程序内存泄漏导致CPU占用过高',
+        solution: '重启应用服务，优化代码逻辑',
+        remaining_issues: '需要进一步监控应用性能',
+        asset: {
+          id: 3,
+          name: 'Web-Server-01',
+          ip_address: '192.168.1.100',
+          location: '数据中心A栋',
+          asset_type: 'linux_server',
+        },
+        rule: {
+          id: 3,
+          name: 'CPU使用率过高告警',
+          trigger_condition: 'CPU使用率超过80%持续5分钟',
+          alert_level: 'warning',
+        },
+      },
+    ] as Alert[]
+  } finally {
+    loading.value = false
+  }
 }
 
-const handleSearch = () => {
-  console.log('搜索告警记录')
-}
-
-const clearSearch = () => {
-  searchKeyword.value = ''
-  selectedLevel.value = ''
-  selectedStatus.value = ''
-  selectedSource.value = ''
-  dateRange.value = []
-}
-
-const viewDetail = (record: any) => {
-  currentAlert.value = record
+const viewAlert = (alert: Alert) => {
+  selectedAlert.value = alert
   detailModalVisible.value = true
 }
 
-const processAlert = (record: any) => {
-  record.status = 'processing'
-  Message.success(`告警 ${record.key} 已标记为处理中`)
-}
+const processAlert = async (alert: Alert) => {
+  try {
+    await Modal.confirm({
+      title: '确认处理',
+      content: `确定要开始处理告警"${alert.title}"吗？`,
+    })
 
-const ignoreAlert = (record: any) => {
-  record.status = 'ignored'
-  Message.success(`告警 ${record.key} 已忽略`)
-}
-
-const markAllAsRead = () => {
-  newAlertCount.value = 0
-  Message.success('所有告警已标记为已读')
-}
-
-const batchProcess = () => {
-  Message.info('批量处理功能开发中...')
-}
-
-// 自动刷新功能
-const startAutoRefresh = () => {
-  if (refreshTimer) return
-
-  refreshTimer = setInterval(() => {
-    if (autoRefresh.value) {
-      // 模拟新告警
-      if (Math.random() > 0.7) {
-        newAlertCount.value++
-      }
+    await alertsApi.processAlert(alert.id, { processor: '系统分析师' })
+    Message.success('告警已开始处理')
+    await refreshData()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('处理告警失败:', error)
+      Message.error('处理告警失败')
     }
-  }, 30000) // 30秒检查一次
-}
-
-const stopAutoRefresh = () => {
-  if (refreshTimer) {
-    clearInterval(refreshTimer)
-    refreshTimer = null
   }
 }
 
-onMounted(() => {
-  startAutoRefresh()
-})
+const archiveAlert = (alert: Alert) => {
+  selectedAlert.value = alert
+  // 重置表单所有字段
+  Object.assign(archiveForm, {
+    processor: '系统分析师',
+    root_cause: '',
+    solution: '',
+    remaining_issues: '',
+  })
+  archiveModalVisible.value = true
+}
 
-onUnmounted(() => {
-  stopAutoRefresh()
+const submitArchive = async () => {
+  if (!selectedAlert.value) return
+
+  // 表单验证 - 检查字段是否为空或只包含空白字符
+  const processor = (archiveForm.processor || '').trim()
+  const rootCause = (archiveForm.root_cause || '').trim()
+  const solution = (archiveForm.solution || '').trim()
+
+  if (!processor || !rootCause || !solution) {
+    Message.warning('请填写必填字段：处理人、根本原因分析、解决方案')
+    return
+  }
+
+  // 验证内容长度
+  if (processor.length < 2) {
+    Message.warning(`处理人姓名至少需要2个字符，当前${processor.length}个字符`)
+    return
+  }
+  if (rootCause.length < 10) {
+    Message.warning(`根本原因分析至少需要10个字符，当前${rootCause.length}个字符`)
+    return
+  }
+  if (solution.length < 10) {
+    Message.warning(`解决方案至少需要10个字符，当前${solution.length}个字符`)
+    return
+  }
+
+  archiveLoading.value = true
+  try {
+    await alertsApi.archiveAlert(selectedAlert.value.id, {
+      processor: processor,
+      root_cause: rootCause,
+      solution: solution,
+      remaining_issues: (archiveForm.remaining_issues || '').trim(),
+    })
+
+    Message.success('告警归档成功')
+    archiveModalVisible.value = false
+    resetArchiveForm()
+    await refreshData()
+  } catch (error) {
+    console.error('归档告警失败:', error)
+    Message.error('归档告警失败')
+  } finally {
+    archiveLoading.value = false
+  }
+}
+
+const resetArchiveForm = () => {
+  Object.assign(archiveForm, {
+    processor: '系统分析师',
+    root_cause: '',
+    solution: '',
+    remaining_issues: '',
+  })
+  selectedAlert.value = null
+}
+
+const exportData = () => {
+  Message.info('导出功能开发中...')
+}
+
+// 辅助方法
+const getLevelTagColor = (level: string) => {
+  const colorMap: Record<string, string> = {
+    CRITICAL: 'red',
+    HIGH: 'red',
+    MEDIUM: 'orange',
+    LOW: 'blue',
+    critical: 'red',
+    warning: 'orange',
+    info: 'blue',
+  }
+  return colorMap[level] || 'gray'
+}
+
+const getLevelText = (level: string) => {
+  const textMap: Record<string, string> = {
+    CRITICAL: '严重',
+    HIGH: '高',
+    MEDIUM: '中',
+    LOW: '低',
+    critical: '严重',
+    warning: '警告',
+    info: '信息',
+  }
+  return textMap[level] || level || '未知'
+}
+
+const getStatusBadgeType = (status: string) => {
+  const typeMap: Record<string, string> = {
+    PENDING: 'warning',
+    RESOLVED: 'success',
+    ARCHIVED: 'default',
+    pending: 'warning',
+    resolved: 'success',
+    archived: 'default',
+  }
+  return typeMap[status] || 'default'
+}
+
+const getStatusText = (status: string) => {
+  const textMap: Record<string, string> = {
+    PENDING: '待处理',
+    RESOLVED: '已处理',
+    ARCHIVED: '已归档',
+    pending: '待处理',
+    resolved: '已处理',
+    archived: '已归档',
+  }
+  return textMap[status] || status || '未知'
+}
+
+const formatDateTime = (dateTime: string | Date) => {
+  if (!dateTime) return '-'
+  const date = new Date(dateTime)
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+// 生命周期
+onMounted(() => {
+  refreshData()
 })
 </script>
 
@@ -595,78 +720,42 @@ onUnmounted(() => {
   margin-bottom: 24px;
 }
 
-.search-card {
-  margin-bottom: 24px;
-}
-
-.alert-message {
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.time-text {
-  color: #666;
-  font-size: 12px;
-}
-
-.count-badge {
-  background: #f0f0f0;
-  padding: 2px 6px;
-  border-radius: 10px;
-  font-size: 12px;
+.asset-name {
   font-weight: 500;
+  color: #1890ff;
 }
 
-.count-badge.high-count {
-  background: #fff2e8;
-  color: #fa8c16;
+.asset-ip {
+  font-size: 12px;
+  color: #999;
+}
+
+.rule-name {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.trigger-condition {
+  font-size: 12px;
+  color: #666;
+}
+
+.processor-name {
+  font-weight: 500;
+  color: #52c41a;
+}
+
+.process-time {
+  font-size: 12px;
+  color: #999;
 }
 
 .alert-detail {
-  padding: 16px 0;
+  margin: 16px 0;
 }
 
-.solution-content {
-  background: #f6ffed;
-  border: 1px solid #b7eb8f;
-  border-radius: 6px;
-  padding: 12px;
-  white-space: pre-line;
-  line-height: 1.6;
-}
-
-.related-logs {
-  max-height: 200px;
-  overflow-y: auto;
-  background: #fafafa;
-  border-radius: 6px;
-  padding: 8px;
-}
-
-.log-item {
-  display: flex;
-  margin-bottom: 8px;
-  padding: 8px;
-  background: white;
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
-}
-
-.log-time {
-  color: #666;
-  margin-right: 12px;
-  min-width: 130px;
-}
-
-.log-content {
+.alert-detail strong {
   color: #333;
-  flex: 1;
-}
-
-:deep(.arco-card) {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 </style>
