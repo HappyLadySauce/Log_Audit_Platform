@@ -173,9 +173,10 @@
         </a-form-item>
         <a-form-item label="告警级别" required>
           <a-select v-model="ruleForm.alert_level" placeholder="请选择告警级别">
-            <a-option value="严重">严重</a-option>
-            <a-option value="警告">警告</a-option>
-            <a-option value="信息">信息</a-option>
+            <a-option value="CRITICAL">严重</a-option>
+            <a-option value="HIGH">警告</a-option>
+            <a-option value="MEDIUM">信息</a-option>
+            <a-option value="LOW">低</a-option>
           </a-select>
         </a-form-item>
         <a-form-item label="状态" required>
@@ -415,19 +416,32 @@ const ruleColumns = [
 // 工具函数
 const getSeverityColor = (severity: string) => {
   switch (severity) {
-    case '严重':
+    case 'CRITICAL':
       return 'red'
-    case '警告':
+    case 'HIGH':
       return 'orange'
-    case '信息':
+    case 'MEDIUM':
       return 'blue'
+    case 'LOW':
+      return 'green'
     default:
       return 'gray'
   }
 }
 
 const getSeverityText = (severity: string) => {
-  return severity || '未知'
+  switch (severity) {
+    case 'CRITICAL':
+      return '严重'
+    case 'HIGH':
+      return '警告'
+    case 'MEDIUM':
+      return '信息'
+    case 'LOW':
+      return '低'
+    default:
+      return '未知'
+  }
 }
 
 // 事件处理函数

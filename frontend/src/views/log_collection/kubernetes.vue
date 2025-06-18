@@ -1929,12 +1929,13 @@ const startStatisticsGrowth = () => {
   // 存储大小增长
   const storageInterval = setInterval(() => {
     if (storageSize.value < 3.8) {
-      storageSize.value += Math.floor(Math.random() * 10) / 100
+      const increment = 0.01 // 每秒固定增长0.01
+      storageSize.value = Math.round((storageSize.value + increment) * 100) / 100 // 保留2位小数
       storageSize.value = Math.min(storageSize.value, 3.8)
     } else {
       clearInterval(storageInterval)
     }
-  }, 300)
+  }, 1000) // 每秒更新一次
 }
 
 // 组件卸载时清理定时器

@@ -47,7 +47,7 @@ class AlertRuleBase(BaseModel):
     alert_level: AlertLevel = Field(..., description="告警级别")
 
 class AlertRuleCreate(AlertRuleBase):
-    pass
+    is_active: str = Field(default="active", description="规则状态")
 
 class AlertRule(AlertRuleBase):
     id: int
