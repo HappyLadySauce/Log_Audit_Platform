@@ -8,9 +8,9 @@
           <EnhancedStatCard
             :icon="IconStorage"
             icon-bg-color="#1890ff"
-            value="10"
+            value="6"
             label="设备监控"
-            subtitle="网络设备6台 · 服务器4台 · 在线总数10"
+            subtitle="网络设备6台 · 服务器0台 · 在线总数6"
             :trend="{ type: 'stable', value: '全部在线' }"
           />
         </a-col>
@@ -41,7 +41,7 @@
           <EnhancedStatCard
             :icon="IconNotification"
             icon-bg-color="#f5222d"
-            value="2.5G"
+            value="0.2G"
             label="流量审计"
             subtitle="总流量统计"
             :trend="{ type: 'increase', value: '+15%' }"
@@ -517,9 +517,9 @@ const aiPredictions = ref([
 const initLogData = () => {
   const devices = [
     { name: '分部防火墙', color: '#52c41a' },
-    { name: '分部K8S控制节点1', color: '#1890ff' },
-    { name: '分部K8S工作节点1', color: '#1890ff' },
     { name: '分部接入交换机', color: '#52c41a' },
+    { name: '分部彩光交换机', color: '#52c41a' },
+    { name: '分部用户接入交换机', color: '#52c41a' },
     { name: '分部无线控制器', color: '#52c41a' },
   ]
 
@@ -534,7 +534,6 @@ const initLogData = () => {
       '分部用户登录认证成功',
       '分部定时备份任务执行完成',
       '分部防火墙规则更新成功',
-      '分部K8S集群健康检查通过',
       '分部数据同步任务完成',
       '分部系统性能监控正常',
       '分部网络流量状态稳定',
@@ -674,39 +673,6 @@ const deviceList = ref([
     status: 'online',
     lastResponse: formatTime(new Date()),
     color: '#52c41a',
-  },
-  // 服务器设备
-  {
-    id: 7,
-    name: '分部K8S控制节点1',
-    ip: '10.10.20.2',
-    status: 'online',
-    lastResponse: formatTime(new Date()),
-    color: '#1890ff',
-  },
-  {
-    id: 8,
-    name: '分部K8S控制节点2',
-    ip: '10.10.20.3',
-    status: 'online',
-    lastResponse: formatTime(new Date()),
-    color: '#1890ff',
-  },
-  {
-    id: 9,
-    name: '分部K8S工作节点1',
-    ip: '10.10.20.4',
-    status: 'online',
-    lastResponse: formatTime(new Date()),
-    color: '#1890ff',
-  },
-  {
-    id: 10,
-    name: '分部K8S工作节点2',
-    ip: '10.10.20.5',
-    status: 'online',
-    lastResponse: formatTime(new Date()),
-    color: '#1890ff',
   },
 ])
 
