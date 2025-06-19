@@ -91,7 +91,7 @@ async def get_alert_stats(db: Session = Depends(get_db)):
     stats.pending = db.query(AlertModel).filter(AlertModel.status == AlertStatus.PENDING).count()
     stats.resolved = db.query(AlertModel).filter(AlertModel.status == AlertStatus.RESOLVED).count()
     stats.archived = db.query(AlertModel).filter(AlertModel.status == AlertStatus.ARCHIVED).count()
-    # Note: ignored status is currently handled separately in frontend
+    stats.ignored = db.query(AlertModel).filter(AlertModel.status == AlertStatus.IGNORED).count()
     
     return stats
 
@@ -183,3 +183,21 @@ async def ignore_alert(alert_id: int, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_alert)
     return db_alert
+
+@router.delete("/alerts/{alert_id}", summary="删除告警记录")
+async def delete_alert(alert_id: int, db: Session = Depends(get_db)):
+    """删除指定ID的告警记录"""
+    db_alert = db.query(AlertModel).filter(AlertModel.id == alert_id).first()
+    if not db_alert:
+        raise HTTPException(status_code=404, detail="告警记录不存在")
+    
+    # 只允许删除已处理、已归档或已忽略的告警
+    if db_alert.status == AlertStatus.PENDING:
+        raise HTTPException(
+            status_code=400, 
+            detail="无法删除待处理状态的告警，请先处理或忽略该告警"
+        )
+    
+    db.delete(db_alert)
+    db.commit()
+    return {"success": True, "message": "告警记录删除成功"}

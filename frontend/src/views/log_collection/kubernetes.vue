@@ -1407,14 +1407,14 @@ const addCluster = async () => {
         cpu: 15,
         memory: 35,
         createdTime: '2025-06-19 02:48:50',
-        image: 'finance/approval-platform:v1.2.3',
+        image: 'app:v4',
         uid: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         podIP: '10.244.20.77',
         nodeIP: '10.10.20.4',
         containers: [
           {
             name: 'app-deployment',
-            image: 'finance/approval-platform:v1.2.3',
+            image: 'app:v4',
             status: 'Running',
             ready: true,
             restarts: 0,
@@ -1447,14 +1447,14 @@ const addCluster = async () => {
         cpu: 18,
         memory: 42,
         createdTime: '2025-06-19 02:48:50',
-        image: 'finance/approval-platform:v1.2.3',
+        image: 'app:v4',
         uid: 'b2c3d4e5-f6g7-8901-bcde-fg2345678901',
         podIP: '10.244.87.161',
         nodeIP: '10.10.20.5',
         containers: [
           {
             name: 'app-deployment',
-            image: 'finance/approval-platform:v1.2.3',
+            image: 'app:v4',
             status: 'Running',
             ready: true,
             restarts: 0,

@@ -104,11 +104,18 @@
               </template>
               编辑
             </a-button>
-            <a-button type="text" size="small" status="danger" @click="deleteRule(record)">
+            <a-button
+              type="text"
+              size="small"
+              status="danger"
+              @click="deleteRule(record)"
+              :loading="deletingRuleId === record.id"
+              :disabled="deletingRuleId === record.id"
+            >
               <template #icon>
                 <icon-delete />
               </template>
-              删除
+              {{ deletingRuleId === record.id ? '删除中...' : '删除' }}
             </a-button>
           </a-space>
         </template>
@@ -216,6 +223,7 @@ const tableLoading = ref(false)
 const ruleModalVisible = ref(false)
 const editingRule = ref(false)
 const currentRule = ref<AlertRule | null>(null)
+const deletingRuleId = ref<number | null>(null)
 
 // 规则数据
 const ruleData = ref<AlertRule[]>([])
@@ -315,7 +323,7 @@ const fetchAssets = async () => {
     assetsList.value = [
       {
         id: 1,
-        name: 'Access-Switch-Branch',
+        name: '分部集群接入交换机',
         asset_type: 'network_device',
         ip_address: '192.168.10.1',
         location: '分部机房',
@@ -488,20 +496,56 @@ const editRule = (rule: AlertRule) => {
 }
 
 const deleteRule = (rule: AlertRule) => {
+  // 获取关联的资产信息
+  const asset = assetsList.value.find((a) => a.id === rule.target_asset_id)
+  const assetInfo = asset ? `${asset.name} (${asset.ip_address})` : `ID: ${rule.target_asset_id}`
+
   // 显示确认对话框
   const modal = Modal.confirm({
-    title: '确认删除',
-    content: `确定要删除告警规则 "${rule.name}" 吗？删除后无法恢复。`,
+    title: '确认删除告警规则',
+    content: `即将删除以下告警规则，此操作不可恢复：
+    
+• 规则名称：${rule.name}
+• 目标资产：${assetInfo}
+• 触发条件：${rule.trigger_condition}
+• 告警级别：${getSeverityText(rule.alert_level)}
+
+注意：如果该规则下存在关联的告警记录，将无法删除。`,
     okText: '确定删除',
     cancelText: '取消',
     okButtonProps: { status: 'danger' },
     onOk: async () => {
       try {
+        deletingRuleId.value = rule.id
         await alertsApi.deleteAlertRule(rule.id)
         Message.success('规则删除成功')
         await fetchAlertRules()
-      } catch (error) {
-        Message.error('删除规则失败')
+      } catch (error: any) {
+        console.error('删除规则失败:', error)
+
+        // 根据错误类型显示不同的提示信息
+        if (
+          error.message &&
+          error.message.includes('存在') &&
+          error.message.includes('条关联的告警记录')
+        ) {
+          Modal.error({
+            title: '删除失败',
+            content: `无法删除该规则：${error.message}。
+
+建议：请先处理或删除相关的告警记录，然后再删除该规则。
+
+您可以前往"告警记录查询"页面查看和处理相关告警。`,
+            width: 500,
+          })
+        } else if (error.message && error.message.includes('404')) {
+          Message.error('告警规则不存在，可能已被删除')
+          await fetchAlertRules() // 刷新列表
+        } else {
+          Message.error(`删除规则失败：${error.message || '未知错误'}`)
+        }
+      } finally {
+        deletingRuleId.value = null
       }
     },
   })

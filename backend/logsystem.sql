@@ -71,13 +71,13 @@ CREATE TABLE `alerts`  (
 -- ----------------------------
 -- Records of alerts
 -- ----------------------------
-INSERT INTO `alerts` VALUES (1, 1, NULL, '核心网络设备离线告警', '设备 Access-Switch-Branch (192.168.10.1) 连续5分钟未收到心跳信号，设备可能已离线。', 'CRITICAL', 'RESOLVED', '2025-06-18 06:33:51', '2025-06-18 13:01:51', '2025-06-18 13:02:02', '当前用户', NULL, NULL, NULL);
+INSERT INTO `alerts` VALUES (1, 1, NULL, '核心网络设备离线告警', '设备 分部集群接入交换机 (192.168.10.1) 连续5分钟未收到心跳信号，设备可能已离线。', 'CRITICAL', 'RESOLVED', '2025-06-18 06:33:51', '2025-06-18 13:01:51', '2025-06-18 13:02:02', '当前用户', NULL, NULL, NULL);
 INSERT INTO `alerts` VALUES (2, 2, NULL, 'K8S集群API Server无响应', 'K8S集群 分部K8S集群 的API Server无法连接，集群服务可能中断。', 'CRITICAL', 'RESOLVED', '2025-06-18 06:33:51', '2025-06-18 13:01:50', '2025-06-18 13:02:02', '当前用户', NULL, NULL, NULL);
-INSERT INTO `alerts` VALUES (3, 1, NULL, '核心网络设备离线告警', '设备 Access-Switch-Branch (192.168.10.1) 连续5分钟未收到心跳信号，设备可能已离线。', 'CRITICAL', 'RESOLVED', '2025-06-18 12:26:37', '2025-06-18 13:01:49', '2025-06-18 13:02:02', '当前用户', NULL, NULL, NULL);
+INSERT INTO `alerts` VALUES (3, 1, NULL, '核心网络设备离线告警', '设备 分部集群接入交换机 (192.168.10.1) 连续5分钟未收到心跳信号，设备可能已离线。', 'CRITICAL', 'RESOLVED', '2025-06-18 12:26:37', '2025-06-18 13:01:49', '2025-06-18 13:02:02', '当前用户', NULL, NULL, NULL);
 INSERT INTO `alerts` VALUES (4, 2, NULL, 'K8S集群API Server无响应', 'K8S集群 分部K8S集群 的API Server无法连接，集群服务可能中断。', 'CRITICAL', 'RESOLVED', '2025-06-18 12:26:37', '2025-06-18 13:01:49', '2025-06-18 13:02:02', '当前用户', NULL, NULL, NULL);
-INSERT INTO `alerts` VALUES (5, 1, 14, '核心网络设备离线告警', '设备 Access-Switch-Branch (192.168.10.1) 连续5分钟未收到心跳信号，设备可能已离线。', 'CRITICAL', 'RESOLVED', '2025-06-18 13:02:03', '2025-06-18 13:10:26', '2025-06-18 13:30:41', '当前用户', NULL, NULL, NULL);
+INSERT INTO `alerts` VALUES (5, 1, 14, '核心网络设备离线告警', '设备 分部集群接入交换机 (192.168.10.1) 连续5分钟未收到心跳信号，设备可能已离线。', 'CRITICAL', 'RESOLVED', '2025-06-18 13:02:03', '2025-06-18 13:10:26', '2025-06-18 13:30:41', '当前用户', NULL, NULL, NULL);
 INSERT INTO `alerts` VALUES (6, 2, 15, 'K8S集群API Server无响应', 'K8S集群 分部K8S集群 的API Server无法连接，集群服务可能中断。', 'CRITICAL', 'RESOLVED', '2025-06-18 13:02:03', '2025-06-18 13:10:26', '2025-06-18 13:30:41', '当前用户', NULL, NULL, NULL);
-INSERT INTO `alerts` VALUES (7, 1, 14, '核心网络设备离线告警', '设备 Access-Switch-Branch (192.168.10.1) 连续5分钟未收到心跳信号，设备可能已离线。', 'CRITICAL', 'PENDING', '2025-06-18 13:41:12', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `alerts` VALUES (7, 1, 14, '核心网络设备离线告警', '设备 分部集群接入交换机 (192.168.10.1) 连续5分钟未收到心跳信号，设备可能已离线。', 'CRITICAL', 'PENDING', '2025-06-18 13:41:12', NULL, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO `alerts` VALUES (8, 2, 15, 'K8S集群API Server无响应', 'K8S集群 分部K8S集群 的API Server无法连接，集群服务可能中断。', 'CRITICAL', 'PENDING', '2025-06-18 13:41:12', NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- ----------------------------
@@ -111,7 +111,7 @@ INSERT INTO `assets` VALUES (3, '分部彩光交换机', 'NETWORK_DEVICE', '192.
 INSERT INTO `assets` VALUES (4, '分部无线控制器', 'NETWORK_DEVICE', '192.168.100.2', '分部机房B-04', 'LEVEL_TWO', 'NORMAL', '2025-06-18 04:35:54', '2025-06-18 04:35:54', NULL, NULL, NULL);
 INSERT INTO `assets` VALUES (5, '分部用户接入交换机', 'NETWORK_DEVICE', '192.168.100.3', '分部机房B-05', 'LEVEL_TWO', 'NORMAL', '2025-06-18 04:35:54', '2025-06-18 04:35:54', NULL, NULL, NULL);
 INSERT INTO `assets` VALUES (6, '分部AP', 'NETWORK_DEVICE', '192.168.30.2', '分部办公区域', 'LEVEL_ONE', 'NORMAL', '2025-06-18 04:35:54', '2025-06-18 04:35:54', NULL, NULL, NULL);
-INSERT INTO `assets` VALUES (14, 'Access-Switch-Branch', 'NETWORK_DEVICE', '192.168.10.1', '分部机房', 'LEVEL_TWO', 'ERROR', '2025-06-18 13:02:03', '2025-06-18 13:41:12', NULL, NULL, NULL);
+INSERT INTO `assets` VALUES (14, '分部集群接入交换机', 'NETWORK_DEVICE', '192.168.10.1', '分部机房', 'LEVEL_TWO', 'ERROR', '2025-06-18 13:02:03', '2025-06-18 13:41:12', NULL, NULL, NULL);
 INSERT INTO `assets` VALUES (15, '分部K8S集群', 'K8S_CLUSTER', '192.168.20.100', '数据中心B栋', 'LEVEL_THREE', 'ERROR', '2025-06-18 13:02:03', '2025-06-18 13:41:12', NULL, NULL, NULL);
 
 -- ----------------------------

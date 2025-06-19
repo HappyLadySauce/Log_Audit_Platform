@@ -101,6 +101,7 @@ class AlertStats(BaseModel):
     pending: int = 0
     resolved: int = 0
     archived: int = 0
+    ignored: int = 0
 
 # 日志相关
 class LogBase(BaseModel):

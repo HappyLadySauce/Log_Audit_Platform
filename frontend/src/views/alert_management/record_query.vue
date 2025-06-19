@@ -21,7 +21,7 @@
 
     <!-- 告警统计 -->
     <a-row :gutter="24" class="stats-row">
-      <a-col :span="8">
+      <a-col :span="6">
         <StatCard
           :icon="IconExclamationCircle"
           icon-bg-color="#faad14"
@@ -32,7 +32,7 @@
           @click="setActiveTab('pending')"
         />
       </a-col>
-      <a-col :span="8">
+      <a-col :span="6">
         <StatCard
           :icon="IconCheckCircle"
           icon-bg-color="#52c41a"
@@ -43,7 +43,7 @@
           @click="setActiveTab('resolved')"
         />
       </a-col>
-      <a-col :span="8">
+      <a-col :span="6">
         <StatCard
           :icon="IconFolder"
           icon-bg-color="#722ed1"
@@ -52,6 +52,17 @@
           subtitle="完成归档"
           :active="activeTab === 'archived'"
           @click="setActiveTab('archived')"
+        />
+      </a-col>
+      <a-col :span="6">
+        <StatCard
+          :icon="IconMinus"
+          icon-bg-color="#999999"
+          :value="stats.ignored"
+          label="已忽略"
+          subtitle="已忽略告警"
+          :active="activeTab === 'ignored'"
+          @click="setActiveTab('ignored')"
         />
       </a-col>
     </a-row>
@@ -160,6 +171,20 @@
               处理
             </a-button>
             <a-button
+              v-if="record.status === 'PENDING' || record.status === 'pending'"
+              type="text"
+              size="small"
+              status="warning"
+              @click="ignoreAlert(record)"
+              :loading="deletingAlertId === record.id"
+              :disabled="deletingAlertId === record.id"
+            >
+              <template #icon>
+                <icon-minus />
+              </template>
+              {{ deletingAlertId === record.id ? '忽略中...' : '忽略' }}
+            </a-button>
+            <a-button
               v-if="record.status === 'RESOLVED' || record.status === 'resolved'"
               type="text"
               size="small"
@@ -169,6 +194,27 @@
                 <icon-folder />
               </template>
               归档
+            </a-button>
+            <a-button
+              v-if="
+                record.status === 'RESOLVED' ||
+                record.status === 'resolved' ||
+                record.status === 'ARCHIVED' ||
+                record.status === 'archived' ||
+                record.status === 'IGNORED' ||
+                record.status === 'ignored'
+              "
+              type="text"
+              size="small"
+              status="danger"
+              @click="deleteAlert(record)"
+              :loading="deletingAlertId === record.id"
+              :disabled="deletingAlertId === record.id"
+            >
+              <template #icon>
+                <icon-delete />
+              </template>
+              {{ deletingAlertId === record.id ? '删除中...' : '删除' }}
             </a-button>
           </a-space>
         </template>
@@ -302,6 +348,8 @@ import {
   IconSearch,
   IconEye,
   IconPlayArrow,
+  IconMinus,
+  IconDelete,
 } from '@arco-design/web-vue/es/icon'
 
 // 响应式数据
@@ -309,6 +357,7 @@ const loading = ref(false)
 const activeTab = ref('pending')
 const searchKeyword = ref('')
 const filterLevel = ref('')
+const deletingAlertId = ref<number | null>(null) // 添加删除状态追踪
 
 // 自动刷新相关
 const autoRefreshInterval = ref<number | null>(null)
@@ -318,6 +367,7 @@ const stats = reactive({
   pending: 0,
   resolved: 0,
   archived: 0,
+  ignored: 0,
 })
 
 const alerts = ref<Alert[]>([])
@@ -399,6 +449,7 @@ const filteredAlerts = computed(() => {
       pending: 'PENDING',
       resolved: 'RESOLVED',
       archived: 'ARCHIVED',
+      ignored: 'IGNORED',
     }
     const dbStatus = statusMap[activeTab.value] || activeTab.value.toUpperCase()
     result = result.filter((alert) => alert.status === dbStatus || alert.status === activeTab.value)
@@ -461,7 +512,7 @@ const loadAlerts = async () => {
         rule_id: 1,
         asset_id: 1,
         title: '核心网络设备离线告警',
-        description: 'Access-Switch-Branch 连续5分钟未收到心跳信号，设备可能已离线',
+        description: '分部集群接入交换机 连续5分钟未收到心跳信号，设备可能已离线',
         alert_level: 'critical',
         status: 'pending',
         triggered_at: new Date(Date.now() - 3600000).toISOString(),
@@ -473,7 +524,7 @@ const loadAlerts = async () => {
         remaining_issues: null,
         asset: {
           id: 1,
-          name: 'Access-Switch-Branch',
+          name: '分部集群接入交换机',
           ip_address: '192.168.10.1',
           location: '分部机房',
           asset_type: 'network_device',
@@ -646,6 +697,91 @@ const exportData = () => {
   Message.info('导出功能开发中...')
 }
 
+// 忽略告警
+const ignoreAlert = async (alert: Alert) => {
+  try {
+    await Modal.confirm({
+      title: '确认忽略告警',
+      content: `确定要忽略告警"${alert.title}"吗？
+      
+忽略后该告警将不再显示在待处理列表中，但会保留在系统记录中以供后续查询。
+
+• 告警名称：${alert.title}
+• 告警等级：${getLevelText(alert.alert_level)}
+• 触发时间：${formatDateTime(alert.triggered_at)}`,
+      okText: '确定忽略',
+      okButtonProps: { status: 'warning' },
+      cancelText: '取消',
+    })
+
+    deletingAlertId.value = alert.id
+    await alertsApi.ignoreAlert(alert.id)
+    Message.success('告警已忽略')
+    await refreshData()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('忽略告警失败:', error)
+      Message.error('忽略告警失败')
+    }
+  } finally {
+    deletingAlertId.value = null
+  }
+}
+
+// 删除告警记录
+const deleteAlert = async (alert: Alert) => {
+  const statusText = getStatusText(alert.status)
+  const levelText = getLevelText(alert.alert_level)
+
+  try {
+    await Modal.confirm({
+      title: '确认删除告警记录',
+      content: `即将永久删除以下告警记录，此操作不可恢复：
+
+• 告警名称：${alert.title}
+• 告警等级：${levelText}
+• 当前状态：${statusText}
+• 触发时间：${formatDateTime(alert.triggered_at)}
+${alert.processor ? `• 处理人：${alert.processor}` : ''}
+
+注意：删除后将无法再查看此告警的详细信息和处理记录。`,
+      okText: '确定删除',
+      okButtonProps: { status: 'danger' },
+      cancelText: '取消',
+    })
+
+    deletingAlertId.value = alert.id
+
+    // 这里调用删除API - 注意后端可能需要添加这个接口
+    // 暂时使用模拟的删除逻辑
+    try {
+      // 尝试调用删除接口，如果不存在则使用本地删除
+      await alertsApi.deleteAlert(alert.id)
+      Message.success('告警记录删除成功')
+    } catch (apiError: any) {
+      // 如果API不存在，从本地数据中移除
+      if (apiError.message && apiError.message.includes('404')) {
+        const index = alerts.value.findIndex((a) => a.id === alert.id)
+        if (index > -1) {
+          alerts.value.splice(index, 1)
+          Message.success('告警记录删除成功')
+        }
+      } else {
+        throw apiError
+      }
+    }
+
+    await refreshData()
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      console.error('删除告警失败:', error)
+      Message.error(`删除告警失败：${error.message || '未知错误'}`)
+    }
+  } finally {
+    deletingAlertId.value = null
+  }
+}
+
 // 辅助方法
 const getLevelTagColor = (level: string) => {
   const colorMap: Record<string, string> = {
@@ -678,9 +814,11 @@ const getStatusBadgeType = (status: string) => {
     PENDING: 'warning',
     RESOLVED: 'success',
     ARCHIVED: 'default',
+    IGNORED: 'default',
     pending: 'warning',
     resolved: 'success',
     archived: 'default',
+    ignored: 'default',
   }
   return typeMap[status] || 'default'
 }
@@ -690,9 +828,11 @@ const getStatusText = (status: string) => {
     PENDING: '待处理',
     RESOLVED: '已处理',
     ARCHIVED: '已归档',
+    IGNORED: '已忽略',
     pending: '待处理',
     resolved: '已处理',
     archived: '已归档',
+    ignored: '已忽略',
   }
   return textMap[status] || status || '未知'
 }

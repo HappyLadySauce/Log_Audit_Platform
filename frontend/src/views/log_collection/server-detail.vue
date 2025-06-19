@@ -47,7 +47,8 @@
         <a-col :span="6">
           <div class="info-item">
             <div class="info-label">操作系统</div>
-            <div class="info-value">{{ serverInfo.serverType }}</div>
+            <!-- <div class="info-value">{{ serverInfo.serverType }}</div> -->
+            <div class="info-value">Ubuntu 22.04</div>
           </div>
         </a-col>
         <a-col :span="6">
@@ -89,6 +90,12 @@
 
     <!-- 系统状态 -->
     <a-card title="系统状态" :bordered="false" class="status-card">
+      <template #extra>
+        <a-space>
+          <a-tag color="blue">实时监控</a-tag>
+          <span class="update-time">最后更新: {{ lastUpdateTime }}</span>
+        </a-space>
+      </template>
       <a-row :gutter="16">
         <a-col :span="6">
           <div class="status-item">
@@ -160,6 +167,9 @@ const logLines = ref<
 const autoRefresh = ref(true)
 let refreshTimer: number | null = null
 
+// 最后更新时间
+const lastUpdateTime = ref('')
+
 // 系统状态
 const systemStats = ref({
   cpu: 35,
@@ -167,6 +177,25 @@ const systemStats = ref({
   disk: 42,
   network: 128,
 })
+
+// 上次的状态值，用于产生更自然的波动
+const lastStats = ref({
+  cpu: 35,
+  memory: 58,
+  disk: 42,
+  network: 128,
+})
+
+// 更新时间格式化
+const updateLastUpdateTime = () => {
+  const now = new Date()
+  lastUpdateTime.value = now.toLocaleTimeString('zh-CN', {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+}
 
 // 模拟日志数据生成器
 const generateMockLog = (): { timestamp: string; level: string; content: string } => {
@@ -224,12 +253,29 @@ const addNewLog = () => {
 
 // 更新系统状态
 const updateSystemStats = () => {
+  // 产生更自然的波动，每次变化不会太大
+  const cpuChange = (Math.random() - 0.5) * 10 // -5 到 +5 的变化
+  const memoryChange = (Math.random() - 0.5) * 8 // -4 到 +4 的变化
+  // 磁盘使用率保持固定，不进行波动
+  const networkChange = (Math.random() - 0.5) * 50 // -25 到 +25 的变化
+
   systemStats.value = {
-    cpu: Math.floor(Math.random() * 40 + 20), // 20-60%
-    memory: Math.floor(Math.random() * 30 + 40), // 40-70%
-    disk: Math.floor(Math.random() * 20 + 30), // 30-50%
-    network: Math.floor(Math.random() * 200 + 50), // 50-250 MB/s
+    cpu: Math.round(Math.max(15, Math.min(80, lastStats.value.cpu + cpuChange))), // 限制在15-80%
+    memory: Math.round(Math.max(30, Math.min(85, lastStats.value.memory + memoryChange))), // 限制在30-85%
+    disk: 42, // 保持固定值42%
+    network: Math.round(Math.max(20, Math.min(300, lastStats.value.network + networkChange))), // 限制在20-300 MB/s
   }
+
+  // 更新上次的状态值（磁盘除外，因为它保持固定）
+  lastStats.value = {
+    cpu: systemStats.value.cpu,
+    memory: systemStats.value.memory,
+    disk: 42, // 磁盘保持固定值
+    network: systemStats.value.network,
+  }
+
+  // 更新最后更新时间
+  updateLastUpdateTime()
 }
 
 // 获取日志级别样式类
@@ -265,6 +311,9 @@ const handleBack = () => {
 
 // 生命周期
 onMounted(() => {
+  // 初始化更新时间
+  updateLastUpdateTime()
+
   // 初始化日志
   for (let i = 0; i < 10; i++) {
     logLines.value.push(generateMockLog())
@@ -274,7 +323,7 @@ onMounted(() => {
   refreshTimer = setInterval(() => {
     addNewLog()
     updateSystemStats()
-  }, 2000) // 每2秒添加新日志
+  }, 1500) // 每1.5秒更新一次，让变化更明显
 })
 
 onUnmounted(() => {
@@ -396,5 +445,10 @@ onUnmounted(() => {
   transform: translateY(-50%);
   font-weight: 500;
   color: #1d2129;
+}
+
+.update-time {
+  color: #86909c;
+  font-size: 12px;
 }
 </style>

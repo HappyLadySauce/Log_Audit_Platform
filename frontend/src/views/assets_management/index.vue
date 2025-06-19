@@ -9,11 +9,17 @@
             </template>
             刷新
           </a-button>
-          <a-button type="primary" @click="showAddAsset">
+          <a-button @click="showAddAsset">
             <template #icon>
               <icon-plus />
             </template>
             添加资产
+          </a-button>
+          <a-button type="primary" @click="showContinuousAdd">
+            <template #icon>
+              <icon-plus />
+            </template>
+            连续添加
           </a-button>
         </a-space>
       </template>
@@ -175,7 +181,20 @@
             :auto-size="{ minRows: 2, maxRows: 4 }"
           />
         </a-form-item>
+        <a-form-item>
+          <a-checkbox v-model="continuousAdd">
+            连续添加模式（保留表单信息，方便添加相似资产）
+          </a-checkbox>
+        </a-form-item>
       </a-form>
+      <template #footer>
+        <a-space>
+          <a-button @click="resetAddForm">取消</a-button>
+          <a-button type="primary" @click="handleAddAsset">
+            {{ continuousAdd ? '添加并继续' : '确定' }}
+          </a-button>
+        </a-space>
+      </template>
     </a-modal>
 
     <!-- 编辑资产弹窗 -->
@@ -265,6 +284,7 @@ import {
 const assetData = ref<Asset[]>([])
 const loading = ref(false)
 const showAddModal = ref(false)
+const continuousAdd = ref(false) // 连续添加模式
 
 // 添加资产表单数据
 const addForm = ref({
@@ -327,6 +347,12 @@ const showAddAsset = () => {
   showAddModal.value = true
 }
 
+// 显示连续添加模式
+const showContinuousAdd = () => {
+  continuousAdd.value = true
+  showAddModal.value = true
+}
+
 // 添加资产
 const handleAddAsset = async () => {
   try {
@@ -337,10 +363,34 @@ const handleAddAsset = async () => {
 
     await assetsApi.createAsset(addForm.value)
     Message.success('资产添加成功')
-    showAddModal.value = false
 
-    // 重置表单
-    resetAddForm()
+    if (continuousAdd.value) {
+      // 连续添加模式：只重置关键字段，保留其他信息
+      const preservedData = {
+        asset_type: addForm.value.asset_type,
+        location: addForm.value.location,
+        security_level: addForm.value.security_level,
+        admin_contact: addForm.value.admin_contact,
+        asset_description: addForm.value.asset_description,
+      }
+
+      addForm.value = {
+        name: '',
+        asset_type: preservedData.asset_type,
+        ip_address: '',
+        location: preservedData.location,
+        security_level: preservedData.security_level,
+        admin_contact: preservedData.admin_contact,
+        asset_description: preservedData.asset_description,
+        last_security_scan: '',
+      }
+
+      Message.info('已保留相关信息，请继续添加下一个资产')
+    } else {
+      // 普通模式：关闭弹窗并重置表单
+      showAddModal.value = false
+      resetAddForm()
+    }
 
     // 刷新列表
     fetchAssets()
@@ -362,6 +412,7 @@ const resetAddForm = () => {
     asset_description: '',
     last_security_scan: '',
   }
+  continuousAdd.value = false
   showAddModal.value = false
 }
 

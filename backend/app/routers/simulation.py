@@ -15,14 +15,14 @@ async def trigger_fault(db: Session = Depends(get_db)):
     2. 生成对应的告警记录
     """
     try:
-        # 查找目标资产：Access-Switch-Branch 和 分部K8S集群
-        switch_asset = db.query(AssetModel).filter(AssetModel.name == "Access-Switch-Branch").first()
+        # 查找目标资产：分部集群接入交换机 和 分部K8S集群
+        switch_asset = db.query(AssetModel).filter(AssetModel.name == "分部集群接入交换机").first()
         k8s_asset = db.query(AssetModel).filter(AssetModel.name.like("%K8S%")).first()
         
         # 如果找不到预设资产，创建它们
         if not switch_asset:
             switch_asset = AssetModel(
-                name="Access-Switch-Branch",
+                name="分部集群接入交换机",
                 asset_type="network_device",
                 ip_address="192.168.10.1",
                 location="分部机房",
@@ -173,7 +173,7 @@ async def init_demo_data(db: Session = Depends(get_db)):
                 status=AssetStatus.NORMAL
             ),
             AssetModel(
-                name="Access-Switch-Branch",
+                name="分部集群接入交换机",
                 asset_type="network_device",
                 ip_address="192.168.10.1",
                 location="分部机房",

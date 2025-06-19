@@ -113,6 +113,11 @@ export const alertsApi = {
   ignoreAlert(id: number): Promise<Alert> {
     return post(`/alerts/${id}/ignore`)
   },
+
+  // 删除告警记录
+  deleteAlert(id: number): Promise<void> {
+    return del(`/alerts/${id}`)
+  },
 }
 
 export default alertsApi

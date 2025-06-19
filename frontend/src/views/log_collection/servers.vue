@@ -284,7 +284,8 @@
             <a-col :span="6">
               <div class="modal-info-item">
                 <div class="modal-info-label">操作系统</div>
-                <div class="modal-info-value">{{ selectedServer.serverType }}</div>
+                <!-- <div class="modal-info-value">{{ selectedServer.serverType }}</div> -->
+                <div class="modal-info-value">Ubuntu 22.04</div>
               </div>
             </a-col>
             <a-col :span="6">
