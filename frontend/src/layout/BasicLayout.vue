@@ -149,13 +149,13 @@
                 <icon-notification />
               </a-button>
             </a-badge>
-            <a-dropdown>
+            <a-dropdown @select="handleUserMenuClick">
               <a-avatar>
                 <icon-user />
               </a-avatar>
               <template #content>
-                <a-doption>个人中心</a-doption>
-                <a-doption>退出登录</a-doption>
+                <a-doption value="profile">个人中心</a-doption>
+                <a-doption value="logout">退出登录</a-doption>
               </template>
             </a-dropdown>
           </a-space>
@@ -243,6 +243,21 @@ const handleMenuClick = (key: string) => {
   const path = menuRouteMap[key]
   if (path) {
     router.push(path)
+  }
+}
+
+const handleUserMenuClick = (value: string) => {
+  if (value === 'logout') {
+    // 清除登录状态
+    localStorage.removeItem('isLoggedIn')
+    localStorage.removeItem('userInfo')
+    
+    Message.success('退出登录成功！')
+    
+    // 跳转到登录页
+    router.push('/login')
+  } else if (value === 'profile') {
+    Message.info('个人中心功能开发中...')
   }
 }
 
