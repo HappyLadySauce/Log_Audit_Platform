@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-安全日志审计平台后端服务启动脚本
+安全综合日志审计平台后端服务启动脚本
 运行前请确保已安装所有依赖：pip install -r requirements.txt
 """
 
@@ -24,7 +24,7 @@ def init_database():
 
 def main():
     """主函数"""
-    print("🚀 启动安全日志审计平台后端服务")
+    print("🚀 启动安全综合日志审计平台后端服务")
     
     # 检查Python版本
     if sys.version_info < (3, 8):

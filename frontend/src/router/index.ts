@@ -4,11 +4,21 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/login/index.vue'),
+      meta: {
+        title: '登录',
+        requiresAuth: false,
+      },
+    },
+    {
       path: '/',
       name: 'overview',
       component: () => import('@/views/overview/index.vue'),
       meta: {
         title: '仪表板',
+        requiresAuth: true,
       },
     },
     {
@@ -17,6 +27,7 @@ const router = createRouter({
       component: () => import('@/views/assets_management/index.vue'),
       meta: {
         title: '资产管理',
+        requiresAuth: true,
       },
     },
     {
@@ -24,6 +35,7 @@ const router = createRouter({
       redirect: '/log-collection/network-device',
       meta: {
         title: '日志采集',
+        requiresAuth: true,
       },
     },
     {
@@ -32,6 +44,7 @@ const router = createRouter({
       component: () => import('@/views/log_collection/network_device.vue'),
       meta: {
         title: '网络设备日志',
+        requiresAuth: true,
       },
     },
     {
@@ -40,6 +53,7 @@ const router = createRouter({
       component: () => import('@/views/log_collection/servers.vue'),
       meta: {
         title: '服务器日志',
+        requiresAuth: true,
       },
     },
     {
@@ -48,6 +62,7 @@ const router = createRouter({
       component: () => import('@/views/log_collection/server-detail.vue'),
       meta: {
         title: '服务器详情',
+        requiresAuth: true,
       },
     },
     {
@@ -56,6 +71,7 @@ const router = createRouter({
       component: () => import('@/views/log_collection/kubernetes.vue'),
       meta: {
         title: 'K8s集群日志',
+        requiresAuth: true,
       },
     },
     {
@@ -64,6 +80,7 @@ const router = createRouter({
       component: () => import('@/views/log_collection/internet_traffic.vue'),
       meta: {
         title: '上网流量统计',
+        requiresAuth: true,
       },
     },
     {
@@ -72,6 +89,7 @@ const router = createRouter({
       component: () => import('@/views/log_management/index.vue'),
       meta: {
         title: '日志管理',
+        requiresAuth: true,
       },
     },
     {
@@ -79,6 +97,7 @@ const router = createRouter({
       redirect: '/alert-management/record-query',
       meta: {
         title: '告警管理',
+        requiresAuth: true,
       },
     },
     {
@@ -87,6 +106,7 @@ const router = createRouter({
       component: () => import('@/views/alert_management/rule_management.vue'),
       meta: {
         title: '告警规则管理',
+        requiresAuth: true,
       },
     },
     {
@@ -95,6 +115,7 @@ const router = createRouter({
       component: () => import('@/views/alert_management/record_query.vue'),
       meta: {
         title: '告警记录查询',
+        requiresAuth: true,
       },
     },
     {
@@ -103,9 +124,28 @@ const router = createRouter({
       component: () => import('@/views/ai_analysis/index.vue'),
       meta: {
         title: 'AI智能分析',
+        requiresAuth: true,
       },
     },
   ],
+})
+
+// 路由守卫
+router.beforeEach((to, from, next) => {
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
+  
+  // 如果要访问的路由需要登录，但用户未登录
+  if (to.meta.requiresAuth && !isLoggedIn) {
+    next('/login')
+  }
+  // 如果用户已登录，但想访问登录页
+  else if (to.path === '/login' && isLoggedIn) {
+    next('/')
+  }
+  // 其他情况正常访问
+  else {
+    next()
+  }
 })
 
 export default router
