@@ -8,7 +8,7 @@
       <div class="login-header">
         <div class="logo">
           <icon-desktop class="logo-icon" />
-          <h1 class="system-title">日志审计平台</h1>
+          <h1 class="system-title">综合日志审计平台</h1>
         </div>
         <p class="login-subtitle">请登录您的账户</p>
       </div>
@@ -67,7 +67,7 @@
       </a-form>
 
       <div class="login-footer">
-        <p class="copyright">© 2024 日志审计平台. All rights reserved.</p>
+        <p class="copyright">© 2025 综合综合日志审计平台. All rights reserved.</p>
       </div>
     </div>
   </div>
@@ -129,19 +129,8 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  background: url('/images/33.jpg') center/cover no-repeat;
   overflow: hidden;
-  /* ======== 背景选择 ======== */
-  /* 方案1: 使用本地图片作为背景 (将图片放在 public/images/ 目录下) */
-  /* background: url('/images/login-bg.jpg') center/cover no-repeat; */
-  
-  /* 方案2: 使用网络图片作为背景 (当前启用) */
-  background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=2072&q=80') center/cover no-repeat;
-  
-  /* 方案3: 使用渐变背景 */
-  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
-  
-  /* 备用背景色（如果图片加载失败） */
-  background-color: #667eea;
 }
 
 .login-background {
@@ -150,7 +139,10 @@ const handleLogin = async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.3); /* 深色半透明遮罩，提高文字可读性 */
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(120, 200, 255, 0.3) 0%, transparent 50%);
 }
 
 .background-overlay {
@@ -159,22 +151,22 @@ const handleLogin = async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.2); /* 额外的深色遮罩层 */
+  background: linear-gradient(135deg, rgba(0, 30, 60, 0.3) 0%, rgba(0, 50, 120, 0.2) 100%);
 }
 
 .login-card {
   position: relative;
   z-index: 1;
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(15, 25, 45, 0.85);
   backdrop-filter: blur(15px);
   border-radius: 20px;
-  padding: 48px;
+  padding: 40px;
   width: 420px;
   box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.25),
-    0 15px 30px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+    0 25px 50px rgba(0, 0, 0, 0.5),
+    0 15px 30px rgba(0, 120, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(100, 150, 255, 0.3);
 }
 
 .login-header {
@@ -191,19 +183,20 @@ const handleLogin = async () => {
 
 .logo-icon {
   font-size: 48px;
-  color: #667eea;
+  color: #64b5f6;
   margin-right: 12px;
 }
 
 .system-title {
   font-size: 28px;
   font-weight: 600;
-  color: #1d2129;
+  color: #ffffff;
   margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .login-subtitle {
-  color: #86909c;
+  color: #b3d4fc;
   font-size: 16px;
   margin: 0;
 }
@@ -223,46 +216,72 @@ const handleLogin = async () => {
   height: 48px;
   font-size: 16px;
   font-weight: 500;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
   border: none;
   border-radius: 8px;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(66, 165, 245, 0.4);
 }
 
 .login-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%);
+  box-shadow: 0 8px 25px rgba(66, 165, 245, 0.6);
 }
 
 .login-footer {
   text-align: center;
   padding-top: 24px;
-  border-top: 1px solid #e5e6eb;
+  border-top: 1px solid rgba(100, 150, 255, 0.2);
 }
 
 .copyright {
-  color: #86909c;
+  color: #9bb5d6;
   font-size: 14px;
   margin: 0;
 }
 
 :deep(.arco-input-wrapper) {
   border-radius: 8px;
-  border: 1px solid #e5e6eb;
+  border: 1px solid rgba(100, 150, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
 }
 
 :deep(.arco-input-wrapper:hover) {
-  border-color: #667eea;
+  border-color: #64b5f6;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 :deep(.arco-input-wrapper.arco-input-focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+  border-color: #64b5f6;
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 2px rgba(100, 181, 246, 0.2);
 }
 
 :deep(.arco-form-item-label) {
   font-weight: 500;
-  color: #1d2129;
+  color: #ffffff;
+}
+
+:deep(.arco-input) {
+  background: transparent;
+  color: #ffffff;
+}
+
+:deep(.arco-input::placeholder) {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+:deep(.arco-input-prefix) {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+:deep(.arco-checkbox-label) {
+  color: #ffffff;
+}
+
+:deep(.arco-link) {
+  color: #64b5f6;
 }
 </style> 

@@ -6,7 +6,7 @@ from app.init_data import init_database
 import uvicorn
 
 app = FastAPI(
-    title="安全日志审计平台 API",
+    title="安全综合日志审计平台 API",
     description="LogSystem Backend API",
     version="1.0.0"
 )
@@ -36,7 +36,7 @@ app.include_router(simulation.router, prefix="/api", tags=["simulation"])
 
 @app.get("/")
 async def root():
-    return {"message": "安全日志审计平台 API 服务已启动"}
+    return {"message": "安全综合日志审计平台 API 服务已启动"}
 
 @app.get("/health")
 async def health_check():

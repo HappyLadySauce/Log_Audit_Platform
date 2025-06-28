@@ -10,7 +10,7 @@
     >
       <div class="logo">
         <icon-desktop class="logo-icon" />
-        <span v-if="!collapsed" class="logo-text">日志审计平台</span>
+        <span v-if="!collapsed" class="logo-text">综合日志审计平台</span>
       </div>
       <a-menu
         v-model:selected-keys="selectedKeys"
