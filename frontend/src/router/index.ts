@@ -127,6 +127,15 @@ const router = createRouter({
         requiresAuth: true,
       },
     },
+    {
+      path: '/system-settings',
+      name: 'system-settings',
+      component: () => import('@/views/system_settings/index.vue'),
+      meta: {
+        title: '系统设置',
+        requiresAuth: true,
+      },
+    },
   ],
 })
 

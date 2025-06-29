@@ -85,6 +85,13 @@
           </template>
           <span>AI智能分析</span>
         </a-menu-item>
+
+        <a-menu-item key="system-settings">
+          <template #icon>
+            <icon-settings />
+          </template>
+          <span>系统设置</span>
+        </a-menu-item>
       </a-menu>
     </a-layout-sider>
 
@@ -218,6 +225,7 @@ const menuRouteMap: Record<string, string> = {
   'alert-rule-management': '/alert-management/rule-management',
   'alert-record-query': '/alert-management/record-query',
   'ai-analysis': '/ai-analysis',
+  'system-settings': '/system-settings',
 }
 
 // 监听路由变化更新选中状态

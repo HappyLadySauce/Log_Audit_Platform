@@ -136,14 +136,14 @@
 
             <template #actions="{ record }">
               <a-space>
-                <a-button type="text" size="small" @click="viewServerDetail(record)">
-                  查看详情
-                </a-button>
                 <a-button type="text" size="small" status="warning" @click="stopCollection(record)">
                   停止采集
                 </a-button>
                 <a-button type="text" size="small" status="danger" @click="deleteServer(record)">
                   删除
+                </a-button>
+                <a-button type="text" size="small" @click="viewServerDetail(record)">
+                  查看详情
                 </a-button>
               </a-space>
             </template>
