@@ -160,11 +160,21 @@
         </a-row>
         <a-row :gutter="16">
           <a-col :span="12">
-            <a-form-item label="安全防护等级" required>
+            <a-form-item required>
+              <template #label>
+                <span style="display: flex; align-items: center; gap: 4px;">
+                  安全防护等级
+                  <icon-question-circle 
+                    style="color: #f53f3f; font-size: 14px; cursor: pointer;" 
+                    @click="showSecurityLevelInfo"
+                  />
+                </span>
+              </template>
               <a-select v-model="addForm.security_level" placeholder="请选择安全防护等级">
-                <a-option value="等级一">等级一</a-option>
-                <a-option value="等级二">等级二</a-option>
-                <a-option value="等级三">等级三</a-option>
+                <a-option value="低防护级别">低防护级别</a-option>
+                <a-option value="中低防护级别">中低防护级别</a-option>
+                <a-option value="中高防护级别">中高防护级别</a-option>
+                <a-option value="高防护级别">高防护级别</a-option>
               </a-select>
             </a-form-item>
           </a-col>
@@ -237,11 +247,21 @@
         </a-row>
         <a-row :gutter="16">
           <a-col :span="12">
-            <a-form-item label="安全防护等级" required>
+            <a-form-item required>
+              <template #label>
+                <span style="display: flex; align-items: center; gap: 4px;">
+                  安全防护等级
+                  <icon-question-circle 
+                    style="color: #f53f3f; font-size: 14px; cursor: pointer;" 
+                    @click="showSecurityLevelInfo"
+                  />
+                </span>
+              </template>
               <a-select v-model="editForm.security_level" placeholder="请选择安全防护等级">
-                <a-option value="等级一">等级一</a-option>
-                <a-option value="等级二">等级二</a-option>
-                <a-option value="等级三">等级三</a-option>
+                <a-option value="低防护级别">低防护级别</a-option>
+                <a-option value="中低防护级别">中低防护级别</a-option>
+                <a-option value="中高防护级别">中高防护级别</a-option>
+                <a-option value="高防护级别">高防护级别</a-option>
               </a-select>
             </a-form-item>
           </a-col>
@@ -259,6 +279,61 @@
           />
         </a-form-item>
       </a-form>
+    </a-modal>
+
+    <!-- 安全防护等级详情弹窗 -->
+    <a-modal
+      v-model:visible="showSecurityInfoModal"
+      title="安全防护等级详细说明"
+      @ok="showSecurityInfoModal = false"
+      @cancel="showSecurityInfoModal = false"
+      width="800px"
+      :footer="false"
+    >
+      <div class="security-level-content">
+        <div class="security-level-item">
+          <h3 class="level-title">1. 低防护级别</h3>
+          <p class="level-description">
+            主要用于保护一些非常基础的信息，如一般的公开信息或无机密性的数据。这个级别的系统主要采用一些基本的安全措施，如网络防火墙、入侵检测系统等。
+          </p>
+        </div>
+
+        <div class="security-level-item">
+          <h3 class="level-title">2. 中低防护级别</h3>
+          <p class="level-description">
+            主要用于保护一些具有一定机密性或重要性的信息，但受到的风险相对较低。这个级别的系统除了基本的安全措施外，还会采用一些额外的安全措施，如加密传输、用户身份认证等。
+          </p>
+        </div>
+
+        <div class="security-level-item">
+          <h3 class="level-title">3. 中高防护级别</h3>
+          <p class="level-description">
+            主要用于保护一些具有较高机密性或重要性的信息，可能会受到一定风险的影响。这个级别的系统除了基本的安全措施外，还会采用更加复杂的安全措施，如多层防护、安全审计等。
+          </p>
+        </div>
+
+        <div class="security-level-item">
+          <h3 class="level-title">4. 高防护级别</h3>
+          <p class="level-description">
+            主要用于保护一些非常重要、具有高度机密性的信息，可能会面临严重的安全风险。这个级别的系统会采用最严格的安全措施，包括但不限于：访问控制、数据加密、安全监控、备份与恢复等多重防护机制。
+          </p>
+        </div>
+
+        <div class="security-tips">
+          <a-alert type="info" show-icon>
+            <template #icon>
+              <icon-info-circle />
+            </template>
+            <p><strong>选择建议：</strong></p>
+            <ul>
+              <li>核心业务系统、数据库服务器建议选择"高防护级别"</li>
+              <li>一般业务服务器可选择"中高防护级别"</li>
+              <li>办公网络设备可选择"中低防护级别"</li>
+              <li>测试环境、临时设备可选择"低防护级别"</li>
+            </ul>
+          </a-alert>
+        </div>
+      </div>
     </a-modal>
   </div>
 </template>
@@ -278,6 +353,8 @@ import {
   IconClose,
   IconWifi,
   IconLock,
+  IconQuestionCircle,
+  IconInfoCircle,
 } from '@arco-design/web-vue/es/icon'
 
 // 资产数据
@@ -312,6 +389,7 @@ const editForm = ref({
 })
 
 const showEditModal = ref(false)
+const showSecurityInfoModal = ref(false)
 
 // 统计数据计算
 const stats = computed(() => {
@@ -351,6 +429,11 @@ const showAddAsset = () => {
 const showContinuousAdd = () => {
   continuousAdd.value = true
   showAddModal.value = true
+}
+
+// 显示安全防护等级详情
+const showSecurityLevelInfo = () => {
+  showSecurityInfoModal.value = true
 }
 
 // 添加资产
@@ -632,5 +715,47 @@ const getStatusText = (status: string) => {
 
 :deep(.arco-card) {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 安全防护等级详情样式 */
+.security-level-content {
+  padding: 8px 0;
+}
+
+.security-level-item {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #1890ff;
+}
+
+.level-title {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.level-description {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #4e5969;
+}
+
+.security-tips {
+  margin-top: 20px;
+}
+
+.security-tips ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.security-tips li {
+  margin-bottom: 4px;
+  font-size: 14px;
+  color: #4e5969;
 }
 </style>

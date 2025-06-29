@@ -8,7 +8,7 @@
       <div class="login-header">
         <div class="logo">
           <icon-desktop class="logo-icon" />
-          <h1 class="system-title">综合日志审计平台</h1>
+          <h1 class="system-title">综合日志审计分析平台</h1>
         </div>
         <p class="login-subtitle">请登录您的账户</p>
       </div>
@@ -67,7 +67,7 @@
       </a-form>
 
       <div class="login-footer">
-        <p class="copyright">© 2025 综合综合日志审计平台. All rights reserved.</p>
+        <p class="copyright">© 2025 综合综合日志审计分析平台. All rights reserved.</p>
       </div>
     </div>
   </div>

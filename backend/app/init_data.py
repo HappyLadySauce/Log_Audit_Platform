@@ -24,7 +24,7 @@ def init_database():
                 "asset_type": AssetType.NETWORK_DEVICE,
                 "ip_address": "10.10.20.1",
                 "location": "分部机房B-01",
-                "security_level": SecurityLevel.LEVEL_THREE,
+                "security_level": SecurityLevel.HIGH,
                 "status": AssetStatus.NORMAL
             },
             {
@@ -32,7 +32,7 @@ def init_database():
                 "asset_type": AssetType.NETWORK_DEVICE,
                 "ip_address": "10.10.10.150",
                 "location": "分部机房B-02",
-                "security_level": SecurityLevel.LEVEL_THREE,
+                "security_level": SecurityLevel.HIGH,
                 "status": AssetStatus.NORMAL
             },
             {
@@ -40,7 +40,7 @@ def init_database():
                 "asset_type": AssetType.NETWORK_DEVICE,
                 "ip_address": "192.168.100.1",
                 "location": "分部机房B-03",
-                "security_level": SecurityLevel.LEVEL_TWO,
+                "security_level": SecurityLevel.MEDIUM_LOW,
                 "status": AssetStatus.NORMAL
             },
             {
@@ -48,7 +48,7 @@ def init_database():
                 "asset_type": AssetType.NETWORK_DEVICE,
                 "ip_address": "192.168.100.2",
                 "location": "分部机房B-04",
-                "security_level": SecurityLevel.LEVEL_TWO,
+                "security_level": SecurityLevel.MEDIUM_LOW,
                 "status": AssetStatus.NORMAL
             },
             {
@@ -56,7 +56,7 @@ def init_database():
                 "asset_type": AssetType.NETWORK_DEVICE,
                 "ip_address": "192.168.100.3",
                 "location": "分部机房B-05",
-                "security_level": SecurityLevel.LEVEL_TWO,
+                "security_level": SecurityLevel.MEDIUM_LOW,
                 "status": AssetStatus.NORMAL
             },
             {
@@ -64,7 +64,7 @@ def init_database():
                 "asset_type": AssetType.NETWORK_DEVICE,
                 "ip_address": "192.168.30.2",
                 "location": "分部办公区域",
-                "security_level": SecurityLevel.LEVEL_ONE,
+                "security_level": SecurityLevel.LOW,
                 "status": AssetStatus.NORMAL
             }
         ]
