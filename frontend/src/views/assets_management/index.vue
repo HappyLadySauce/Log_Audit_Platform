@@ -127,18 +127,18 @@
       title="添加资产"
       @ok="handleAddAsset"
       @cancel="resetAddForm"
-      width="800px"
+      width="600px"
     >
       <a-form :model="addForm" layout="vertical">
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="设备名称" required>
-              <a-input v-model="addForm.name" placeholder="请输入设备名称" />
+              <a-input v-model="addForm.name" placeholder="请输入设备名称" size="large" />
             </a-form-item>
           </a-col>
           <a-col :span="12">
             <a-form-item label="设备类型" required>
-              <a-select v-model="addForm.asset_type" placeholder="请选择设备类型">
+              <a-select v-model="addForm.asset_type" placeholder="请选择设备类型" size="large">
                 <a-option value="linux_server">Linux服务器</a-option>
                 <a-option value="windows_server">Windows服务器</a-option>
                 <a-option value="network_device">网络设备</a-option>
@@ -149,12 +149,12 @@
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="IP地址" required>
-              <a-input v-model="addForm.ip_address" placeholder="请输入IP地址" />
+              <a-input v-model="addForm.ip_address" placeholder="请输入IP地址" size="large" />
             </a-form-item>
           </a-col>
           <a-col :span="12">
             <a-form-item label="位置" required>
-              <a-input v-model="addForm.location" placeholder="请输入设备位置" />
+              <a-input v-model="addForm.location" placeholder="请输入设备位置" size="large" />
             </a-form-item>
           </a-col>
         </a-row>
@@ -170,7 +170,7 @@
                   />
                 </span>
               </template>
-              <a-select v-model="addForm.security_level" placeholder="请选择安全防护等级">
+              <a-select v-model="addForm.security_level" placeholder="请选择安全防护等级" size="large">
                 <a-option value="低防护级别">低防护级别</a-option>
                 <a-option value="中低防护级别">中低防护级别</a-option>
                 <a-option value="中高防护级别">中高防护级别</a-option>
@@ -180,17 +180,10 @@
           </a-col>
           <a-col :span="12">
             <a-form-item label="管理员联系方式">
-              <a-input v-model="addForm.admin_contact" placeholder="请输入联系方式" />
+              <a-input v-model="addForm.admin_contact" placeholder="请输入联系方式" size="large" />
             </a-form-item>
           </a-col>
         </a-row>
-        <a-form-item label="资产描述">
-          <a-textarea
-            v-model="addForm.asset_description"
-            placeholder="请描述资产详细信息"
-            :auto-size="{ minRows: 2, maxRows: 4 }"
-          />
-        </a-form-item>
         <a-form-item>
           <a-checkbox v-model="continuousAdd">
             连续添加模式（保留表单信息，方便添加相似资产）
@@ -213,18 +206,18 @@
       title="编辑资产"
       @ok="handleEditAsset"
       @cancel="showEditModal = false"
-      width="800px"
+      width="600px"
     >
       <a-form :model="editForm" layout="vertical">
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="设备名称" required>
-              <a-input v-model="editForm.name" placeholder="请输入设备名称" />
+              <a-input v-model="editForm.name" placeholder="请输入设备名称" size="large" />
             </a-form-item>
           </a-col>
           <a-col :span="12">
             <a-form-item label="设备类型" required>
-              <a-select v-model="editForm.asset_type" placeholder="请选择设备类型">
+              <a-select v-model="editForm.asset_type" placeholder="请选择设备类型" size="large">
                 <a-option value="linux_server">Linux服务器</a-option>
                 <a-option value="windows_server">Windows服务器</a-option>
                 <a-option value="network_device">网络设备</a-option>
@@ -236,12 +229,12 @@
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="IP地址" required>
-              <a-input v-model="editForm.ip_address" placeholder="请输入IP地址" />
+              <a-input v-model="editForm.ip_address" placeholder="请输入IP地址" size="large" />
             </a-form-item>
           </a-col>
           <a-col :span="12">
             <a-form-item label="位置" required>
-              <a-input v-model="editForm.location" placeholder="请输入设备位置" />
+              <a-input v-model="editForm.location" placeholder="请输入设备位置" size="large" />
             </a-form-item>
           </a-col>
         </a-row>
@@ -257,7 +250,7 @@
                   />
                 </span>
               </template>
-              <a-select v-model="editForm.security_level" placeholder="请选择安全防护等级">
+              <a-select v-model="editForm.security_level" placeholder="请选择安全防护等级" size="large">
                 <a-option value="低防护级别">低防护级别</a-option>
                 <a-option value="中低防护级别">中低防护级别</a-option>
                 <a-option value="中高防护级别">中高防护级别</a-option>
@@ -267,17 +260,10 @@
           </a-col>
           <a-col :span="12">
             <a-form-item label="管理员联系方式">
-              <a-input v-model="editForm.admin_contact" placeholder="请输入联系方式" />
+              <a-input v-model="editForm.admin_contact" placeholder="请输入联系方式" size="large" />
             </a-form-item>
           </a-col>
         </a-row>
-        <a-form-item label="资产描述">
-          <a-textarea
-            v-model="editForm.asset_description"
-            placeholder="请描述资产详细信息"
-            :auto-size="{ minRows: 2, maxRows: 4 }"
-          />
-        </a-form-item>
       </a-form>
     </a-modal>
 
@@ -287,7 +273,7 @@
       title="安全防护等级详细说明"
       @ok="showSecurityInfoModal = false"
       @cancel="showSecurityInfoModal = false"
-      width="800px"
+      width="700px"
       :footer="false"
     >
       <div class="security-level-content">
@@ -371,7 +357,6 @@ const addForm = ref({
   location: '',
   security_level: '',
   admin_contact: '',
-  asset_description: '',
   last_security_scan: '',
 })
 
@@ -384,7 +369,6 @@ const editForm = ref({
   location: '',
   security_level: '',
   admin_contact: '',
-  asset_description: '',
   last_security_scan: '',
 })
 
@@ -454,7 +438,6 @@ const handleAddAsset = async () => {
         location: addForm.value.location,
         security_level: addForm.value.security_level,
         admin_contact: addForm.value.admin_contact,
-        asset_description: addForm.value.asset_description,
       }
 
       addForm.value = {
@@ -464,7 +447,6 @@ const handleAddAsset = async () => {
         location: preservedData.location,
         security_level: preservedData.security_level,
         admin_contact: preservedData.admin_contact,
-        asset_description: preservedData.asset_description,
         last_security_scan: '',
       }
 
@@ -492,7 +474,6 @@ const resetAddForm = () => {
     location: '',
     security_level: '',
     admin_contact: '',
-    asset_description: '',
     last_security_scan: '',
   }
   continuousAdd.value = false
@@ -515,7 +496,6 @@ const editAsset = (record: Asset) => {
     location: record.location,
     security_level: record.security_level,
     admin_contact: record.admin_contact || '',
-    asset_description: record.asset_description || '',
     last_security_scan: record.last_security_scan || '',
   }
   showEditModal.value = true
