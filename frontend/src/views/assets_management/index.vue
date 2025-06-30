@@ -71,10 +71,10 @@
         <a-space>
           <a-input-search placeholder="搜索资产..." style="width: 200px" allow-clear />
           <a-select placeholder="设备类型" style="width: 120px" allow-clear>
-            <a-option value="server">服务器</a-option>
-            <a-option value="network">网络设备</a-option>
-            <a-option value="storage">存储设备</a-option>
-            <a-option value="security">安全设备</a-option>
+            <a-option value="linux_server">Linux服务器</a-option>
+            <a-option value="windows_server">Windows服务器</a-option>
+            <a-option value="network_device">网络设备</a-option>
+            <a-option value="other">其他</a-option>
           </a-select>
         </a-space>
       </template>
@@ -142,6 +142,7 @@
                 <a-option value="linux_server">Linux服务器</a-option>
                 <a-option value="windows_server">Windows服务器</a-option>
                 <a-option value="network_device">网络设备</a-option>
+                <a-option value="other">其他</a-option>
               </a-select>
             </a-form-item>
           </a-col>
@@ -221,7 +222,7 @@
                 <a-option value="linux_server">Linux服务器</a-option>
                 <a-option value="windows_server">Windows服务器</a-option>
                 <a-option value="network_device">网络设备</a-option>
-                <a-option value="k8s_cluster">K8S集群</a-option>
+                <a-option value="other">其他</a-option>
               </a-select>
             </a-form-item>
           </a-col>
@@ -596,8 +597,6 @@ const getDeviceIcon = (type: string) => {
       return IconDesktop
     case 'network_device':
       return IconWifi
-    case 'k8s_cluster':
-      return IconLock
     default:
       return IconDesktop
   }
@@ -610,8 +609,8 @@ const getTypeColor = (type: string) => {
       return 'blue'
     case 'network_device':
       return 'green'
-    case 'k8s_cluster':
-      return 'red'
+    case 'other':
+      return 'purple'
     default:
       return 'gray'
   }
@@ -625,8 +624,8 @@ const getTypeName = (type: string) => {
       return 'Windows服务器'
     case 'network_device':
       return '网络设备'
-    case 'k8s_cluster':
-      return 'K8S集群'
+    case 'other':
+      return '其他'
     default:
       return '未知'
   }

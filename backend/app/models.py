@@ -8,7 +8,7 @@ class AssetType(str, enum.Enum):
     NETWORK_DEVICE = "network_device"
     LINUX_SERVER = "linux_server"
     WINDOWS_SERVER = "windows_server"
-    K8S_CLUSTER = "k8s_cluster"
+    OTHER = "other"
 
 class AssetStatus(str, enum.Enum):
     NORMAL = "normal"
