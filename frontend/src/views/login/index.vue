@@ -1,135 +1,64 @@
 <template>
   <div class="login-container">
-    <!-- 左侧安全审计元素展示 -->
-    <div class="security-section">
-      <div class="security-content">
-        <div class="system-info">
-          <h2 class="system-title">综合日志审计分析平台</h2>
-          <p class="system-desc">Log Audit Analysis Platform</p>
-        </div>
-        
-        <!-- 功能特性列表 -->
-        <div class="features-section">
-          <div class="feature-list">
-            <div class="feature-item">
-              <div class="feature-dot"></div>
-              <div class="feature-text">
-                <span class="feature-title">全方位安全防护</span>
-                <span class="feature-desc">多层次安全防护体系，确保系统安全</span>
-              </div>
-            </div>
-            
-            <div class="feature-item">
-              <div class="feature-dot"></div>
-              <div class="feature-text">
-                <span class="feature-title">完整审计追踪</span>
-                <span class="feature-desc">记录所有操作行为，提供完整审计链</span>
-              </div>
-            </div>
-            
-            <div class="feature-item">
-              <div class="feature-dot"></div>
-              <div class="feature-text">
-                <span class="feature-title">实时监控告警</span>
-                <span class="feature-desc">7×24小时实时监控，及时发现异常</span>
-              </div>
-            </div>
-            
-            <div class="feature-item">
-              <div class="feature-dot"></div>
-              <div class="feature-text">
-                <span class="feature-title">智能数据分析</span>
-                <span class="feature-desc">AI驱动的行为分析，精准识别威胁</span>
-              </div>
-            </div>
-            
-            <div class="feature-item">
-              <div class="feature-dot"></div>
-              <div class="feature-text">
-                <span class="feature-title">企业级加密</span>
-                <span class="feature-desc">端到端加密保护，确保数据安全</span>
-              </div>
-            </div>
-          </div>
-          
-          <!-- 装饰性元素 -->
-          <div class="decorative-elements">
-            <div class="floating-shape shape-1"></div>
-            <div class="floating-shape shape-2"></div>
-            <div class="floating-shape shape-3"></div>
-            <div class="pulse-ring"></div>
-          </div>
-        </div>
+    <!-- 登录卡片 -->
+    <div class="login-card">
+      <!-- 简洁标题 -->
+      <div class="login-header">
+        <h2 class="login-title">综合日志审计分析平台</h2>
+        <p class="login-subtitle">请输入您的账户信息</p>
       </div>
-    </div>
 
-    <!-- 右侧登录区域 -->
-    <div class="login-section">
-      <div class="login-card">
-        <div class="login-header">
-          <div class="brand-icon">
-            <icon-desktop />
-          </div>
-          <h3 class="login-title">系统登录</h3>
-          <p class="login-subtitle">请输入您的登录凭据</p>
-        </div>
+      <!-- 登录表单 -->
+      <a-form
+        ref="loginForm"
+        :model="form"
+        :rules="rules"
+        layout="vertical"
+        @submit="handleLogin"
+        class="login-form"
+      >
+        <a-form-item field="username" class="form-item">
+          <template #label>
+            <span class="field-label">用户名</span>
+          </template>
+          <a-input
+            v-model="form.username"
+            placeholder="请输入用户名"
+            size="large"
+            class="form-input"
+          />
+        </a-form-item>
 
-        <a-form
-          ref="loginForm"
-          :model="form"
-          :rules="rules"
-          layout="vertical"
-          @submit="handleLogin"
-          class="login-form"
-        >
-          <a-form-item field="username">
-            <a-input
-              v-model="form.username"
-              placeholder="用户名或邮箱"
-              size="large"
-              class="tech-input"
-            >
-              <template #prefix>
-                <icon-user />
-              </template>
-            </a-input>
-          </a-form-item>
+        <a-form-item field="password" class="form-item">
+          <template #label>
+            <span class="field-label">密码</span>
+          </template>
+          <a-input-password
+            v-model="form.password"
+            placeholder="请输入密码"
+            size="large"
+            class="form-input"
+          />
+        </a-form-item>
 
-          <a-form-item field="password">
-            <a-input-password
-              v-model="form.password"
-              placeholder="密码"
-              size="large"
-              class="tech-input"
-            >
-              <template #prefix>
-                <icon-lock />
-              </template>
-            </a-input-password>
-          </a-form-item>
+        <a-form-item class="form-item">
+          <a-button
+            type="primary"
+            html-type="submit"
+            size="large"
+            long
+            :loading="loading"
+            class="login-button"
+          >
+            <span v-if="!loading">登录</span>
+            <span v-else>登录中...</span>
+          </a-button>
+        </a-form-item>
+      </a-form>
 
-          <div class="login-options">
-            <a-checkbox v-model="rememberMe" class="remember-me">记住登录状态</a-checkbox>
-          </div>
-
-          <a-form-item>
-            <a-button
-              type="primary"
-              html-type="submit"
-              size="large"
-              long
-              :loading="loading"
-              class="tech-login-button"
-            >
-              <span v-if="!loading">登录系统</span>
-              <span v-else>验证中...</span>
-            </a-button>
-          </a-form-item>
-        </a-form>
-
-        <div class="login-footer">
-          <p class="version-info">Version 2.1.0</p>
-        </div>
+      <!-- 版本信息 -->
+      <div class="version-info">
+        <p class="version-text">版本 v2.1.0 | 企业级安全认证</p>
       </div>
     </div>
   </div>
@@ -139,7 +68,6 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Message } from '@arco-design/web-vue'
-import { IconDesktop, IconUser, IconLock } from '@arco-design/web-vue/es/icon'
 
 const router = useRouter()
 
@@ -148,7 +76,6 @@ const form = ref({
   password: ''
 })
 
-const rememberMe = ref(false)
 const loading = ref(false)
 
 const rules = {
@@ -163,9 +90,9 @@ const rules = {
 const handleLogin = async () => {
   loading.value = true
   
-  // 模拟登录延迟
-  setTimeout(() => {
-    // 设置登录状态
+  try {
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    
     localStorage.setItem('isLoggedIn', 'true')
     localStorage.setItem('userInfo', JSON.stringify({
       username: form.value.username,
@@ -173,464 +100,251 @@ const handleLogin = async () => {
     }))
     
     Message.success('登录成功！')
-    loading.value = false
-    
-    // 跳转到主页
     router.push('/')
-    
-    // 触发登录状态变化事件
     window.dispatchEvent(new Event('loginStatusChanged'))
-  }, 1000)
+  } catch (error) {
+    Message.error('登录失败，请重试')
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
 <style scoped>
 .login-container {
-  display: flex;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f1419 0%, #1a1f36 50%, #151b2d 100%);
+  background-image: url('/images/33.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 298px;
+  padding-left: 20px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
   position: relative;
   overflow: hidden;
 }
 
-.login-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, transparent 50%, rgba(168, 85, 247, 0.05) 100%),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.02) 1px, transparent 1px),
-    linear-gradient(rgba(59, 130, 246, 0.02) 1px, transparent 1px);
-  background-size: 100% 100%, 40px 40px, 40px 40px;
-  pointer-events: none;
-}
-
-/* 左侧安全审计元素区域 */
-.security-section {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  padding: 60px 40px 60px 80px;
-  position: relative;
-}
-
-.security-content {
-  width: 100%;
-  max-width: 600px;
-}
-
-.system-info {
-  margin-bottom: 80px;
-  text-align: center;
-}
-
-.system-title {
-  font-size: 47px;
-  font-weight: 300;
-  color: #ffffff;
-  margin: 0 0 16px 0;
-  letter-spacing: -0.5px;
-}
-
-.system-desc {
-  font-size: 21px;
-  color: rgba(148, 163, 184, 0.8);
-  margin: 0;
-  font-weight: 300;
-  letter-spacing: 0.5px;
-}
-
-/* 功能特性列表 */
-.features-section {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.feature-list {
-  max-width: 480px;
-  width: 100%;
-  margin-left: 114px;
-}
-
-.feature-item {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 38px;
-  opacity: 0;
-  transform: translateX(-30px);
-  animation: slideInUp 0.6s ease forwards;
-}
-
-.feature-item:nth-child(1) { animation-delay: 0.1s; }
-.feature-item:nth-child(2) { animation-delay: 0.2s; }
-.feature-item:nth-child(3) { animation-delay: 0.3s; }
-.feature-item:nth-child(4) { animation-delay: 0.4s; }
-.feature-item:nth-child(5) { animation-delay: 0.5s; }
-
-.feature-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  margin-right: 24px;
-  margin-top: 8px;
-  flex-shrink: 0;
-  position: relative;
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-}
-
-.feature-dot::before {
-  content: '';
-  position: absolute;
-  top: -4px;
-  left: -4px;
-  right: -4px;
-  bottom: -4px;
-  border: 2px solid rgba(59, 130, 246, 0.3);
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-
-.feature-text {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.feature-title {
-  font-size: 22px;
-  font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 6px;
-  letter-spacing: 0.5px;
-}
-
-.feature-desc {
-  font-size: 16px;
-  color: #94a3b8;
-  line-height: 1.5;
-  font-weight: 400;
-}
-
-/* 装饰性元素 */
-.decorative-elements {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.floating-shape {
-  position: absolute;
-  border-radius: 50%;
-  opacity: 0.1;
-}
-
-.shape-1 {
-  width: 100px;
-  height: 100px;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  top: 10%;
-  right: 15%;
-  animation: float 6s ease-in-out infinite;
-}
-
-.shape-2 {
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, #10b981, #059669);
-  top: 60%;
-  right: 10%;
-  animation: float 8s ease-in-out infinite reverse;
-}
-
-.shape-3 {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, #a855f7, #7c3aed);
-  bottom: 20%;
-  right: 20%;
-  animation: float 7s ease-in-out infinite;
-}
-
-.pulse-ring {
-  position: absolute;
-  top: 50%;
-  right: 12%;
-  width: 200px;
-  height: 200px;
-  border: 2px solid rgba(59, 130, 246, 0.1);
-  border-radius: 50%;
-  transform: translate(50%, -50%);
-  animation: pulse 3s infinite;
-}
-
-/* 动画效果 */
-@keyframes slideInUp {
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.3;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 0.1;
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-/* 右侧登录区域 */
-.login-section {
-  width: 550px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 60px 22px 60px 20px;
-  transform: translateX(-114px);
-}
-
+/* 登录卡片 */
 .login-card {
-  background: rgba(30, 41, 59, 0.9);
-  backdrop-filter: blur(20px);
-  border-radius: 16px;
-  padding: 45px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   width: 100%;
-  max-width: 480px;
-  border: 1px solid rgba(71, 85, 105, 0.4);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+  max-width: 420px;
+  padding: 50px 40px 40px;
+  position: relative;
+  z-index: 2;
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
+/* 登录头部 */
 .login-header {
   text-align: center;
-  margin-bottom: 32px;
-}
-
-.brand-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  border-radius: 12px;
-  margin-bottom: 20px;
-  color: white;
-  font-size: 24px;
-  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+  margin-bottom: 36px;
 }
 
 .login-title {
   font-size: 24px;
   font-weight: 600;
-  color: #ffffff;
-  margin: 0 0 8px 0;
+  color: #1f2937;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
 }
 
 .login-subtitle {
-  font-size: 14px;
-  color: #94a3b8;
+  font-size: 15px;
+  color: #6b7280;
   margin: 0;
   font-weight: 400;
 }
 
-.login-form .arco-form-item {
-  margin-bottom: 20px;
+/* 表单样式 */
+.form-item {
+  margin-bottom: 24px;
 }
 
-.login-options {
-  margin: 20px 0 24px 0;
-}
-
-.login-footer {
-  text-align: center;
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(71, 85, 105, 0.3);
-}
-
-.version-info {
-  font-size: 12px;
-  color: #64748b;
-  margin: 0;
-  font-family: 'Monaco', 'Consolas', monospace;
-}
-
-/* 科技风输入框 */
-:deep(.tech-input .arco-input-wrapper) {
-  background: rgba(51, 65, 85, 0.4);
-  border: 1px solid rgba(71, 85, 105, 0.5);
-  border-radius: 10px;
-  height: 48px;
-  transition: all 0.3s ease;
-}
-
-:deep(.tech-input .arco-input-wrapper:hover) {
-  border-color: rgba(59, 130, 246, 0.6);
-  background: rgba(51, 65, 85, 0.6);
-}
-
-:deep(.tech-input .arco-input-wrapper.arco-input-focus) {
-  border-color: #3b82f6;
-  background: rgba(51, 65, 85, 0.8);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-:deep(.tech-input .arco-input) {
-  background: transparent;
-  color: #ffffff;
-  font-size: 15px;
-}
-
-:deep(.tech-input .arco-input::placeholder) {
-  color: rgba(148, 163, 184, 0.6);
-}
-
-:deep(.tech-input .arco-input-prefix) {
-  color: rgba(148, 163, 184, 0.8);
-}
-
-/* 科技风登录按钮 */
-.tech-login-button {
-  height: 48px;
-  font-size: 15px;
+.field-label {
+  font-size: 14px;
   font-weight: 500;
-  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+/* 输入框样式 */
+:deep(.form-input .arco-input-wrapper) {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+:deep(.form-input .arco-input-wrapper:hover) {
+  border-color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+:deep(.form-input .arco-input-wrapper.arco-input-focus) {
+  border-color: #3b82f6;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 
+    0 0 0 4px rgba(59, 130, 246, 0.08),
+    0 6px 20px rgba(59, 130, 246, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  transform: translateY(-1px);
+}
+
+:deep(.form-input .arco-input) {
+  background: transparent;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 0 18px;
+  line-height: 1.4;
+}
+
+:deep(.form-input .arco-input::placeholder) {
+  color: #94a3b8;
+  font-weight: 400;
+  font-size: 15px;
+}
+
+/* 登录按钮 */
+.login-button {
+  height: 56px;
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   color: white;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
-  letter-spacing: 0.3px;
+  box-shadow: 
+    0 4px 16px rgba(59, 130, 246, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  margin-top: 8px;
+  position: relative;
+  overflow: hidden;
 }
 
-.tech-login-button:hover {
+.login-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.login-button:hover::before {
+  left: 100%;
+}
+
+.login-button:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 25px rgba(59, 130, 246, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.login-button:active {
   transform: translateY(-1px);
-  background: linear-gradient(135deg, #60a5fa, #3b82f6);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
 }
 
-.tech-login-button:active {
-  transform: translateY(0);
+/* 版本信息 */
+.version-info {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
 }
 
-/* 记住我选项 */
-:deep(.remember-me .arco-checkbox-label) {
-  color: #cbd5e1;
-  font-size: 14px;
-}
-
-:deep(.remember-me .arco-checkbox) {
-  color: #3b82f6;
+.version-text {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
+  font-weight: 400;
 }
 
 /* 响应式设计 */
-@media (max-width: 1200px) {
-  .security-section {
-    padding: 40px 20px;
+@media (max-width: 640px) {
+  .login-container {
+    padding: 20px;
+    justify-content: center;
   }
   
-  .login-section {
-    width: 480px;
-    padding: 40px 40px 40px 20px;
-    transform: translateX(-80px);
+  .login-card {
+    max-width: 100%;
+    padding: 40px 24px 32px;
   }
   
-  .feature-list {
-    max-width: 400px;
-    margin-left: 80px;
-  }
-  
-  .feature-item {
-    margin-bottom: 28px;
-  }
-  
-  .feature-dot {
-    width: 13px;
-    height: 13px;
-    margin-right: 22px;
-    margin-top: 7px;
-  }
-  
-  .feature-title {
+  .login-title {
     font-size: 20px;
   }
   
-  .feature-desc {
+  .login-subtitle {
+    font-size: 13px;
+  }
+  
+  .form-item {
+    margin-bottom: 20px;
+  }
+  
+  :deep(.form-input .arco-input-wrapper) {
+    height: 52px;
+  }
+  
+  .login-button {
+    height: 52px;
     font-size: 15px;
   }
 }
 
-@media (max-width: 768px) {
-  .login-container {
-    flex-direction: column;
+@media (max-width: 480px) {
+  .login-card {
+    padding: 32px 20px 28px;
   }
   
-  .security-section {
-    padding: 30px 20px 20px 20px;
-  }
-  
-  .login-section {
-    width: 100%;
-    padding: 20px;
-    transform: translateX(0);
-  }
-  
-  .system-title {
-    font-size: 28px;
-  }
-  
-  .system-desc {
-    font-size: 16px;
-  }
-  
-  .feature-list {
-    max-width: 320px;
-    margin-left: 20px;
-  }
-  
-  .feature-item {
-    margin-bottom: 24px;
-  }
-  
-  .feature-dot {
-    width: 12px;
-    height: 12px;
-    margin-right: 20px;
-    margin-top: 6px;
-  }
-  
-  .feature-title {
+  .login-title {
     font-size: 18px;
   }
   
-  .feature-desc {
-    font-size: 14px;
+  .login-subtitle {
+    font-size: 12px;
   }
   
-  .decorative-elements {
-    display: none;
+  :deep(.form-input .arco-input-wrapper) {
+    height: 48px;
+  }
+  
+  .login-button {
+    height: 48px;
+    font-size: 14px;
+  }
+
+  .version-info {
+    margin-top: 24px;
+    padding-top: 16px;
   }
 }
 </style> 
