@@ -1,245 +1,451 @@
 <template>
-  <div class="login-container">
-    <!-- 登录卡片 -->
-    <div class="login-card">
-      <!-- 简洁标题 -->
-      <div class="login-header">
-        <h2 class="login-title">综合日志审计分析平台</h2>
-        <p class="login-subtitle">请输入您的账户信息</p>
-      </div>
+  <div class="login-page">
+    <!-- 背景遮罩层 -->
+    <div class="background-overlay"></div>
 
-      <!-- 登录表单 -->
-      <a-form
-        ref="loginForm"
-        :model="form"
-        :rules="rules"
-        layout="vertical"
-        @submit="handleLogin"
-        class="login-form"
-      >
-        <a-form-item field="username" class="form-item">
-          <template #label>
-            <span class="field-label">用户名</span>
-          </template>
-          <a-input
-            v-model="form.username"
-            placeholder="请输入用户名"
-            size="large"
-            class="form-input"
-          />
-        </a-form-item>
+    <!-- 主容器 -->
+    <div class="login-container">
+      <!-- 登录卡片 -->
+      <div class="login-card">
+        <!-- 头部logo和标题 -->
+        <div class="login-header">
+          <div class="logo-section">
+            <div class="logo-icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1Z" 
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M9 12L11 14L15 10" 
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h1 class="platform-title">综合日志审计分析平台</h1>
+            <p class="platform-subtitle">企业级安全监控与智能分析系统</p>
+          </div>
+        </div>
 
-        <a-form-item field="password" class="form-item">
-          <template #label>
-            <span class="field-label">密码</span>
-          </template>
-          <a-input-password
-            v-model="form.password"
-            placeholder="请输入密码"
-            size="large"
-            class="form-input"
-          />
-        </a-form-item>
+        <!-- 登录表单区域 -->
+        <div class="form-section">
 
-        <a-form-item class="form-item">
-          <a-button
-            type="primary"
-            html-type="submit"
-            size="large"
-            long
-            :loading="loading"
-            class="login-button"
+          <a-form
+            ref="formRef"
+            :model="loginForm"
+            :rules="formRules"
+            layout="vertical"
+            @submit="handleLogin"
+            class="login-form"
           >
-            <span v-if="!loading">登录</span>
-            <span v-else>登录中...</span>
-          </a-button>
-        </a-form-item>
-      </a-form>
+            <!-- 用户名输入 -->
+            <a-form-item 
+              field="username" 
+              class="form-item"
+            >
+              <template #label>
+                <div class="field-label">
+                  <icon-user class="field-icon" />
+                  <span>用户名</span>
+                </div>
+              </template>
+              <a-input
+                v-model="loginForm.username"
+                placeholder="请输入用户名"
+                size="large"
+                class="form-input"
+                allow-clear
+              />
+            </a-form-item>
 
-      <!-- 版本信息 -->
-      <div class="version-info">
-        <p class="version-text">版本 v2.1.0 | 企业级安全认证</p>
+            <!-- 密码输入 -->
+            <a-form-item 
+              field="password" 
+              class="form-item"
+            >
+              <template #label>
+                <div class="field-label">
+                  <icon-lock class="field-icon" />
+                  <span>密码</span>
+                </div>
+              </template>
+              <a-input-password
+                v-model="loginForm.password"
+                placeholder="请输入密码"
+                size="large"
+                class="form-input"
+                allow-clear
+              />
+            </a-form-item>
+
+            <!-- 记住密码选项 -->
+            <div class="form-options">
+              <a-checkbox v-model="rememberPassword">记住密码</a-checkbox>
+              <a-link class="forgot-link">忘记密码？</a-link>
+            </div>
+
+            <!-- 登录按钮 -->
+            <a-form-item class="submit-item">
+              <a-button
+                type="primary"
+                html-type="submit"
+                size="large"
+                long
+                :loading="isLoading"
+                class="login-button"
+              >
+                {{ isLoading ? '登录中...' : '立即登录' }}
+              </a-button>
+            </a-form-item>
+          </a-form>
+        </div>
+
+        <!-- 底部信息 -->
+        <div class="footer-section">
+          <div class="version-info">
+            <span class="version">v2.1.0</span>
+            <span class="separator">|</span>
+            <span class="copyright">© 2024 综合日志审计分析平台</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { Message } from '@arco-design/web-vue'
+import { IconUser, IconLock } from '@arco-design/web-vue/es/icon'
 
 const router = useRouter()
+const formRef = ref()
 
-const form = ref({
+// 表单数据
+const loginForm = reactive({
   username: '',
   password: ''
 })
 
-const loading = ref(false)
+// 其他状态
+const isLoading = ref(false)
+const rememberPassword = ref(false)
 
-const rules = {
+// 表单验证规则
+const formRules = {
   username: [
-    { required: true, message: '请输入用户名' }
+    { required: true, message: '请输入用户名' },
+    { minLength: 2, message: '用户名长度不能少于2位' }
   ],
   password: [
-    { required: true, message: '请输入密码' }
+    { required: true, message: '请输入密码' },
+    { minLength: 6, message: '密码长度不能少于6位' }
   ]
 }
 
+// 登录处理函数
 const handleLogin = async () => {
-  loading.value = true
-  
   try {
+    const valid = await formRef.value?.validate()
+    if (!valid) return
+
+    isLoading.value = true
+
+    // 模拟登录请求
     await new Promise(resolve => setTimeout(resolve, 1500))
-    
+
+    // 保存登录状态
     localStorage.setItem('isLoggedIn', 'true')
     localStorage.setItem('userInfo', JSON.stringify({
-      username: form.value.username,
-      loginTime: new Date().toISOString()
+      username: loginForm.username,
+      loginTime: new Date().toISOString(),
+      rememberPassword: rememberPassword.value
     }))
+
+    Message.success('登录成功！正在跳转...')
     
-    Message.success('登录成功！')
-    router.push('/')
-    window.dispatchEvent(new Event('loginStatusChanged'))
+    // 跳转到主页
+    setTimeout(() => {
+      router.push('/')
+      // 触发登录状态变更事件
+      window.dispatchEvent(new Event('loginStatusChanged'))
+    }, 500)
+
   } catch (error) {
-    Message.error('登录失败，请重试')
+    console.error('登录错误:', error)
+    Message.error('登录失败，请检查用户名和密码')
   } finally {
-    loading.value = false
+    isLoading.value = false
   }
 }
 </script>
 
 <style scoped>
-.login-container {
+.login-page {
   min-height: 100vh;
-  background-image: url('/images/33.png');
+  background: url('/images/55.png') center center;
   background-size: cover;
-  background-position: center;
   background-repeat: no-repeat;
+  background-attachment: fixed;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding-right: 298px;
-  padding-left: 20px;
-  padding-top: 20px;
-  padding-bottom: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+  padding: 20px 156px 20px 20px;
   position: relative;
   overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Helvetica Neue', sans-serif;
+}
+
+
+
+/* 背景遮罩层 */
+.background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(0, 20, 40, 0.3) 0%, rgba(0, 40, 80, 0.2) 100%);
+  z-index: 1;
+}
+
+/* 主容器 */
+.login-container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 440px;
 }
 
 /* 登录卡片 */
 .login-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(15px);
+  background: rgba(15, 30, 50, 0.85);
+  backdrop-filter: blur(25px);
   border-radius: 20px;
+  padding: 24px 35px;
   box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.15),
-    0 8px 32px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  width: 100%;
-  max-width: 420px;
-  padding: 50px 40px 40px;
+    0 25px 50px rgba(0, 0, 0, 0.3),
+    0 10px 25px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(100, 200, 255, 0.2);
   position: relative;
-  z-index: 2;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  animation: slideInRight 0.8s ease-out;
+  overflow: hidden;
 }
 
-/* 登录头部 */
+/* 卡片内部光效 */
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(100, 200, 255, 0.6), transparent);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 头部区域 */
 .login-header {
   text-align: center;
-  margin-bottom: 36px;
-}
-
-.login-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 0 0 10px 0;
-  letter-spacing: -0.025em;
-  line-height: 1.2;
-}
-
-.login-subtitle {
-  font-size: 15px;
-  color: #6b7280;
-  margin: 0;
-  font-weight: 400;
-}
-
-/* 表单样式 */
-.form-item {
   margin-bottom: 24px;
 }
 
-.field-label {
+.logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo-icon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  margin-bottom: 12px;
+  box-shadow: 
+    0 15px 35px rgba(0, 210, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.platform-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.platform-subtitle {
   font-size: 14px;
+  color: #b8d4f0;
+  margin: 0;
   font-weight: 500;
-  color: #374151;
+}
+
+/* 表单区域 */
+.form-section {
+  margin-bottom: 20px;
+}
+
+
+
+/* 表单项 */
+.form-item {
+  margin-bottom: 16px;
+}
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
   margin-bottom: 8px;
+}
+
+.field-icon {
+  font-size: 16px;
+  color: #64c8ff;
 }
 
 /* 输入框样式 */
 :deep(.form-input .arco-input-wrapper) {
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  height: 56px;
-  background: rgba(255, 255, 255, 0.9);
-  transition: all 0.3s ease;
+  height: 70px !important;
+  background: rgba(30, 50, 80, 0.6) !important;
+  border: 2px solid rgba(100, 200, 255, 0.3) !important;
+  border-radius: 12px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 :deep(.form-input .arco-input-wrapper:hover) {
-  border-color: #cbd5e1;
-  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(100, 200, 255, 0.5) !important;
+  background: rgba(30, 50, 80, 0.8) !important;
   box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    0 6px 20px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
   transform: translateY(-1px);
 }
 
 :deep(.form-input .arco-input-wrapper.arco-input-focus) {
-  border-color: #3b82f6;
-  background: rgba(255, 255, 255, 1);
+  border-color: #64c8ff !important;
+  background: rgba(30, 50, 80, 0.9) !important;
   box-shadow: 
-    0 0 0 4px rgba(59, 130, 246, 0.08),
-    0 6px 20px rgba(59, 130, 246, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
-  transform: translateY(-1px);
+    0 0 0 4px rgba(100, 200, 255, 0.2),
+    0 8px 25px rgba(100, 200, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 :deep(.form-input .arco-input) {
-  background: transparent;
-  color: #1f2937;
-  font-size: 16px;
-  font-weight: 500;
-  padding: 0 18px;
-  line-height: 1.4;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  color: #ffffff !important;
+  padding: 0 20px !important;
+  border: none !important;
+  background: transparent !important;
 }
 
 :deep(.form-input .arco-input::placeholder) {
-  color: #94a3b8;
-  font-weight: 400;
-  font-size: 15px;
+  color: #9ca3af !important;
+  font-weight: 400 !important;
 }
 
-/* 登录按钮 */
+/* 密码输入框特殊样式 */
+:deep(.form-input .arco-input-password .arco-input-wrapper) {
+  height: 70px !important;
+  background: rgba(30, 50, 80, 0.6) !important;
+  border: 2px solid rgba(100, 200, 255, 0.3) !important;
+  border-radius: 12px !important;
+}
+
+:deep(.form-input .arco-input-password .arco-input) {
+  color: #ffffff !important;
+  font-size: 16px !important;
+}
+
+:deep(.form-input .arco-input-password .arco-input-suffix) {
+  color: #9ca3af !important;
+}
+
+/* 复选框样式 */
+:deep(.form-options .arco-checkbox) {
+  color: #e2e8f0 !important;
+}
+
+:deep(.form-options .arco-checkbox .arco-checkbox-icon) {
+  border-color: rgba(100, 200, 255, 0.4) !important;
+  background-color: rgba(30, 50, 80, 0.6) !important;
+}
+
+:deep(.form-options .arco-checkbox.arco-checkbox-checked .arco-checkbox-icon) {
+  background-color: #64c8ff !important;
+  border-color: #64c8ff !important;
+}
+
+/* 表单选项 */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #e2e8f0;
+}
+
+.forgot-link {
+  color: #64c8ff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.forgot-link:hover {
+  color: #38bdf8;
+  text-decoration: underline;
+}
+
+/* 提交按钮 */
+.submit-item {
+  margin-bottom: 0;
+}
+
 .login-button {
-  height: 56px;
-  font-size: 16px;
-  font-weight: 600;
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  border: none;
-  border-radius: 12px;
-  color: white;
-  transition: all 0.3s ease;
+  height: 70px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  color: white !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 
-    0 4px 16px rgba(59, 130, 246, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  margin-top: 8px;
+    0 10px 30px rgba(14, 165, 233, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 0 1px rgba(14, 165, 233, 0.2);
   position: relative;
   overflow: hidden;
 }
@@ -251,8 +457,8 @@ const handleLogin = async () => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s ease;
 }
 
 .login-button:hover::before {
@@ -260,91 +466,100 @@ const handleLogin = async () => {
 }
 
 .login-button:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important;
   transform: translateY(-2px);
   box-shadow: 
-    0 8px 25px rgba(59, 130, 246, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    0 15px 40px rgba(14, 165, 233, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 0 0 1px rgba(14, 165, 233, 0.3);
 }
 
 .login-button:active {
-  transform: translateY(-1px);
+  transform: translateY(0px);
 }
 
-/* 版本信息 */
+/* 底部区域 */
+.footer-section {
+  border-top: 1px solid rgba(100, 200, 255, 0.2);
+  padding-top: 16px;
+}
+
+
+
 .version-info {
-  margin-top: 32px;
-  padding-top: 20px;
-  border-top: 1px solid #e5e7eb;
   text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
-.version-text {
-  font-size: 12px;
-  color: #9ca3af;
-  margin: 0;
-  font-weight: 400;
+.separator {
+  margin: 0 8px;
+  color: #64748b;
 }
 
 /* 响应式设计 */
-@media (max-width: 640px) {
-  .login-container {
-    padding: 20px;
+@media (max-width: 768px) {
+  .login-page {
     justify-content: center;
+    padding: 20px;
+  }
+  
+  .login-container {
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-page {
+    padding: 16px;
   }
   
   .login-card {
-    max-width: 100%;
-    padding: 40px 24px 32px;
+    padding: 20px 28px;
   }
   
-  .login-title {
-    font-size: 20px;
+  .platform-title {
+    font-size: 22px;
   }
   
-  .login-subtitle {
+  .platform-subtitle {
     font-size: 13px;
   }
   
-  .form-item {
-    margin-bottom: 20px;
-  }
-  
   :deep(.form-input .arco-input-wrapper) {
-    height: 52px;
+    height: 65px !important;
   }
   
   .login-button {
-    height: 52px;
-    font-size: 15px;
+    height: 65px !important;
+    font-size: 15px !important;
   }
+  
+
 }
 
 @media (max-width: 480px) {
   .login-card {
-    padding: 32px 20px 28px;
+    padding: 17px 24px;
   }
   
-  .login-title {
-    font-size: 18px;
+  .platform-title {
+    font-size: 20px;
   }
   
-  .login-subtitle {
-    font-size: 12px;
+  .logo-icon {
+    width: 60px;
+    height: 60px;
   }
   
   :deep(.form-input .arco-input-wrapper) {
-    height: 48px;
+    height: 60px !important;
   }
   
   .login-button {
-    height: 48px;
-    font-size: 14px;
-  }
-
-  .version-info {
-    margin-top: 24px;
-    padding-top: 16px;
+    height: 100px !important;
+    font-size: 14px !important;
   }
 }
-</style> 
+</style> image.png
