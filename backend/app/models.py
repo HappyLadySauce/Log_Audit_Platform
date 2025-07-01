@@ -8,7 +8,7 @@ class AssetType(str, enum.Enum):
     NETWORK_DEVICE = "network_device"
     LINUX_SERVER = "linux_server"
     WINDOWS_SERVER = "windows_server"
-    K8S_CLUSTER = "k8s_cluster"
+    OTHER = "other"
 
 class AssetStatus(str, enum.Enum):
     NORMAL = "normal"
@@ -16,9 +16,10 @@ class AssetStatus(str, enum.Enum):
     ERROR = "error"
 
 class SecurityLevel(str, enum.Enum):
-    LEVEL_ONE = "等级一"
-    LEVEL_TWO = "等级二"
-    LEVEL_THREE = "等级三"
+    LOW = "低防护级别"
+    MEDIUM_LOW = "中低防护级别"
+    MEDIUM_HIGH = "中高防护级别"
+    HIGH = "高防护级别"
 
 class AlertStatus(str, enum.Enum):
     PENDING = "PENDING"

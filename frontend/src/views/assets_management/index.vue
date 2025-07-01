@@ -71,10 +71,10 @@
         <a-space>
           <a-input-search placeholder="搜索资产..." style="width: 200px" allow-clear />
           <a-select placeholder="设备类型" style="width: 120px" allow-clear>
-            <a-option value="server">服务器</a-option>
-            <a-option value="network">网络设备</a-option>
-            <a-option value="storage">存储设备</a-option>
-            <a-option value="security">安全设备</a-option>
+            <a-option value="linux_server">Linux服务器</a-option>
+            <a-option value="windows_server">Windows服务器</a-option>
+            <a-option value="network_device">网络设备</a-option>
+            <a-option value="other">其他</a-option>
           </a-select>
         </a-space>
       </template>
@@ -127,21 +127,22 @@
       title="添加资产"
       @ok="handleAddAsset"
       @cancel="resetAddForm"
-      width="800px"
+      width="600px"
     >
       <a-form :model="addForm" layout="vertical">
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="设备名称" required>
-              <a-input v-model="addForm.name" placeholder="请输入设备名称" />
+              <a-input v-model="addForm.name" placeholder="请输入设备名称" size="large" />
             </a-form-item>
           </a-col>
           <a-col :span="12">
             <a-form-item label="设备类型" required>
-              <a-select v-model="addForm.asset_type" placeholder="请选择设备类型">
+              <a-select v-model="addForm.asset_type" placeholder="请选择设备类型" size="large">
                 <a-option value="linux_server">Linux服务器</a-option>
                 <a-option value="windows_server">Windows服务器</a-option>
                 <a-option value="network_device">网络设备</a-option>
+                <a-option value="other">其他</a-option>
               </a-select>
             </a-form-item>
           </a-col>
@@ -149,38 +150,41 @@
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="IP地址" required>
-              <a-input v-model="addForm.ip_address" placeholder="请输入IP地址" />
+              <a-input v-model="addForm.ip_address" placeholder="请输入IP地址" size="large" />
             </a-form-item>
           </a-col>
           <a-col :span="12">
             <a-form-item label="位置" required>
-              <a-input v-model="addForm.location" placeholder="请输入设备位置" />
+              <a-input v-model="addForm.location" placeholder="请输入设备位置" size="large" />
             </a-form-item>
           </a-col>
         </a-row>
         <a-row :gutter="16">
           <a-col :span="12">
-            <a-form-item label="安全防护等级" required>
-              <a-select v-model="addForm.security_level" placeholder="请选择安全防护等级">
-                <a-option value="等级一">等级一</a-option>
-                <a-option value="等级二">等级二</a-option>
-                <a-option value="等级三">等级三</a-option>
+            <a-form-item required>
+              <template #label>
+                <span style="display: flex; align-items: center; gap: 4px;">
+                  安全防护等级
+                  <icon-question-circle 
+                    style="color: #f53f3f; font-size: 14px; cursor: pointer;" 
+                    @click="showSecurityLevelInfo"
+                  />
+                </span>
+              </template>
+              <a-select v-model="addForm.security_level" placeholder="请选择安全防护等级" size="large">
+                <a-option value="低防护级别">低防护级别</a-option>
+                <a-option value="中低防护级别">中低防护级别</a-option>
+                <a-option value="中高防护级别">中高防护级别</a-option>
+                <a-option value="高防护级别">高防护级别</a-option>
               </a-select>
             </a-form-item>
           </a-col>
           <a-col :span="12">
             <a-form-item label="管理员联系方式">
-              <a-input v-model="addForm.admin_contact" placeholder="请输入联系方式" />
+              <a-input v-model="addForm.admin_contact" placeholder="请输入联系方式" size="large" />
             </a-form-item>
           </a-col>
         </a-row>
-        <a-form-item label="资产描述">
-          <a-textarea
-            v-model="addForm.asset_description"
-            placeholder="请描述资产详细信息"
-            :auto-size="{ minRows: 2, maxRows: 4 }"
-          />
-        </a-form-item>
         <a-form-item>
           <a-checkbox v-model="continuousAdd">
             连续添加模式（保留表单信息，方便添加相似资产）
@@ -203,22 +207,22 @@
       title="编辑资产"
       @ok="handleEditAsset"
       @cancel="showEditModal = false"
-      width="800px"
+      width="600px"
     >
       <a-form :model="editForm" layout="vertical">
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="设备名称" required>
-              <a-input v-model="editForm.name" placeholder="请输入设备名称" />
+              <a-input v-model="editForm.name" placeholder="请输入设备名称" size="large" />
             </a-form-item>
           </a-col>
           <a-col :span="12">
             <a-form-item label="设备类型" required>
-              <a-select v-model="editForm.asset_type" placeholder="请选择设备类型">
+              <a-select v-model="editForm.asset_type" placeholder="请选择设备类型" size="large">
                 <a-option value="linux_server">Linux服务器</a-option>
                 <a-option value="windows_server">Windows服务器</a-option>
                 <a-option value="network_device">网络设备</a-option>
-                <a-option value="k8s_cluster">K8S集群</a-option>
+                <a-option value="other">其他</a-option>
               </a-select>
             </a-form-item>
           </a-col>
@@ -226,39 +230,97 @@
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="IP地址" required>
-              <a-input v-model="editForm.ip_address" placeholder="请输入IP地址" />
+              <a-input v-model="editForm.ip_address" placeholder="请输入IP地址" size="large" />
             </a-form-item>
           </a-col>
           <a-col :span="12">
             <a-form-item label="位置" required>
-              <a-input v-model="editForm.location" placeholder="请输入设备位置" />
+              <a-input v-model="editForm.location" placeholder="请输入设备位置" size="large" />
             </a-form-item>
           </a-col>
         </a-row>
         <a-row :gutter="16">
           <a-col :span="12">
-            <a-form-item label="安全防护等级" required>
-              <a-select v-model="editForm.security_level" placeholder="请选择安全防护等级">
-                <a-option value="等级一">等级一</a-option>
-                <a-option value="等级二">等级二</a-option>
-                <a-option value="等级三">等级三</a-option>
+            <a-form-item required>
+              <template #label>
+                <span style="display: flex; align-items: center; gap: 4px;">
+                  安全防护等级
+                  <icon-question-circle 
+                    style="color: #f53f3f; font-size: 14px; cursor: pointer;" 
+                    @click="showSecurityLevelInfo"
+                  />
+                </span>
+              </template>
+              <a-select v-model="editForm.security_level" placeholder="请选择安全防护等级" size="large">
+                <a-option value="低防护级别">低防护级别</a-option>
+                <a-option value="中低防护级别">中低防护级别</a-option>
+                <a-option value="中高防护级别">中高防护级别</a-option>
+                <a-option value="高防护级别">高防护级别</a-option>
               </a-select>
             </a-form-item>
           </a-col>
           <a-col :span="12">
             <a-form-item label="管理员联系方式">
-              <a-input v-model="editForm.admin_contact" placeholder="请输入联系方式" />
+              <a-input v-model="editForm.admin_contact" placeholder="请输入联系方式" size="large" />
             </a-form-item>
           </a-col>
         </a-row>
-        <a-form-item label="资产描述">
-          <a-textarea
-            v-model="editForm.asset_description"
-            placeholder="请描述资产详细信息"
-            :auto-size="{ minRows: 2, maxRows: 4 }"
-          />
-        </a-form-item>
       </a-form>
+    </a-modal>
+
+    <!-- 安全防护等级详情弹窗 -->
+    <a-modal
+      v-model:visible="showSecurityInfoModal"
+      title="安全防护等级详细说明"
+      @ok="showSecurityInfoModal = false"
+      @cancel="showSecurityInfoModal = false"
+      width="700px"
+      :footer="false"
+    >
+      <div class="security-level-content">
+        <div class="security-level-item">
+          <h3 class="level-title">1. 低防护级别</h3>
+          <p class="level-description">
+            主要用于保护一些非常基础的信息，如一般的公开信息或无机密性的数据。这个级别的系统主要采用一些基本的安全措施，如网络防火墙、入侵检测系统等。
+          </p>
+        </div>
+
+        <div class="security-level-item">
+          <h3 class="level-title">2. 中低防护级别</h3>
+          <p class="level-description">
+            主要用于保护一些具有一定机密性或重要性的信息，但受到的风险相对较低。这个级别的系统除了基本的安全措施外，还会采用一些额外的安全措施，如加密传输、用户身份认证等。
+          </p>
+        </div>
+
+        <div class="security-level-item">
+          <h3 class="level-title">3. 中高防护级别</h3>
+          <p class="level-description">
+            主要用于保护一些具有较高机密性或重要性的信息，可能会受到一定风险的影响。这个级别的系统除了基本的安全措施外，还会采用更加复杂的安全措施，如多层防护、安全审计等。
+          </p>
+        </div>
+
+        <div class="security-level-item">
+          <h3 class="level-title">4. 高防护级别</h3>
+          <p class="level-description">
+            主要用于保护一些非常重要、具有高度机密性的信息，可能会面临严重的安全风险。这个级别的系统会采用最严格的安全措施，包括但不限于：访问控制、数据加密、安全监控、备份与恢复等多重防护机制。
+          </p>
+        </div>
+
+        <div class="security-tips">
+          <a-alert type="info" show-icon>
+            <template #icon>
+              <icon-info-circle />
+            </template>
+            <p><strong>选择建议：</strong></p>
+            <ul>
+              <li>核心业务系统、数据库服务器建议选择"高防护级别"</li>
+              <li>一般业务服务器可选择"中高防护级别"</li>
+              <li>办公网络设备可选择"中低防护级别"</li>
+              <li>测试环境、临时设备可选择"低防护级别"</li>
+            </ul>
+          </a-alert>
+        </div>
+      </div>
     </a-modal>
   </div>
 </template>
@@ -278,6 +340,8 @@ import {
   IconClose,
   IconWifi,
   IconLock,
+  IconQuestionCircle,
+  IconInfoCircle,
 } from '@arco-design/web-vue/es/icon'
 
 // 资产数据
@@ -294,7 +358,6 @@ const addForm = ref({
   location: '',
   security_level: '',
   admin_contact: '',
-  asset_description: '',
   last_security_scan: '',
 })
 
@@ -307,11 +370,11 @@ const editForm = ref({
   location: '',
   security_level: '',
   admin_contact: '',
-  asset_description: '',
   last_security_scan: '',
 })
 
 const showEditModal = ref(false)
+const showSecurityInfoModal = ref(false)
 
 // 统计数据计算
 const stats = computed(() => {
@@ -353,6 +416,11 @@ const showContinuousAdd = () => {
   showAddModal.value = true
 }
 
+// 显示安全防护等级详情
+const showSecurityLevelInfo = () => {
+  showSecurityInfoModal.value = true
+}
+
 // 添加资产
 const handleAddAsset = async () => {
   try {
@@ -371,7 +439,6 @@ const handleAddAsset = async () => {
         location: addForm.value.location,
         security_level: addForm.value.security_level,
         admin_contact: addForm.value.admin_contact,
-        asset_description: addForm.value.asset_description,
       }
 
       addForm.value = {
@@ -381,7 +448,6 @@ const handleAddAsset = async () => {
         location: preservedData.location,
         security_level: preservedData.security_level,
         admin_contact: preservedData.admin_contact,
-        asset_description: preservedData.asset_description,
         last_security_scan: '',
       }
 
@@ -409,7 +475,6 @@ const resetAddForm = () => {
     location: '',
     security_level: '',
     admin_contact: '',
-    asset_description: '',
     last_security_scan: '',
   }
   continuousAdd.value = false
@@ -432,7 +497,6 @@ const editAsset = (record: Asset) => {
     location: record.location,
     security_level: record.security_level,
     admin_contact: record.admin_contact || '',
-    asset_description: record.asset_description || '',
     last_security_scan: record.last_security_scan || '',
   }
   showEditModal.value = true
@@ -533,8 +597,6 @@ const getDeviceIcon = (type: string) => {
       return IconDesktop
     case 'network_device':
       return IconWifi
-    case 'k8s_cluster':
-      return IconLock
     default:
       return IconDesktop
   }
@@ -547,8 +609,8 @@ const getTypeColor = (type: string) => {
       return 'blue'
     case 'network_device':
       return 'green'
-    case 'k8s_cluster':
-      return 'red'
+    case 'other':
+      return 'purple'
     default:
       return 'gray'
   }
@@ -562,8 +624,8 @@ const getTypeName = (type: string) => {
       return 'Windows服务器'
     case 'network_device':
       return '网络设备'
-    case 'k8s_cluster':
-      return 'K8S集群'
+    case 'other':
+      return '其他'
     default:
       return '未知'
   }
@@ -632,5 +694,47 @@ const getStatusText = (status: string) => {
 
 :deep(.arco-card) {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 安全防护等级详情样式 */
+.security-level-content {
+  padding: 8px 0;
+}
+
+.security-level-item {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #1890ff;
+}
+
+.level-title {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.level-description {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #4e5969;
+}
+
+.security-tips {
+  margin-top: 20px;
+}
+
+.security-tips ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.security-tips li {
+  margin-bottom: 4px;
+  font-size: 14px;
+  color: #4e5969;
 }
 </style>

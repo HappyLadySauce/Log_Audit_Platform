@@ -14,7 +14,7 @@
               <icon-search v-if="!scanning" />
               <icon-loading v-else />
             </template>
-            {{ scanning ? '正在扫描...' : '开始扫描' }}
+            {{ scanning ? '正在添加...' : '自动添加' }}
           </a-button>
         </a-space>
       </template>
@@ -89,14 +89,14 @@
                 </template>
                 <div style="margin-top: 16px">
                   <p style="color: #86909c; margin-bottom: 12px">
-                    请点击上方的"开始扫描"按钮来发现网络中的服务器
+                    请点击上方的"自动添加"按钮来发现网络中的服务器
                   </p>
                   <a-button type="primary" @click="startScan" :loading="scanning">
                     <template #icon>
                       <icon-search v-if="!scanning" />
                       <icon-loading v-else />
                     </template>
-                    {{ scanning ? '正在扫描...' : '开始扫描' }}
+                    {{ scanning ? '正在添加...' : '自动添加' }}
                   </a-button>
                 </div>
               </a-empty>
@@ -136,14 +136,14 @@
 
             <template #actions="{ record }">
               <a-space>
-                <a-button type="text" size="small" @click="viewServerDetail(record)">
-                  查看详情
-                </a-button>
                 <a-button type="text" size="small" status="warning" @click="stopCollection(record)">
                   停止采集
                 </a-button>
                 <a-button type="text" size="small" status="danger" @click="deleteServer(record)">
                   删除
+                </a-button>
+                <a-button type="text" size="small" @click="viewServerDetail(record)">
+                  查看详情
                 </a-button>
               </a-space>
             </template>

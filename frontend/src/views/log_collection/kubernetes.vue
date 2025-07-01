@@ -204,8 +204,8 @@
 
             <template #actions="{ record }">
               <a-space>
-                <a-button type="text" size="small" @click="showPodDetail(record)">日志</a-button>
                 <a-button type="text" size="small" @click="showPodDetail(record)">详情</a-button>
+                <a-button type="text" size="small" @click="showPodDetail(record)">日志</a-button>
                 <a-button type="text" size="small">重启</a-button>
               </a-space>
             </template>

@@ -2,7 +2,7 @@
   <a-layout class="layout">
     <a-layout-sider
       v-model:collapsed="collapsed"
-      :width="240"
+      :width="260"
       :collapsed-width="64"
       :trigger="null"
       collapsible
@@ -10,7 +10,7 @@
     >
       <div class="logo">
         <icon-desktop class="logo-icon" />
-        <span v-if="!collapsed" class="logo-text">综合日志审计平台</span>
+        <span v-if="!collapsed" class="logo-text">综合日志审计分析平台</span>
       </div>
       <a-menu
         v-model:selected-keys="selectedKeys"
@@ -84,6 +84,13 @@
             <icon-robot />
           </template>
           <span>AI智能分析</span>
+        </a-menu-item>
+
+        <a-menu-item key="system-settings">
+          <template #icon>
+            <icon-settings />
+          </template>
+          <span>系统设置</span>
         </a-menu-item>
       </a-menu>
     </a-layout-sider>
@@ -218,6 +225,7 @@ const menuRouteMap: Record<string, string> = {
   'alert-rule-management': '/alert-management/rule-management',
   'alert-record-query': '/alert-management/record-query',
   'ai-analysis': '/ai-analysis',
+  'system-settings': '/system-settings',
 }
 
 // 监听路由变化更新选中状态
@@ -313,9 +321,9 @@ const fixFault = async () => {
 .logo {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   height: 64px;
-  padding: 0 16px;
+  padding: 0 12px;
   color: #fff;
   font-size: 18px;
   font-weight: bold;
@@ -323,11 +331,16 @@ const fixFault = async () => {
 }
 
 .logo-icon {
-  font-size: 24px;
+  font-size: 22px;
+  flex-shrink: 0;
 }
 
 .logo-text {
-  margin-left: 8px;
+  margin-left: 6px;
+  white-space: nowrap;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 600;
 }
 
 .layout-header {
